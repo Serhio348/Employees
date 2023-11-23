@@ -1,7 +1,8 @@
 const express = require('express');
+const { auth } = require('../middleware/Auth')
 const router = express.Router();
 
-const { login, register, current } = require('../controllers/users')
+const { login, register, current } = require('../controllers/Users')
 
 /* api/user/login */
 router.post('/login', login);
@@ -10,8 +11,6 @@ router.post('/login', login);
 router.post('/register', register);
 
 /* api/user/current */
-router.get('/current', function (req, res) {
-  res.send('current', current);
-});
+router.get('/current', auth, current);
 
 module.exports = router;
