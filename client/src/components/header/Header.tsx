@@ -1,6 +1,6 @@
 import React from "react";
 import { Layout, Space, Typography } from "antd";
-import { TeamOutlined } from "@ant-design/icons";
+import { LoginOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 
 import styles from "./Header.module.css";
 import CustomButton from "../customButton/CustomButton";
@@ -20,10 +20,10 @@ const Header = () => {
             </Space>
             <Space>
                 <Link to={Paths.register}>
-                    <CustomButton type="ghost">Зарегистрироваться</CustomButton>
+                    <CustomButton type="ghost" icon={<UserOutlined />}>Зарегистрироваться</CustomButton>
                 </Link>
                 <Link to={Paths.login}>
-                    <CustomButton type="ghost">Войти</CustomButton>
+                    <CustomButton type="ghost" icon={<LoginOutlined />}>Войти</CustomButton>
                 </Link>
             </Space>
         </Layout.Header>
