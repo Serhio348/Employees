@@ -14,7 +14,7 @@ const Header = () => {
                 <TeamOutlined className={styles.teamIcon} />
                 <Link to={Paths.home}>
                     <CustomButton type="ghost">
-                        <Typography.Title level={1}>Сотрудники</Typography.Title>
+                        <Typography.Title level={1}>Участок ТЭО</Typography.Title>
                     </CustomButton>
                 </Link>
             </Space>
