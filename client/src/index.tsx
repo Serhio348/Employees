@@ -10,8 +10,9 @@ import Register from "./pages/register/Register";
 
 import "./index.css";
 import { Paths } from "./path";
+import Auth from "./features/auth/Auth";
 
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
     path: Paths.home,
     element: <h1>Employees</h1>,
@@ -26,6 +27,13 @@ const router = createBrowserRouter([
   },
 ]);
 
+
+export const useContest = {
+  name: 'serg',
+  age: 12,
+  city: 'brest'
+}
+
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
@@ -35,7 +43,9 @@ root.render(
       <ConfigProvider theme={{
         algorithm: theme.darkAlgorithm
       }}>
-        <RouterProvider router={router} />
+        <Auth>
+          <RouterProvider router={router} />
+        </Auth>
       </ConfigProvider>
     </Provider>
   </React.StrictMode>

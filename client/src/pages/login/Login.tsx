@@ -9,7 +9,9 @@ import { Paths } from "../../path";
 import { UserData, useLoginMutation } from "../../app/services/auth";
 import { isErrorWithMessage } from "../../utils/isErrorWithMessage";
 import ErrorMessage from "../../components/errorMessage/ErrorMessage";
-import { log } from "console";
+
+
+
 
 const Login = () => {
     const navigate = useNavigate();
