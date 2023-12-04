@@ -11,11 +11,13 @@ import Register from "./pages/register/Register";
 import "./index.css";
 import { Paths } from "./path";
 import Auth from "./features/auth/Auth";
+import Employees from "./pages/employees/Employees";
+import AddEmployee from "./pages/addEmployee/AddEmployee";
 
 export const router = createBrowserRouter([
   {
     path: Paths.home,
-    element: <h1>Employees</h1>,
+    element: <Employees />,
   },
   {
     path: Paths.login,
@@ -25,14 +27,12 @@ export const router = createBrowserRouter([
     path: Paths.register,
     element: <Register />,
   },
+  {
+    path: Paths.employeeAdd,
+    element: <AddEmployee />,
+  },
 ]);
 
-
-export const useContest = {
-  name: 'serg',
-  age: 12,
-  city: 'brest'
-}
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);

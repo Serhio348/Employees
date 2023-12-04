@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Layout from "../../components/layout/Layout";
 import { Card, Form, Row, Space, Typography } from "antd";
-import LoginInput from "../../components/loginInput/LoginInput";
+import CustomInput from "../../components/customInput/CastomInput";
 import PasswordInput from "../../components/passwordInput/PasswordInput";
 import CustomButton from "../../components/customButton/CustomButton";
 import { Link, useNavigate } from "react-router-dom";
@@ -38,7 +38,7 @@ const Login = () => {
             <Row align="middle" justify="center">
                 <Card title="Войдите" style={{ width: "30rem" }}>
                     <Form onFinish={login}>
-                        <LoginInput type="email" name="email" placeholder="Email" />
+                        <CustomInput type="email" name="email" placeholder="Email" />
                         <PasswordInput name="password" placeholder="Пароль" />
                         <CustomButton type="primary" htmlType="submit">
                             Войти

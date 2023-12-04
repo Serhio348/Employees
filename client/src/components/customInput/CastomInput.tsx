@@ -9,7 +9,7 @@ type Props = {
     type?: string
 }
 
-const LoginInput = ({
+const CustomInput = ({
     name,
     placeholder,
     type = "text"
@@ -29,4 +29,4 @@ const LoginInput = ({
     );
 };
 
-export default LoginInput;
+export default CustomInput;
