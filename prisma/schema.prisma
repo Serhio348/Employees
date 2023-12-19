@@ -16,6 +16,7 @@ model User {
   email           String
   password        String
   name            String
+  lastName        String
   createdEmployee  Employee[]
 }
 
@@ -23,8 +24,12 @@ model Employee {
   id        String @id @default(uuid())
   firstName String
   lastName  String
+  surName   String?
   age       String
+  profession String
   address   String
+  tableNumber  String?
+
   user      User   @relation(fields: [userId], references: [id])
   userId    String
 }

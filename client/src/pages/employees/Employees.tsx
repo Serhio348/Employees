@@ -14,6 +14,11 @@ import { selectUser } from '../../features/auth/authSlice'
 
 const columns: ColumnsType<Employee> = [
     {
+        title: "Фамилия",
+        dataIndex: "lastName",
+        key: "lastName",
+    },
+    {
         title: "Имя",
         dataIndex: "firstName",
         key: "firstName",
@@ -27,6 +32,11 @@ const columns: ColumnsType<Employee> = [
         title: "Адрес",
         dataIndex: "address",
         key: "address",
+    },
+    {
+        title: "Профессия",
+        dataIndex: "profession",
+        key: "profession",
     },
 ];
 

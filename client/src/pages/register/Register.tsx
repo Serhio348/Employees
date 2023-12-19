@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout/Layout";
 import { Card, Form, Row, Space, Typography } from "antd";
-import LoginInput from "../../components/customInput/CastomInput";
+import CustomInput from "../../components/customInput/CustomInput";
 import PasswordInput from "../../components/passwordInput/PasswordInput";
 import CustomButton from "../../components/customButton/CustomButton";
 import { Link, useNavigate } from "react-router-dom";
@@ -41,8 +41,9 @@ const Register = () => {
             <Row align="middle" justify="center">
                 <Card title="Регистрация" style={{ width: "30rem" }}>
                     <Form onFinish={register}>
-                        <LoginInput name="name" placeholder="Имя" />
-                        <LoginInput type="email" name="email" placeholder="Email" />
+                        <CustomInput name="name" placeholder="Имя" />
+                        <CustomInput name="lastName" placeholder="Фамилия" />
+                        <CustomInput type="email" name="email" placeholder="Email" />
                         <PasswordInput name="password" placeholder="Пароль" />
                         <PasswordInput name="confirmPassword" placeholder="Повторите пароль" />
                         <CustomButton type="primary" htmlType="submit">

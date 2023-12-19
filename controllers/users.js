@@ -58,10 +58,10 @@ const login = async (req, res) => {
 ////Принимаем данные с client
 const register = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, name, lastName } = req.body;
 
         /////Сравниваем все ли поля заполнены
-        if (!email || !password || !name) {
+        if (!email || !password || !name || !lastName) {
             return res
                 .status(400)
                 .json({ message: "Пожалуйста, заполните обязательные поля" });
@@ -92,6 +92,7 @@ const register = async (req, res) => {
             data: {
                 email,
                 name,
+                lastName,
                 password: hashedPassord,
             },
         });
@@ -104,6 +105,7 @@ const register = async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name,
+                lastName,
                 token: jwt.sign({ id: user.id }, secret, { expiresIn: "30d" }),
             });
         } else {
