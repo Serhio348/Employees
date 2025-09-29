@@ -19,5 +19,7 @@ app.use(cookieParser());
 
 app.use('/api/user', require("./routes/Users"));
 app.use('/api/employees', require("./routes/Employees"));
+app.use('/api/inventory', require("./routes/Inventory"));
+app.use('/api/inventory-addon', require("./routes/InventoryAddon"));
 
 module.exports = app;

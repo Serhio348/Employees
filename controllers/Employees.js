@@ -26,12 +26,28 @@ const all = async (req, res) => {
 const add = async (req, res) => {
     try {
         const data = req.body;
-        if (!data.firstName || !data.lastName || data.surName || !data.address || !data.age) {
+        console.log('Received employee data:', data);
+        
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "Пользователь не авторизован" });
+        }
+        
+        if (!data.firstName || !data.lastName || !data.address || !data.age || !data.profession) {
+            console.log('Validation failed - missing fields:', {
+                firstName: !!data.firstName,
+                lastName: !!data.lastName,
+                address: !!data.address,
+                age: !!data.age,
+                profession: !!data.profession
+            });
             return res.status(400).json({ message: "Все поля обязательные" });
         }
         const employee = await prisma.employee.create({
             data: {
                 ...data,
+                age: parseInt(data.age), // Преобразуем возраст в число
+                height: data.height ? parseInt(data.height) : null, // Преобразуем рост в число
+                birthDate: data.birthDate ? new Date(data.birthDate) : null, // Преобразуем дату рождения
                 userId: req.user.id,
             },
         });
@@ -44,12 +60,12 @@ const add = async (req, res) => {
 }
 
 /**
-* @route POST /api/empoyees/remove/:id
+* @route DELETE /api/employees/remove/:id
 * @desc Удаление сотрудника
 * @access Private
 */
 const remove = async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.params;
 
     try {
         await prisma.employee.delete({
@@ -65,7 +81,7 @@ const remove = async (req, res) => {
 };
 
 /**
- * @route PUT /api/empoyees/edit/:id
+ * @route PUT /api/employees/edit/:id
  * @desc Редактирование сотрудника
  * @access Private
  */
@@ -78,7 +94,12 @@ const edit = async (req, res) => {
             where: {
                 id,
             },
-            data,
+            data: {
+                ...data,
+                age: data.age ? parseInt(data.age) : undefined,
+                height: data.height ? parseInt(data.height) : null,
+                birthDate: data.birthDate ? new Date(data.birthDate) : null,
+            },
         });
 
         res.status(204).json("OK");

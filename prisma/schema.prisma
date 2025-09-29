@@ -13,7 +13,7 @@ datasource db {
 
 model User {
   id              String     @id @default(uuid())
-  email           String
+  email           String     @unique
   password        String
   name            String
   lastName        String
@@ -25,11 +25,38 @@ model Employee {
   firstName String
   lastName  String
   surName   String?
-  age       String
+  age       Int
+  birthDate DateTime? // дата рождения
   profession String
   address   String
-  tableNumber  String?
+  employeeNumber  String?
+  height    Int?    // рост в см
+  clothingSize String? // размер одежды
+  shoeSize  String? // размер обуви
 
   user      User   @relation(fields: [userId], references: [id])
   userId    String
+}
+
+model Inventory {
+  id          String @id @default(uuid())
+  itemName    String
+  itemType    String  // "спецодежда", "инструмент", "оборудование", "сиз"
+  issueDate   DateTime @default(now())
+  quantity    Int     @default(1)
+  status      String  @default("выдан") // "выдан", "возвращен", "списан"
+  employeeId  String  // Простая строка без связи
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InventoryAddon {
+  id                String @id @default(uuid())
+  name              String
+  issueDate         DateTime @default(now())
+  wearPeriodMonths  Int      // срок носки в месяцах
+  nextReplacementDate DateTime
+  inventoryId       String  // Простая строка без связи
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

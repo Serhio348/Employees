@@ -6,8 +6,6 @@ import PasswordInput from "../../components/passwordInput/PasswordInput";
 import CustomButton from "../../components/customButton/CustomButton";
 import { Link, useNavigate } from "react-router-dom";
 import { Paths } from "../../path";
-import { useSelector } from "react-redux";
-import { selectUser } from "../../features/auth/authSlice";
 import { useRegisterMutation } from "../../app/services/auth";
 import { User } from "@prisma/client";
 import { isErrorWithMessage } from "../../utils/isErrorWithMessage";
@@ -17,7 +15,6 @@ type RegisterData = Omit<User, "id"> & { confirmPassword: string }; //удали
 
 const Register = () => {
     const navigate = useNavigate();
-    const user = useSelector(selectUser)
     const [error, setError] = useState("");
     const [registerUser] = useRegisterMutation()
     const register = async (data: RegisterData) => {

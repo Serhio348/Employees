@@ -16,6 +16,8 @@ import AddEmployee from "./pages/addEmployee/AddEmployee";
 import Status from "./pages/status/Status";
 import Employee from "./pages/employee/Employee";
 import EditEmployee from "./pages/editEmployee/EditEmployee";
+import EmployeeInventory from "./pages/employeeInventory/EmployeeInventory";
+import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +47,14 @@ export const router = createBrowserRouter([
   {
     path: `${Paths.employeeEdit}/:id`,
     element: <EditEmployee />,
+  },
+  {
+    path: `${Paths.employee}/:id/inventory`,
+    element: <EmployeeInventory />,
+  },
+  {
+    path: `/inventory/:inventoryId/addons`,
+    element: <InventoryAddons />,
   },
 ]);
 

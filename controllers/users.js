@@ -1,5 +1,5 @@
 const { prisma } = require("../prisma/prisma-client");
-const brypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 /**
  * @route POST /api/user/login
@@ -27,7 +27,7 @@ const login = async (req, res) => {
 
         ///Сравнение паролей, который пришел к нам с client и хэш пароля текущего пользователя
         const isPasswordCorrect =
-            user && (await brypt.compare(password, user.password));
+            user && (await bcrypt.compare(password, user.password));
 
         const secret = process.env.JWT_SECRET;
 
@@ -44,8 +44,9 @@ const login = async (req, res) => {
                 .status(400)
                 .json({ message: "Введен неверный логин или пароль" });
         }
-    } catch {
-        res.status(400).json({ message: "Что-то пошло не так" });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: "Что-то пошло не так", error: error.message });
     }
 };
 
@@ -83,17 +84,17 @@ const register = async (req, res) => {
         }
 
         ////Строка которая будет добавлятся к хэшу
-        const salt = await brypt.genSalt(10);
+        const salt = await bcrypt.genSalt(10);
 
         ////Хэшировавние пароля с помощью сгенерированной соли:
-        const hashedPassord = await brypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const user = await prisma.user.create({
             data: {
                 email,
                 name,
                 lastName,
-                password: hashedPassord,
+                password: hashedPassword,
             },
         });
 
@@ -113,8 +114,9 @@ const register = async (req, res) => {
                 .status(400)
                 .json({ message: "Не удалось создать пользователя" });
         }
-    } catch {
-        res.status(400).json({ message: "Что-то пошло не так" });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ message: "Что-то пошло не так", error: error.message });
     }
 };
 

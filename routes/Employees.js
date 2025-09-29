@@ -13,7 +13,7 @@ router.get("/:id", auth, employee);
 router.post("/add", auth, add);
 
 /////   /api/employees/remove/:id
-router.post("/remove/:id", auth, remove);
+router.delete("/remove/:id", auth, remove);
 
 /////   /api/employees/edit/:id
 router.put("/edit/:id", auth, edit);

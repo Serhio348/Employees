@@ -14,7 +14,7 @@ const AddEmployee = () => {
     const [error, setError] = useState("");
     const navigate = useNavigate();
     const user = useSelector(selectUser);
-    const [AddEmployee] = useAddEmployeeMutation();
+    const [AddEmployee, { isLoading: isAdding }] = useAddEmployeeMutation();
 
     useEffect(() => {
         if (!user) {
@@ -46,6 +46,7 @@ const AddEmployee = () => {
                     btnText='Добавить'
                     onFinish={handleAddEmployee}
                     error={error}
+                    loading={isAdding}
                 />
             </Row>
         </Layout>

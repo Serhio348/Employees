@@ -4,8 +4,10 @@ import { useEditEmployeeMutation, useGetEmployeeQuery } from '../../app/services
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 import { Employee } from '@prisma/client';
 import Layout from '../../components/layout/Layout';
-import { Row } from 'antd';
+import { Row, Space } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import EmployeeForm from '../../components/employeeForm/EmployeeForm';
+import CustomButton from '../../components/customButton/CustomButton';
 import { Paths } from '../../path';
 
 const EditEmployee = () => {
@@ -14,7 +16,7 @@ const EditEmployee = () => {
     const params = useParams<{ id: string }>();
     const [error, setError] = useState("");
     const { data, isLoading } = useGetEmployeeQuery(params.id || "");
-    const [editEmployee] = useEditEmployeeMutation();
+    const [editEmployee, { isLoading: isEditing }] = useEditEmployeeMutation();
 
 
     if (isLoading) {
@@ -42,9 +44,22 @@ const EditEmployee = () => {
         }
     };
 
+    const handleGoBack = () => {
+        navigate(`${Paths.employee}/${params.id}`);
+    };
+
 
     return (
         <Layout>
+            <Space style={{ marginBottom: 16 }}>
+                <CustomButton
+                    type="default"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={handleGoBack}
+                >
+                    Назад к сотруднику
+                </CustomButton>
+            </Space>
             <Row align="middle" justify="center">
                 <EmployeeForm
                     onFinish={handleEditUser}
@@ -52,6 +67,7 @@ const EditEmployee = () => {
                     employee={data}
                     btnText="Редактировать"
                     error={error}
+                    loading={isEditing}
                 />
             </Row>
         </Layout>

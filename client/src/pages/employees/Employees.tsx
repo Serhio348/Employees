@@ -67,7 +67,8 @@ const Employees = () => {
                 rowKey={(record => record.id)}
                 onRow={(record) => {
                     return {
-                        onClick: () => navigate(`${Paths.employee}/${record.id}`)
+                        onClick: () => navigate(`${Paths.employee}/${record.id}`),
+                        style: { cursor: 'pointer' }
                     }
                 }}
             />

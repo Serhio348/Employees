@@ -1,24 +1,24 @@
 import React from "react";
 import { Form, Input } from "antd";
-import FormItem from "antd/es/form/FormItem";
 
 
 type Props = {
     name: string,
     placeholder: string,
-    type?: string
+    type?: string,
+    required?: boolean
 }
 
 const CustomInput = ({
     name,
     placeholder,
-    type = "text"
+    type = "text",
+    required = true
 }: Props) => {
     return (
         <Form.Item
-            rules={[{ required: true, message: 'Обязательное поле' }]}
+            rules={required ? [{ required: true, message: 'Обязательное поле' }] : []}
             name={name}
-            shouldUpdate={true}
         >
             <Input
                 placeholder={placeholder}
