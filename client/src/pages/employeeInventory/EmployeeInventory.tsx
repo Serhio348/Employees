@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
 import { Row, Col, Button, Modal, Space, Typography, Statistic, Card, Tabs } from 'antd';
-import { PlusOutlined, ArrowLeftOutlined, BookOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, ArrowLeftOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
 import SizNormsTable from '../../components/sizNormsTable/SizNormsTable';
@@ -19,7 +19,7 @@ import {
 import { useGetEmployeeQuery } from '../../app/services/employees';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const EmployeeInventory = () => {
     const { id: employeeId } = useParams<{ id: string }>();
@@ -52,20 +52,38 @@ const EmployeeInventory = () => {
         }
     }, [navigate, user]);
 
+    // Подавляем ошибку ResizeObserver
+    useEffect(() => {
+        const handleError = (e: ErrorEvent) => {
+            if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+                e.stopImmediatePropagation();
+            }
+        };
+        
+        window.addEventListener('error', handleError);
+        
+        return () => {
+            window.removeEventListener('error', handleError);
+        };
+    }, []);
+
     const handleAddItem = async (values: InventoryItem) => {
         try {
+            console.log('EmployeeInventory - handleAddItem called with values:', values);
             if (!employeeId) {
                 setError("ID сотрудника не найден");
                 return;
             }
 
             const itemData = { ...values, employeeId: employeeId };
+            console.log('EmployeeInventory - sending itemData:', itemData);
             await addInventoryItem(itemData).unwrap();
             setIsModalVisible(false);
             setError("");
             // Автоматическое обновление страницы
             window.location.reload();
         } catch (error) {
+            console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
                 setError(error.data.message);
@@ -208,14 +226,74 @@ const EmployeeInventory = () => {
                             Назад к сотруднику
                         </Button>
                     </Space>
-                    <Title level={2}>
-                        Инвентарь сотрудника
+                    <div style={{ marginBottom: '24px' }}>
+                        <Title level={2} style={{ marginBottom: '16px' }}>
+                            Инвентарь сотрудника
+                        </Title>
                         {employee && (
-                            <span style={{ fontSize: '18px', fontWeight: 'normal', marginLeft: '16px' }}>
-                                {employee.lastName} {employee.firstName} {employee.surName}
-                            </span>
+                            <Card 
+                                style={{ 
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    marginBottom: '16px'
+                                }}
+                                bodyStyle={{ padding: '20px' }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '24px',
+                                        color: 'white'
+                                    }}>
+                                        <UserOutlined />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <Title 
+                                            level={2} 
+                                            style={{ 
+                                                color: 'white', 
+                                                margin: 0, 
+                                                fontSize: '24px',
+                                                fontWeight: 'bold',
+                                                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                            }}
+                                        >
+                                            {employee.lastName} {employee.firstName} {employee.surName}
+                                        </Title>
+                                        <Text 
+                                            style={{ 
+                                                color: 'rgba(255, 255, 255, 0.9)', 
+                                                fontSize: '16px',
+                                                display: 'block',
+                                                marginTop: '4px'
+                                            }}
+                                        >
+                                            {employee.profession}
+                                        </Text>
+                                        {employee.employeeNumber && (
+                                            <Text 
+                                                style={{ 
+                                                    color: 'rgba(255, 255, 255, 0.8)', 
+                                                    fontSize: '14px',
+                                                    display: 'block',
+                                                    marginTop: '2px'
+                                                }}
+                                            >
+                                                Табельный номер: {employee.employeeNumber}
+                                            </Text>
+                                        )}
+                                    </div>
+                                </div>
+                            </Card>
                         )}
-                    </Title>
+                    </div>
                 </Col>
 
                 {/* Статистика */}

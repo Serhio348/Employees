@@ -38,11 +38,13 @@ const InventoryForm = ({
     const { sizNorms } = useSizNorms();
 
     const handleFinish = (values: any) => {
+        console.log('InventoryForm - received values:', values);
         const processedValues = {
             ...values,
             issueDate: values.issueDate ? dayjs(values.issueDate).format('YYYY-MM-DD') : undefined,
             employeeId: employeeId
         };
+        console.log('InventoryForm - processed values:', processedValues);
         onFinish(processedValues);
     };
 
@@ -52,7 +54,10 @@ const InventoryForm = ({
         issueDate: item.issueDate ? dayjs(item.issueDate) : undefined,
         quantity: item.quantity,
         status: item.status
-    } : {};
+    } : {
+        quantity: 1,
+        status: 'выдан'
+    };
 
     return (
         <Card title={title} style={{ width: '30rem' }}>
@@ -90,7 +95,9 @@ const InventoryForm = ({
                     />
                 </Form.Item>
                 
-                <CustomInput type="number" name='quantity' placeholder='Количество' />
+                <Form.Item name="quantity" rules={[{ required: true, message: 'Введите количество' }]}>
+                    <CustomInput type="number" name='quantity' placeholder='Количество' />
+                </Form.Item>
                 
                 <Form.Item name="status" rules={[{ required: true, message: 'Выберите статус' }]}>
                     <Select placeholder="Статус">

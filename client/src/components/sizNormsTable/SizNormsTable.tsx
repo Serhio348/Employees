@@ -1,12 +1,11 @@
 import React, { memo, useState } from 'react';
-import { Table, Tag, Button, Space, Modal, Form, Input, InputNumber, Select } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Modal, Form, Input, InputNumber, Select, message } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { useSizNorms, SizNorm } from '../../hooks/useSizNorms';
 
 const SizNormsTable = () => {
-    const { sizNorms, updateSizNorms } = useSizNorms();
-    const [norms, setNorms] = useState<SizNorm[]>(sizNorms);
+    const { sizNorms, isLoading, addNorm, updateNorm, deleteNorm, initDefaults } = useSizNorms();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
@@ -24,33 +23,41 @@ const SizNormsTable = () => {
         setIsModalVisible(true);
     };
 
-    const handleDelete = (id: string) => {
-        const updatedNorms = norms.filter(norm => norm.id !== id);
-        setNorms(updatedNorms);
-        updateSizNorms(updatedNorms);
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteNorm(id);
+            message.success('Норма СИЗ удалена');
+        } catch (error) {
+            message.error('Ошибка при удалении нормы СИЗ');
+        }
     };
 
-    const handleModalOk = () => {
-        form.validateFields().then(values => {
-            let updatedNorms: SizNorm[];
-            if (editingNorm) {
+    const handleModalOk = async () => {
+        try {
+            const values = await form.validateFields();
+            if (editingNorm && editingNorm.id) {
                 // Редактирование
-                updatedNorms = norms.map(norm => 
-                    norm.id === editingNorm.id ? { ...norm, ...values } : norm
-                );
+                await updateNorm(editingNorm.id, values);
+                message.success('Норма СИЗ обновлена');
             } else {
                 // Добавление
-                const newNorm: SizNorm = {
-                    id: Date.now().toString(),
-                    ...values
-                };
-                updatedNorms = [...norms, newNorm];
+                await addNorm(values);
+                message.success('Норма СИЗ добавлена');
             }
-            setNorms(updatedNorms);
-            updateSizNorms(updatedNorms);
             setIsModalVisible(false);
             form.resetFields();
-        });
+        } catch (error) {
+            message.error('Ошибка при сохранении нормы СИЗ');
+        }
+    };
+
+    const handleInitDefaults = async () => {
+        try {
+            await initDefaults();
+            message.success('Стандартные нормы СИЗ инициализированы');
+        } catch (error) {
+            message.error('Ошибка при инициализации стандартных норм');
+        }
     };
 
     const handleModalCancel = () => {
@@ -119,7 +126,7 @@ const SizNormsTable = () => {
                         danger
                         size="small"
                         icon={<DeleteOutlined />}
-                        onClick={() => handleDelete(record.id)}
+                        onClick={() => record.id && handleDelete(record.id)}
                     />
                 </Space>
             )
@@ -132,21 +139,30 @@ const SizNormsTable = () => {
                 <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
                     Нормы выдачи СИЗ
                 </div>
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={handleAdd}
-                >
-                    Добавить норматив
-                </Button>
+                <Space>
+                    <Button
+                        icon={<ReloadOutlined />}
+                        onClick={handleInitDefaults}
+                    >
+                        Инициализировать стандартные
+                    </Button>
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={handleAdd}
+                    >
+                        Добавить норматив
+                    </Button>
+                </Space>
             </div>
             <Table
                 columns={columns}
-                dataSource={norms}
+                dataSource={sizNorms}
                 rowKey="id"
                 pagination={false}
                 size="small"
                 scroll={{ y: 400 }}
+                loading={isLoading}
             />
             
             <Modal

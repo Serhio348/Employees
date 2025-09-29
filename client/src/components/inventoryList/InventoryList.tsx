@@ -1,6 +1,6 @@
 import { Table, Tag, Button, Space, Popconfirm, Progress, Checkbox, Modal, message } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, ExclamationCircleOutlined, FileTextOutlined } from '@ant-design/icons';
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { InventoryItem } from '../../app/services/inventory';
 import { useSizNorms } from '../../hooks/useSizNorms';
 import dayjs from 'dayjs';
@@ -21,6 +21,21 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
     const { sizNorms } = useSizNorms();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
+
+    // Подавляем ошибку ResizeObserver
+    useEffect(() => {
+        const handleError = (e: ErrorEvent) => {
+            if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+                e.stopImmediatePropagation();
+            }
+        };
+        
+        window.addEventListener('error', handleError);
+        
+        return () => {
+            window.removeEventListener('error', handleError);
+        };
+    }, []);
 
     // Функция для расчета процента износа
     const calculateWearPercentage = (item: InventoryItem) => {

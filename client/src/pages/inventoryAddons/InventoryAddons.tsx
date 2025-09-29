@@ -15,7 +15,6 @@ import {
     InventoryAddon 
 } from '../../app/services/inventoryAddon';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
-import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
@@ -37,6 +36,21 @@ const InventoryAddons = () => {
             navigate('/login');
         }
     }, [navigate, user]);
+
+    // Подавляем ошибку ResizeObserver
+    useEffect(() => {
+        const handleError = (e: ErrorEvent) => {
+            if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+                e.stopImmediatePropagation();
+            }
+        };
+        
+        window.addEventListener('error', handleError);
+        
+        return () => {
+            window.removeEventListener('error', handleError);
+        };
+    }, []);
 
     const handleAddAddon = async (values: InventoryAddon) => {
         try {

@@ -4,12 +4,14 @@ import { useGetEmployeeQuery, useRemoveEmployeeMutation } from '../../app/servic
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
-import { Descriptions, Divider, Modal, Space } from 'antd';
-import { DeleteOutlined, EditOutlined, ToolOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Descriptions, Divider, Modal, Space, Typography, Card, Row, Col, Tag } from 'antd';
+import { DeleteOutlined, EditOutlined, ToolOutlined, ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 import CustomButton from '../../components/customButton/CustomButton';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 import { Paths } from '../../path';
+
+const { Title, Text } = Typography;
 
 // Расширенный интерфейс Employee с новыми полями
 interface ExtendedEmployee {
@@ -113,35 +115,238 @@ const Employee = () => {
                     Назад к списку сотрудников
                 </CustomButton>
             </Space>
-            <Descriptions title='Информация о сотруднике' bordered>
-                <Descriptions.Item label="Имя" span={3} >
-                    {`${employeeData.firstName} ${employeeData.lastName} ${employeeData.surName}`}
-                </Descriptions.Item>
-                <Descriptions.Item label="Возраст" span={3} >
-                    {getCurrentAge() ? `${getCurrentAge()} лет` : 'Не указан'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Дата рождения" span={3} >
-                    {employeeData.birthDate ? new Date(employeeData.birthDate).toLocaleDateString('ru-RU') : 'Не указана'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Адрес" span={3} >
-                    {`${employeeData.address}`}
-                </Descriptions.Item>
-                <Descriptions.Item label="Профессия" span={3} >
-                    {`${employeeData.profession}`}
-                </Descriptions.Item>
-                <Descriptions.Item label="Табельный номер" span={3} >
-                    {employeeData.employeeNumber || 'Не указан'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Рост" span={3} >
-                    {employeeData.height ? `${employeeData.height} см` : 'Не указан'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Размер одежды" span={3} >
-                    {employeeData.clothingSize || 'Не указан'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Размер обуви" span={3} >
-                    {employeeData.shoeSize || 'Не указан'}
-                </Descriptions.Item>
-            </Descriptions>
+            
+            {/* Выделенная карточка с ФИО */}
+            <Card 
+                style={{ 
+                    marginBottom: 24, 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: 'none',
+                    borderRadius: '12px'
+                }}
+                bodyStyle={{ padding: '24px' }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '32px',
+                        color: 'white'
+                    }}>
+                        <UserOutlined />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <Title 
+                            level={1} 
+                            style={{ 
+                                color: 'white', 
+                                margin: 0, 
+                                fontSize: '32px',
+                                fontWeight: 'bold',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                            }}
+                        >
+                            {`${employeeData.lastName} ${employeeData.firstName} ${employeeData.surName || ''}`.trim()}
+                        </Title>
+                        <Text 
+                            style={{ 
+                                color: 'rgba(255, 255, 255, 0.9)', 
+                                fontSize: '16px',
+                                display: 'block',
+                                marginTop: '8px'
+                            }}
+                        >
+                            {employeeData.profession}
+                        </Text>
+                        {employeeData.employeeNumber && (
+                            <Text 
+                                style={{ 
+                                    color: 'rgba(255, 255, 255, 0.8)', 
+                                    fontSize: '14px',
+                                    display: 'block',
+                                    marginTop: '4px'
+                                }}
+                            >
+                                Табельный номер: {employeeData.employeeNumber}
+                            </Text>
+                        )}
+                    </div>
+                </div>
+            </Card>
+
+            {/* Современный дизайн подробной информации */}
+            <Card 
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: 'var(--gradient-primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '16px'
+                        }}>
+                            <UserOutlined />
+                        </div>
+                        <span style={{ fontSize: '18px', fontWeight: '600' }}>Подробная информация</span>
+                    </div>
+                }
+                style={{ 
+                    marginBottom: 24,
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-md)',
+                    border: '1px solid var(--border-color)'
+                }}
+                bodyStyle={{ padding: '24px' }}
+            >
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12} md={8}>
+                        <Card 
+                            size="small" 
+                            style={{ 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)'
+                            }}
+                            bodyStyle={{ padding: '16px' }}
+                        >
+                            <div style={{ marginBottom: '8px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Возраст
+                                </Text>
+                            </div>
+                            <div>
+                                <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
+                                    {getCurrentAge() ? `${getCurrentAge()} лет` : 'Не указан'}
+                                </Tag>
+                            </div>
+                        </Card>
+                    </Col>
+                    
+                    <Col xs={24} sm={12} md={8}>
+                        <Card 
+                            size="small" 
+                            style={{ 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)'
+                            }}
+                            bodyStyle={{ padding: '16px' }}
+                        >
+                            <div style={{ marginBottom: '8px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Дата рождения
+                                </Text>
+                            </div>
+                            <div>
+                                <Tag color="green" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
+                                    {employeeData.birthDate ? new Date(employeeData.birthDate).toLocaleDateString('ru-RU') : 'Не указана'}
+                                </Tag>
+                            </div>
+                        </Card>
+                    </Col>
+                    
+                    <Col xs={24} sm={12} md={8}>
+                        <Card 
+                            size="small" 
+                            style={{ 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)'
+                            }}
+                            bodyStyle={{ padding: '16px' }}
+                        >
+                            <div style={{ marginBottom: '8px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Рост
+                                </Text>
+                            </div>
+                            <div>
+                                <Tag color="orange" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
+                                    {employeeData.height ? `${employeeData.height} см` : 'Не указан'}
+                                </Tag>
+                            </div>
+                        </Card>
+                    </Col>
+                    
+                    <Col xs={24} sm={12} md={8}>
+                        <Card 
+                            size="small" 
+                            style={{ 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)'
+                            }}
+                            bodyStyle={{ padding: '16px' }}
+                        >
+                            <div style={{ marginBottom: '8px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Размер одежды
+                                </Text>
+                            </div>
+                            <div>
+                                <Tag color="purple" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
+                                    {employeeData.clothingSize || 'Не указан'}
+                                </Tag>
+                            </div>
+                        </Card>
+                    </Col>
+                    
+                    <Col xs={24} sm={12} md={8}>
+                        <Card 
+                            size="small" 
+                            style={{ 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)'
+                            }}
+                            bodyStyle={{ padding: '16px' }}
+                        >
+                            <div style={{ marginBottom: '8px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Размер обуви
+                                </Text>
+                            </div>
+                            <div>
+                                <Tag color="cyan" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
+                                    {employeeData.shoeSize || 'Не указан'}
+                                </Tag>
+                            </div>
+                        </Card>
+                    </Col>
+                    
+                    <Col xs={24} sm={12} md={8}>
+                        <Card 
+                            size="small" 
+                            style={{ 
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)'
+                            }}
+                            bodyStyle={{ padding: '16px' }}
+                        >
+                            <div style={{ marginBottom: '8px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Адрес
+                                </Text>
+                            </div>
+                            <div>
+                                <Text style={{ fontSize: '14px', color: 'var(--text-primary)' }}>
+                                    {employeeData.address}
+                                </Text>
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
+            </Card>
             {user?.id === employeeData.userId && (
                 <>
                     <Divider orientation="left">Действия</Divider>

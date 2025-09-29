@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Layout, Space, Typography, Avatar, Modal, Form, Input, Button } from "antd";
-import { LoginOutlined, TeamOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
+import { Layout, Space, Typography, Avatar, Modal, Form, Input, Switch } from "antd";
+import { LoginOutlined, TeamOutlined, UserOutlined, EditOutlined, BulbOutlined, BulbFilled } from "@ant-design/icons";
 
 import styles from "./Header.module.css";
 import CustomButton from "../customButton/CustomButton";
@@ -8,11 +8,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Paths } from "../../path";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, selectUser } from "../../features/auth/authSlice";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const Header = () => {
     const user = useSelector(selectUser);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { theme, toggleTheme } = useTheme();
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [form] = Form.useForm();
 
@@ -62,6 +64,18 @@ const Header = () => {
             </Space>
             {user ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <div className={styles.themeToggle}>
+                            <BulbOutlined style={{ color: 'white', fontSize: '18px' }} />
+                            <Switch
+                                checked={theme === 'dark'}
+                                onChange={toggleTheme}
+                                size="small"
+                                style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
+                            />
+                            <BulbFilled style={{ color: 'white', fontSize: '18px' }} />
+                        </div>
+                    </div>
                     <div 
                         style={{ 
                             display: 'flex', 
@@ -93,6 +107,16 @@ const Header = () => {
                 </div>
             ) : (
                 <Space align="center">
+                    <div className={styles.themeToggle}>
+                        <BulbOutlined style={{ color: 'white', fontSize: '18px' }} />
+                        <Switch
+                            checked={theme === 'dark'}
+                            onChange={toggleTheme}
+                            size="small"
+                            style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
+                        />
+                        <BulbFilled style={{ color: 'white', fontSize: '18px' }} />
+                    </div>
                     <Link to={Paths.register}>
                         <CustomButton type="ghost" icon={<UserOutlined />}>
                             Зарегистрироваться

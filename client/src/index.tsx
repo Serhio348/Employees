@@ -2,12 +2,12 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ConfigProvider, theme } from "antd";
-
+// import { ConfigProvider, theme } from "antd"; // Удален неиспользуемый импорт
+import { ThemeProvider } from "./contexts/ThemeContext";
+import ThemeWrapper from "./components/theme/ThemeWrapper";
 import { store } from "./app/store";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
-
 import "./index.css";
 import { Paths } from "./path";
 import Auth from "./features/auth/Auth";
@@ -18,6 +18,18 @@ import Employee from "./pages/employee/Employee";
 import EditEmployee from "./pages/editEmployee/EditEmployee";
 import EmployeeInventory from "./pages/employeeInventory/EmployeeInventory";
 import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
+
+// Подавляем ошибку ResizeObserver
+const resizeObserverErr = (e: ErrorEvent) => {
+  if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+    const resizeObserverErrDiv = document.getElementById('resize-observer-error');
+    if (resizeObserverErrDiv) {
+      resizeObserverErrDiv.style.display = 'none';
+    }
+    e.stopImmediatePropagation();
+  }
+};
+window.addEventListener('error', resizeObserverErr);
 
 export const router = createBrowserRouter([
   {
@@ -65,13 +77,13 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <ConfigProvider theme={{
-        algorithm: theme.darkAlgorithm
-      }}>
-        <Auth>
-          <RouterProvider router={router} />
-        </Auth>
-      </ConfigProvider>
+      <ThemeProvider>
+        <ThemeWrapper>
+          <Auth>
+            <RouterProvider router={router} />
+          </Auth>
+        </ThemeWrapper>
+      </ThemeProvider>
     </Provider>
   </React.StrictMode>
 );

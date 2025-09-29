@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, Space, Select, message } from 'antd';
+import { Button, Modal, Space, message } from 'antd';
 import { FilePdfOutlined, FileExcelOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Employee } from '@prisma/client';
 import { InventoryItem } from '../../app/services/inventory';
@@ -145,6 +145,14 @@ const ExportCard = ({ employee, inventory }: Props) => {
 
                 <div class="section">
                     <div class="section-title">Информация о работнике</div>
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
+                            ${employee.lastName} ${employee.firstName} ${employee.surName || ''}
+                        </div>
+                        <div style="font-size: 16px; opacity: 0.9;">
+                            ${employee.profession}
+                        </div>
+                    </div>
                     <div class="employee-info">
                         <div class="info-block">
                             <div><span class="info-label">Фамилия:</span> ${employee.lastName}</div>
@@ -207,49 +215,6 @@ const ExportCard = ({ employee, inventory }: Props) => {
         `;
     };
 
-    const generateCSVContent = () => {
-        const headers = [
-            'Фамилия', 'Имя', 'Отчество', 'Возраст', 'Дата рождения', 'Профессия', 
-            'Адрес', 'Табельный номер', 'Рост', 'Размер одежды', 'Размер обуви'
-        ];
-        
-        const inventoryHeaders = [
-            'Наименование СИЗ', 'Тип', 'Дата выдачи', 'Количество', 'Статус'
-        ];
-
-        const employeeData = [
-            employee.lastName,
-            employee.firstName,
-            employee.surName || '',
-            employee.age,
-            employee.birthDate ? new Date(employee.birthDate).toLocaleDateString('ru-RU') : '',
-            employee.profession,
-            employee.address,
-            employee.employeeNumber || '',
-            employee.height ? employee.height + ' см' : '',
-            employee.clothingSize || '',
-            employee.shoeSize || ''
-        ];
-
-        let csvContent = headers.join(',') + '\n';
-        csvContent += employeeData.map(field => `"${field}"`).join(',') + '\n\n';
-        
-        csvContent += 'ИНВЕНТАРЬ:\n';
-        csvContent += inventoryHeaders.join(',') + '\n';
-        
-        inventory.forEach(item => {
-            const row = [
-                item.itemName,
-                item.itemType,
-                item.issueDate ? new Date(item.issueDate).toLocaleDateString('ru-RU') : '',
-                item.quantity,
-                item.status
-            ];
-            csvContent += row.map(field => `"${field}"`).join(',') + '\n';
-        });
-
-        return csvContent;
-    };
 
     return (
         <>
