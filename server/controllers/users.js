@@ -1,10 +1,10 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../../.env' });
 // Устанавливаем JWT_SECRET напрямую, если он не загрузился из .env
 if (!process.env.JWT_SECRET) {
     process.env.JWT_SECRET = 'your-super-secret-jwt-key-here-12345';
     console.log('JWT_SECRET set manually');
 }
-const { prisma } = require("../prisma/prisma-client");
+const { prisma } = require("../../prisma/prisma-client");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 /**
