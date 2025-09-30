@@ -20,10 +20,12 @@ const Login = () => {
 
     const login = async (data: UserData) => {
         try {
+            // Очищаем localStorage перед логином
+            localStorage.clear();
+            
             await loginUser(data).unwrap();
             navigate("/")
         } catch (err) {
-
             const error = isErrorWithMessage(err);
             if (error) {
                 setError(err.data.message);
@@ -46,7 +48,7 @@ const Login = () => {
                     </Form>
                     <Space direction="vertical" size="large">
                         <Typography.Text>
-                            Нет аккаунта? <Link to={Paths.register}>Зарегестрируйтесь</Link>
+                            Нет аккаунта? <Link to={Paths.register}>Зарегистрируйтесь</Link>
                         </Typography.Text>
                         <ErrorMessage message={error} />
                     </Space>

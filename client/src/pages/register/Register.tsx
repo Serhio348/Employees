@@ -10,17 +10,27 @@ import { useRegisterMutation } from "../../app/services/auth";
 import { User } from "@prisma/client";
 import { isErrorWithMessage } from "../../utils/isErrorWithMessage";
 import ErrorMessage from "../../components/errorMessage/ErrorMessage";
+import { useDispatch } from "react-redux";
+import { clearAuth } from "../../features/auth/authSlice";
+import { api } from "../../app/services/api";
 
 type RegisterData = Omit<User, "id"> & { confirmPassword: string }; //удалим из user id  и добавим confirm password
 
 const Register = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [error, setError] = useState("");
     const [registerUser] = useRegisterMutation()
+    
     const register = async (data: RegisterData) => {
         try {
+            // Полная очистка состояния перед регистрацией
+            dispatch(clearAuth());
+            dispatch(api.util.resetApiState());
+            localStorage.clear();
+            sessionStorage.clear();
+            
             await registerUser(data).unwrap();
-
             navigate("/");
         } catch (err) {
             const error = isErrorWithMessage(err);
@@ -49,7 +59,7 @@ const Register = () => {
                     </Form>
                     <Space direction="vertical" size="large">
                         <Typography.Text>
-                            Уже зарегестрированы? <Link to={Paths.login}>Войдите</Link>
+                            Уже зарегистрированы? <Link to={Paths.login}>Войдите</Link>
                         </Typography.Text>
                         <ErrorMessage message={error} />
                     </Space>

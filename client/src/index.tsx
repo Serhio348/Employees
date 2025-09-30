@@ -2,7 +2,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-// import { ConfigProvider, theme } from "antd"; // Удален неиспользуемый импорт
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeWrapper from "./components/theme/ThemeWrapper";
 import { store } from "./app/store";
@@ -18,6 +17,9 @@ import Employee from "./pages/employee/Employee";
 import EditEmployee from "./pages/editEmployee/EditEmployee";
 import EmployeeInventory from "./pages/employeeInventory/EmployeeInventory";
 import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
+
+// Очищаем localStorage при запуске приложения для избежания конфликтов
+localStorage.removeItem('token');
 
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {

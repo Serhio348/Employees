@@ -1,5 +1,6 @@
 import React from 'react'
-import { Form, Input } from 'antd'
+import { Form } from 'antd'
+import { Input } from 'antd'
 import { NamePath } from 'antd/es/form/interface'
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
     placeholder: string;
     dependencies?: NamePath[];
 }
+
 const PasswordInput = ({
     name,
     placeholder,
@@ -17,35 +19,38 @@ const PasswordInput = ({
             name={name}
             dependencies={dependencies}
             hasFeedback={true}
-            rules={[{
-                required: true, message: 'Обязательное поле'
-            }, ({ getFieldValue }) => ({                                       //// функция валидации паролей взята из antdesign 
-                validator(_, value) {                                           //// componets form
-                    if (!value) {
-                        return Promise.resolve()
-                    }
-                    if (name === "confirmPassword") {
-                        if (!value || getFieldValue(('password')) === value) {
+            rules={[
+                {
+                    required: true, 
+                    message: 'Обязательное поле'
+                },
+                ({ getFieldValue }: { getFieldValue: (name: string) => any }) => ({
+                    validator(_: any, value: string) {
+                        if (!value) {
                             return Promise.resolve()
                         }
-                        return Promise.reject(new Error('Пароли должны совпадать'))
-                    } else {
-                        if (value.length < 6) {
-                            return Promise.reject(new Error('Пароль должен имень не менее 6 символов'))
+                        if (name === "confirmPassword") {
+                            if (!value || getFieldValue('password') === value) {
+                                return Promise.resolve()
+                            }
+                            return Promise.reject(new Error('Пароли должны совпадать'))
+                        } else {
+                            if (value.length < 6) {
+                                return Promise.reject(new Error('Пароль должен иметь не менее 6 символов'))
+                            }
+                            return Promise.resolve()
                         }
-                        return Promise.resolve()
                     }
-                }
-            })
-
+                })
             ]}
         >
-            <Input.Password
-                placeholder={placeholder}
-                size="large"
-            />
-        </Form.Item >
+            {React.createElement(Input, {
+                type: "password",
+                placeholder: placeholder,
+                size: "large"
+            })}
+        </Form.Item>
     )
 }
 
-export default PasswordInput
+export default PasswordInput;
