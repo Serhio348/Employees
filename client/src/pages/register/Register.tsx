@@ -10,15 +10,15 @@ import { useRegisterMutation } from "../../app/services/auth";
 import { User } from "@prisma/client";
 import { isErrorWithMessage } from "../../utils/isErrorWithMessage";
 import ErrorMessage from "../../components/errorMessage/ErrorMessage";
-import { useDispatch } from "react-redux";
-import { clearAuth } from "../../features/auth/authSlice";
-import { api } from "../../app/services/api";
+// import { useDispatch } from "react-redux";
+// import { clearAuth } from "../../features/auth/authSlice";
+// import { api } from "../../app/services/api";
 
 type RegisterData = Omit<User, "id"> & { confirmPassword: string }; //удалим из user id  и добавим confirm password
 
 const Register = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     const [error, setError] = useState("");
     const [registerUser] = useRegisterMutation()
     

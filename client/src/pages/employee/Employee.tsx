@@ -4,7 +4,7 @@ import { useGetEmployeeQuery, useRemoveEmployeeMutation } from '../../app/servic
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
-import { Descriptions, Divider, Modal, Space, Typography, Card, Row, Col, Tag } from 'antd';
+import { Divider, Modal, Space, Typography, Card, Row, Col, Tag } from 'antd';
 import { DeleteOutlined, EditOutlined, ToolOutlined, ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 import CustomButton from '../../components/customButton/CustomButton';

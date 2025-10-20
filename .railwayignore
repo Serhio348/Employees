@@ -1,8 +1,5 @@
-# Dependencies
+# Development files
 node_modules/
-client/node_modules/
-
-# Environment variables
 .env
 .env.local
 .env.development.local
@@ -61,12 +58,16 @@ jspm_packages/
 ehthumbs.db
 Thumbs.db
 
-# Build artifacts
+# Development database
+prisma/dev.db
+prisma/prisma/dev.db
+
+# Build artifacts (will be generated during build)
 client/build/
+
+# Git
+.git/
+.gitignore
 
 # Railway specific
 .railway/
-
-# SSH keys
-5
-5.pub
