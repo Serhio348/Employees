@@ -38,6 +38,15 @@ app.use((err, req, res, next) => {
   next();
 });
 
+// Healthcheck эндпоинт для Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // API роуты
 app.use('/api/user', require("./routes/users"));
 app.use('/api/employees', require("./routes/Employees"));

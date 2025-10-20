@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "npm run build && node ./server/bin/www",
+    "start": "npm run build && npx prisma generate && node ./server/bin/www",
     "build": "cd client && npm install && npm run build",
     "server": "nodemon ./server/bin/www",
     "client": "npm start --prefix client",
