@@ -3,7 +3,8 @@ import { api } from "./api";
 
 export const employeesApi = api.injectEndpoints({
     endpoints: (builder) => ({
-        getAllEmployees: builder.query<Employee[], void>({
+        // userKey используется только для разделения кэша между пользователями
+        getAllEmployees: builder.query<Employee[], string | void>({
             query: () => ({
                 url: "/employees",
                 method: "GET",

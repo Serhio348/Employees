@@ -9,13 +9,14 @@ const { prisma } = require('../../prisma/prisma-client')
 
 const all = async (req, res) => {
     try {
-        // Возвращаем только сотрудников текущего пользователя
+        // Возвращаем только сотрудников текущего пользователя (кроме админа)
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: 'Не авторизован' });
         }
 
+        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
         const employees = await prisma.employee.findMany({
-            where: { userId: req.user.id },
+            where: isAdmin ? {} : { userId: req.user.id },
             orderBy: { lastName: 'asc' }
         });
         res.status(200).json(employees)
@@ -75,9 +76,10 @@ const remove = async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Проверяем владение записью
+        // Проверяем владение записью (админ имеет доступ ко всем)
         const existing = await prisma.employee.findUnique({ where: { id } });
-        if (!existing || existing.userId !== req.user.id) {
+        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
+        if (!existing || (!isAdmin && existing.userId !== req.user.id)) {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 
@@ -99,9 +101,10 @@ const edit = async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Проверяем владение записью
+        // Проверяем владение записью (админ имеет доступ ко всем)
         const existing = await prisma.employee.findUnique({ where: { id } });
-        if (!existing || existing.userId !== req.user.id) {
+        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
+        if (!existing || (!isAdmin && existing.userId !== req.user.id)) {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 
@@ -131,8 +134,9 @@ const employee = async (req, res) => {
 
     try {
         const emp = await prisma.employee.findUnique({ where: { id } });
+        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
 
-        if (!emp || emp.userId !== req.user.id) {
+        if (!emp || (!isAdmin && emp.userId !== req.user.id)) {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 

@@ -70,7 +70,7 @@ const columns: ColumnsType<Employee> = [
 const Employees = () => {
     const navigate = useNavigate();
     const user = useSelector(selectUser)
-    const { data, isLoading } = useGetAllEmployeesQuery()
+    const { data, isLoading } = useGetAllEmployeesQuery(user?.id)
 
     useEffect(() => {
         if (!user) {
