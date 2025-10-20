@@ -37,32 +37,66 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
         };
     }, []);
 
+    // Нормализация названий для гибкого сопоставления (игнор регистра/ё/пунктуации/двойных пробелов)
+    const normalizeName = (value: string = '') => {
+        return value
+            .toLowerCase()
+            .replace(/ё/g, 'е')
+            .replace(/[^a-zа-я0-9\s]/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    };
+
+    // Попытка найти подходящий норматив по названию предмета (учитываем возможные расхождения)
+    const findNormByItemName = (itemName: string) => {
+        const normItem = normalizeName(itemName);
+
+        // 1) Точное совпадение (нормализованное)
+        let norm = sizNorms.find(n => normalizeName(n.name) === normItem);
+        if (norm) return norm;
+
+        // 2) Частичное совпадение (включение) в обе стороны
+        norm = sizNorms.find(n => {
+            const nn = normalizeName(n.name);
+            return nn.includes(normItem) || normItem.includes(nn);
+        });
+        if (norm) return norm;
+
+        return undefined;
+    };
+
     // Функция для расчета процента износа
     const calculateWearPercentage = (item: InventoryItem) => {
         if (!item.issueDate) return 0;
 
-        const issueDate = dayjs(item.issueDate);
-        const currentDate = dayjs();
-        const daysPassed = currentDate.diff(issueDate, 'day');
+        const issueDate = dayjs(item.issueDate).startOf('day');
+        const currentDate = dayjs().startOf('day');
 
-        // Находим норматив для данного предмета
-        const norm = sizNorms.find(n => n.name === item.itemName);
+        // Находим норматив для данного предмета (с учетом возможных расхождений в названии)
+        const norm = findNormByItemName(item.itemName);
         if (!norm) return 0;
 
         let totalDays = 0;
+        let endDate = issueDate;
         if (norm.periodType === 'months') {
-            // Более точный расчет с учетом количества месяцев
+            // Точный расчет с использованием dayjs для добавления месяцев
             const months = parseInt(norm.period);
-            totalDays = months * 30.44; // Среднее количество дней в месяце
+            endDate = issueDate.add(months, 'month');
+            totalDays = endDate.diff(issueDate, 'day');
         } else if (norm.periodType === 'until_worn') {
             // Для предметов "до износа" считаем 365 дней (1 год)
             totalDays = 365;
+            endDate = issueDate.add(365, 'day');
         }
 
         if (totalDays === 0) return 0;
 
-        const percentage = Math.min((daysPassed / totalDays) * 100, 100);
-        return Math.round(percentage);
+        // Считаем через оставшиеся дни, чтобы точно не получать 100% раньше срока
+        const daysLeft = endDate.diff(currentDate, 'day');
+        const elapsed = totalDays - Math.max(daysLeft, 0);
+        const raw = (elapsed / totalDays) * 100;
+        const percent = daysLeft > 0 ? Math.min(raw, 99) : 100;
+        return Math.floor(percent);
     };
 
     // Функция для получения цвета прогресс-бара
@@ -77,22 +111,21 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
     const isExpired = (item: InventoryItem) => {
         if (!item.issueDate) return false;
         
-        const issueDate = dayjs(item.issueDate);
-        const currentDate = dayjs();
-        const daysPassed = currentDate.diff(issueDate, 'day');
+        const issueDate = dayjs(item.issueDate).startOf('day');
+        const currentDate = dayjs().startOf('day');
         
-        const norm = sizNorms.find(n => n.name === item.itemName);
+        const norm = findNormByItemName(item.itemName);
         if (!norm) return false;
         
-        let totalDays = 0;
+        let endDate = issueDate;
         if (norm.periodType === 'months') {
             const months = parseInt(norm.period);
-            totalDays = months * 30.44;
+            endDate = issueDate.add(months, 'month');
         } else if (norm.periodType === 'until_worn') {
-            totalDays = 365;
+            endDate = issueDate.add(365, 'day');
         }
         
-        return daysPassed >= totalDays;
+        return !currentDate.isBefore(endDate.startOf('day'));
     };
 
     // Функции для массового списания
@@ -209,13 +242,15 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
                     const currentDate = dayjs();
                     const daysPassed = currentDate.diff(issueDate, 'day');
                     
-                    const norm = sizNorms.find(n => n.name === item.itemName);
+        const norm = findNormByItemName(item.itemName);
                     if (!norm) return 0;
                     
                     let totalDays = 0;
                     if (norm.periodType === 'months') {
+                        // Точный расчет с использованием dayjs для добавления месяцев
                         const months = parseInt(norm.period);
-                        totalDays = months * 30.44;
+                        const endDate = issueDate.add(months, 'month');
+                        totalDays = endDate.diff(issueDate, 'day');
                     } else if (norm.periodType === 'until_worn') {
                         totalDays = 365;
                     }

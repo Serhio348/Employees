@@ -54,7 +54,7 @@ const login = async (req, res) => {
                 email: user.email,
                 name: user.name,
                 lastName: user.lastName,
-                token: jwt.sign({ id: user.id }, secret, { expiresIn: "30d" }),
+                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1d" }),
             });
         } else {
             console.log('Login failed - conditions not met:');
@@ -130,7 +130,7 @@ const register = async (req, res) => {
                 email: user.email,
                 name,
                 lastName,
-                token: jwt.sign({ id: user.id }, secret, { expiresIn: "30d" }),
+                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1d" }),
             });
         } else {
             return res

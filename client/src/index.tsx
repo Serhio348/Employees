@@ -18,8 +18,7 @@ import EditEmployee from "./pages/editEmployee/EditEmployee";
 import EmployeeInventory from "./pages/employeeInventory/EmployeeInventory";
 import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
-// Очищаем localStorage при запуске приложения для избежания конфликтов
-localStorage.removeItem('token');
+// Инициализация приложения
 
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {

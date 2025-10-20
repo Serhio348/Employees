@@ -14,8 +14,7 @@ export const store = configureStore({
     getDefaultMiddleware().concat(api.middleware).prepend(listenerMiddleware.middleware),
 });
 
-// Очищаем кэш API при инициализации
-store.dispatch(api.util.resetApiState());
+// Инициализация store
 
 // Export types
 export type { RootState } from './types';

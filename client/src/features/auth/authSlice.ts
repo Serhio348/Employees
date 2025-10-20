@@ -45,6 +45,11 @@ const slice = createSlice({
                 state.user = action.payload;
                 state.isAuthenticated = true;
             })
+            .addMatcher(authApi.endpoints.current.matchRejected, (state) => {
+                state.user = null;
+                state.isAuthenticated = false;
+                localStorage.removeItem('token');
+            })
             .addMatcher(authApi.endpoints.login.matchRejected, (state) => {
                 state.user = null;
                 state.isAuthenticated = false;

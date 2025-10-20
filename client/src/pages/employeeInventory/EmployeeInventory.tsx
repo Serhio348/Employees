@@ -39,6 +39,15 @@ const EmployeeInventory = () => {
         skip: !employeeId
     });
 
+    // Отладочная информация
+    console.log('EmployeeInventory Debug:', {
+        employeeId,
+        user: user ? 'authenticated' : 'not authenticated',
+        employee: employee ? 'loaded' : 'not loaded',
+        allInventory: allInventory.length,
+        isLoading
+    });
+
     // Разделяем инвентарь на активный и списанный
     const activeInventory = allInventory.filter(item => item.status !== 'списан');
     const writtenOffInventory = allInventory.filter(item => item.status === 'списан');
@@ -323,11 +332,31 @@ const EmployeeInventory = () => {
                 </Col>
 
                 <Col span={24}>
+                    <div style={{ 
+                        background: '#f0f2f5', 
+                        padding: '16px', 
+                        borderRadius: '8px', 
+                        marginBottom: '16px',
+                        border: '2px solid #1890ff'
+                    }}>
+                        <Text strong style={{ color: '#1890ff', fontSize: '16px' }}>
+                            Кнопки управления инвентарем:
+                        </Text>
+                    </div>
                     <Space style={{ marginBottom: 16 }}>
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={openAddModal}
+                            size="large"
+                            style={{ 
+                                backgroundColor: '#1890ff',
+                                borderColor: '#1890ff',
+                                fontSize: '16px',
+                                height: '48px',
+                                padding: '0 24px',
+                                fontWeight: 'bold'
+                            }}
                         >
                             Добавить предмет
                         </Button>

@@ -13,16 +13,6 @@
     overflow: hidden;
 }
 
-.main::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--gradient-primary);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
 
 /* Анимация появления */
 .main {

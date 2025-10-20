@@ -24,12 +24,6 @@ const Register = () => {
     
     const register = async (data: RegisterData) => {
         try {
-            // Полная очистка состояния перед регистрацией
-            dispatch(clearAuth());
-            dispatch(api.util.resetApiState());
-            localStorage.clear();
-            sessionStorage.clear();
-            
             await registerUser(data).unwrap();
             navigate("/");
         } catch (err) {

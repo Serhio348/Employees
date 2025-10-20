@@ -85,7 +85,7 @@ const Header = () => {
                             cursor: 'pointer',
                             padding: '4px 8px',
                             borderRadius: '4px',
-                            transition: 'background-color 0.2s'
+                            transition: 'background-color 0.2s ease'
                         }}
                         onClick={handleEditProfile}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}

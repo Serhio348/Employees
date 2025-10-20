@@ -20,9 +20,6 @@ const Login = () => {
 
     const login = async (data: UserData) => {
         try {
-            // Очищаем localStorage перед логином
-            localStorage.clear();
-            
             await loginUser(data).unwrap();
             navigate("/")
         } catch (err) {
