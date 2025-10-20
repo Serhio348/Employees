@@ -9,8 +9,15 @@ const { prisma } = require('../../prisma/prisma-client')
 
 const all = async (req, res) => {
     try {
-        //////Обращение к БД и нахождение всех сотрудников
-        const employees = await prisma.employee.findMany();
+        // Возвращаем только сотрудников текущего пользователя
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: 'Не авторизован' });
+        }
+
+        const employees = await prisma.employee.findMany({
+            where: { userId: req.user.id },
+            orderBy: { lastName: 'asc' }
+        });
         res.status(200).json(employees)
     } catch {
         res.status(400).json({ message: 'Не удалось получить сотрудников' })
@@ -68,11 +75,13 @@ const remove = async (req, res) => {
     const { id } = req.params;
 
     try {
-        await prisma.employee.delete({
-            where: {
-                id,
-            },
-        });
+        // Проверяем владение записью
+        const existing = await prisma.employee.findUnique({ where: { id } });
+        if (!existing || existing.userId !== req.user.id) {
+            return res.status(404).json({ message: 'Сотрудник не найден' });
+        }
+
+        await prisma.employee.delete({ where: { id } });
 
         res.status(204).json("OK");
     } catch {
@@ -87,13 +96,17 @@ const remove = async (req, res) => {
  */
 const edit = async (req, res) => {
     const data = req.body;
-    const id = data.id;
+    const { id } = req.params;
 
     try {
+        // Проверяем владение записью
+        const existing = await prisma.employee.findUnique({ where: { id } });
+        if (!existing || existing.userId !== req.user.id) {
+            return res.status(404).json({ message: 'Сотрудник не найден' });
+        }
+
         await prisma.employee.update({
-            where: {
-                id,
-            },
+            where: { id },
             data: {
                 ...data,
                 age: data.age ? parseInt(data.age) : undefined,
@@ -117,13 +130,13 @@ const employee = async (req, res) => {
     const { id } = req.params; // http://localhost:8000/api/employees/9fe371c1-361f-494a-9def-465959ecc098
 
     try {
-        const employee = await prisma.employee.findUnique({
-            where: {
-                id,
-            },
-        });
+        const emp = await prisma.employee.findUnique({ where: { id } });
 
-        res.status(200).json(employee);
+        if (!emp || emp.userId !== req.user.id) {
+            return res.status(404).json({ message: 'Сотрудник не найден' });
+        }
+
+        res.status(200).json(emp);
     } catch {
         res.status(500).json({ message: "Не удалось получить сотрудника" });
     }
