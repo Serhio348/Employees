@@ -40,10 +40,17 @@ app.use((err, req, res, next) => {
 
 // Healthcheck эндпоинт для Railway
 app.get('/health', (req, res) => {
+  console.log('Healthcheck requested at:', new Date().toISOString());
+  console.log('Server uptime:', process.uptime());
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Port:', process.env.PORT);
+  
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV,
+    port: process.env.PORT
   });
 });
 
