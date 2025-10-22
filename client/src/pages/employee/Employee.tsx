@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useGetEmployeeQuery, useRemoveEmployeeMutation } from '../../app/services/employees';
 import { useSelector } from 'react-redux';
@@ -37,10 +37,21 @@ const Employee = () => {
     const [error, setError] = useState("");
     const params = useParams<{ id: string }>();
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
     const { data, isLoading } = useGetEmployeeQuery(params.id || "")
     const employeeData = data as ExtendedEmployee | undefined
     const [removeEmployee] = useRemoveEmployeeMutation();
     const user = useSelector(selectUser);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768)
+        }
+
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     if (isLoading) {
         return <span>Загрузка</span>;
@@ -350,14 +361,24 @@ const Employee = () => {
             {user?.id === employeeData.userId && (
                 <>
                     <Divider orientation="left">Действия</Divider>
-                    <Space>
+                    <Space 
+                        direction={isMobile ? "vertical" : "horizontal"} 
+                        size={isMobile ? "small" : "middle"}
+                        style={{ width: isMobile ? "100%" : "auto" }}
+                    >
                         <Link to={`/employee/edit/${employeeData.id}`}>
                             <CustomButton
                                 shape="round"
                                 type="default"
                                 icon={<EditOutlined />}
+                                size={isMobile ? "small" : "middle"}
+                                style={{
+                                    width: isMobile ? "100%" : "auto",
+                                    height: isMobile ? "36px" : "40px",
+                                    fontSize: isMobile ? "12px" : "14px"
+                                }}
                             >
-                                Редактировать
+                                {isMobile ? "Редактировать" : "Редактировать"}
                             </CustomButton>
                         </Link>
                         <Link to={`/employee/${employeeData.id}/inventory`}>
@@ -365,8 +386,14 @@ const Employee = () => {
                                 shape="round"
                                 type="default"
                                 icon={<ToolOutlined />}
+                                size={isMobile ? "small" : "middle"}
+                                style={{
+                                    width: isMobile ? "100%" : "auto",
+                                    height: isMobile ? "36px" : "40px",
+                                    fontSize: isMobile ? "12px" : "14px"
+                                }}
                             >
-                                Инвентарь
+                                {isMobile ? "Инвентарь" : "Инвентарь"}
                             </CustomButton>
                         </Link>
                         <CustomButton
@@ -374,8 +401,14 @@ const Employee = () => {
                             danger
                             onClick={showModal}
                             icon={<DeleteOutlined />}
+                            size={isMobile ? "small" : "middle"}
+                            style={{
+                                width: isMobile ? "100%" : "auto",
+                                height: isMobile ? "36px" : "40px",
+                                fontSize: isMobile ? "12px" : "14px"
+                            }}
                         >
-                            Удалить
+                            {isMobile ? "Удалить" : "Удалить"}
                         </CustomButton>
                     </Space>
                 </>
