@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layout, Space, Typography, Avatar, Modal, Form, Input, Switch } from "antd";
+import { Layout, Typography, Avatar, Modal, Form, Input, Switch } from "antd";
 import { LoginOutlined, TeamOutlined, UserOutlined, EditOutlined, BulbOutlined, BulbFilled } from "@ant-design/icons";
 
 import styles from "./Header.module.css";
@@ -53,82 +53,89 @@ const Header = () => {
     };
 
     return (
-        <Layout.Header className={styles.header} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Space align="center">
-                <TeamOutlined className={styles.teamIcon} />
-                <Link to={Paths.home}>
-                    <CustomButton type="ghost">
-                        <Typography.Title level={1}>Участок ТЭО</Typography.Title>
-                    </CustomButton>
+        <Layout.Header className={styles.header}>
+            {/* Логотип и название */}
+            <div className={styles.headerLeft}>
+                <Link to={Paths.home} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+                    <TeamOutlined className={styles.teamIcon} />
+                    <Typography.Title level={1} style={{ margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', color: 'white' }}>
+                        Участок ТЭО
+                    </Typography.Title>
                 </Link>
-            </Space>
-            {user ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <div className={styles.themeToggle}>
-                            <BulbOutlined style={{ color: 'white', fontSize: '18px' }} />
-                            <Switch
-                                checked={theme === 'dark'}
-                                onChange={toggleTheme}
-                                size="small"
-                                style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
-                            />
-                            <BulbFilled style={{ color: 'white', fontSize: '18px' }} />
-                        </div>
-                    </div>
-                    <div 
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px', 
-                            marginBottom: '4px',
-                            cursor: 'pointer',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            transition: 'background-color 0.2s ease'
-                        }}
-                        onClick={handleEditProfile}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                        <Avatar icon={<UserOutlined />} size="small" />
-                        <Typography.Text strong style={{ color: 'white', fontSize: '14px' }}>
-                            {user.name} {user.lastName}
-                        </Typography.Text>
-                        <EditOutlined style={{ color: 'white', fontSize: '12px' }} />
-                    </div>
-                    <CustomButton
-                        type="ghost"
-                        icon={<LoginOutlined />}
-                        onClick={onLogoutClick}
-                    >
-                        Выйти
-                    </CustomButton>
-                </div>
-            ) : (
-                <Space align="center">
+            </div>
+
+            {/* Правая часть - все элементы управления в столбце */}
+            <div className={styles.headerRight}>
+                <div className={styles.controlsColumn}>
+                    {/* Переключатель темы - скрыт на мобильных */}
                     <div className={styles.themeToggle}>
-                        <BulbOutlined style={{ color: 'white', fontSize: '18px' }} />
+                        <BulbOutlined style={{ color: 'white', fontSize: '12px' }} />
                         <Switch
                             checked={theme === 'dark'}
                             onChange={toggleTheme}
                             size="small"
                             style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
                         />
-                        <BulbFilled style={{ color: 'white', fontSize: '18px' }} />
+                        <BulbFilled style={{ color: 'white', fontSize: '12px' }} />
                     </div>
-                    <Link to={Paths.register}>
-                        <CustomButton type="ghost" icon={<UserOutlined />}>
-                            Зарегистрироваться
-                        </CustomButton>
-                    </Link>
-                    <Link to={Paths.login}>
-                        <CustomButton type="ghost" icon={<LoginOutlined />}>
-                            Войти
-                        </CustomButton>
-                    </Link>
-                </Space>
-            )}
+
+                    {user ? (
+                        <>
+                            {/* Профиль пользователя */}
+                            <div 
+                                className={styles.userProfile}
+                                onClick={handleEditProfile}
+                            >
+                                <Avatar icon={<UserOutlined />} size="default" />
+                                <div className={styles.userInfo}>
+                                    <Typography.Text strong style={{ color: 'white', fontSize: 'clamp(14px, 4vw, 16px)' }}>
+                                        {user.name} {user.lastName}
+                                    </Typography.Text>
+                                    <EditOutlined style={{ color: 'white', fontSize: '12px' }} />
+                                </div>
+                            </div>
+                            
+                            {/* Кнопка выхода */}
+                            <CustomButton
+                                type="ghost"
+                                icon={<LoginOutlined />}
+                                onClick={onLogoutClick}
+                                size="small"
+                                className={styles.logoutButton}
+                            >
+                                Выйти
+                            </CustomButton>
+                        </>
+                    ) : (
+                        <div className={styles.authButtons}>
+                            <Link to={Paths.register}>
+                                <CustomButton type="ghost" icon={<UserOutlined />} size="small">
+                                    Регистрация
+                                </CustomButton>
+                            </Link>
+                            <Link to={Paths.login}>
+                                <CustomButton type="ghost" icon={<LoginOutlined />} size="small">
+                                    Войти
+                                </CustomButton>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Переключатель темы для мобильных - в самом низу */}
+            <div className={styles.mobileThemeToggle}>
+                <div className={styles.themeToggle}>
+                    <BulbOutlined style={{ color: 'white', fontSize: '12px' }} />
+                    <Switch
+                        checked={theme === 'dark'}
+                        onChange={toggleTheme}
+                        size="small"
+                        style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
+                    />
+                    <BulbFilled style={{ color: 'white', fontSize: '12px' }} />
+                </div>
+            </div>
 
             <Modal
                 title="Редактировать профиль"
