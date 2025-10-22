@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEditEmployeeMutation, useGetEmployeeQuery } from '../../app/services/employees';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
-import { Employee } from '@prisma/client';
 import Layout from '../../components/layout/Layout';
 import { Row, Space } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -23,7 +22,7 @@ const EditEmployee = () => {
         return <span>Загрузка</span>
     }
 
-    const handleEditUser = async (employee: Employee) => {
+    const handleEditUser = async (employee: any) => {
         try {
             const editedEmployee = {
                 ...data,
