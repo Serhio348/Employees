@@ -5,16 +5,9 @@
   "scripts": {
     "start": "npm run build && npx prisma generate && npx prisma migrate deploy && node ./server/bin/www",
     "build": "cd client && npm install --omit=dev && npm run build",
-    "railway:install": "npm install --omit=dev",
-    "railway:build": "npm run build && npx prisma generate",
     "server": "nodemon ./server/bin/www",
     "client": "npm start --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "db:generate": "npx prisma generate",
-    "db:migrate": "npx prisma migrate dev",
-    "db:reset": "npx prisma migrate reset",
-    "db:studio": "npx prisma studio",
-    "db:setup": "npm run db:generate && npm run db:migrate"
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
