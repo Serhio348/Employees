@@ -1,10 +1,18 @@
 import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
 
+// Определяем базовый URL для API
+const getBaseUrl = () => {
+    // Если мы в браузере и не на localhost, используем относительный путь
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+        return "/api";
+    }
+    // Для localhost используем полный URL
+    return "http://localhost:5000/api";
+};
+
 const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NODE_ENV === 'production' 
-        ? "/api" 
-        : "http://localhost:5000/api",
+    baseUrl: getBaseUrl(),
     prepareHeaders: (headers, { getState }) => {
         const token =
             (getState() as RootState).auth.user?.token ||
