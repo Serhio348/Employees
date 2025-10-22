@@ -27,12 +27,25 @@ app.use((err, req, res, next) => {
   next();
 });
 
+// Healthcheck endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
+});
+
 // API роуты
 app.use('/api/user', require("./routes/users"));
 app.use('/api/employees', require("./routes/Employees"));
 app.use('/api/inventory', require("./routes/Inventory"));
 app.use('/api/inventory-addon', require("./routes/InventoryAddon"));
 app.use('/api/siz-norms', require("./routes/SizNorms"));
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Catch all handler: send back React's index.html file
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+});
 
 // Обработка ошибок
 app.use((err, req, res, next) => {

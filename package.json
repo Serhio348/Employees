@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./server/bin/www",
+    "start": "npm run build && npx prisma generate && npx prisma migrate deploy && node ./server/bin/www",
+    "build": "cd client && npm install --omit=dev && npm run build",
     "server": "nodemon ./server/bin/www",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
