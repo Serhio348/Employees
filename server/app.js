@@ -11,7 +11,9 @@ const app = express();
 // Middleware
 app.use(logger('dev'));
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.NODE_ENV === 'production' 
+        ? true  // Разрешить все домены в продакшене
+        : 'http://localhost:3000',
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
