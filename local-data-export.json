@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "id": "f592af1d-4d9f-4e7e-aaeb-f244b50bdaf2",
+      "email": "serhiosidorovich@gmail.com",
+      "password": "$2b$10$zHasLgG8aGfnqjWYyZWOvO477XE1bbN5oaYUqkhgObzE0uGertFH6",
+      "name": "Сергей",
+      "lastName": "Сидорович"
+    }
+  ],
+  "employees": [
+    {
+      "id": "229dfd0d-d05b-4a45-9a09-20c63ded6789",
+      "firstName": "Сергей",
+      "lastName": "Сидорович",
+      "surName": "Юрьевич",
+      "age": 38,
+      "birthDate": "1987-05-13T00:00:00.000Z",
+      "profession": "главный энергетик",
+      "address": "65 Смирнова",
+      "employeeNumber": "9439",
+      "height": 180,
+      "clothingSize": "52",
+      "shoeSize": "43",
+      "userId": "f592af1d-4d9f-4e7e-aaeb-f244b50bdaf2"
+    }
+  ],
+  "inventory": [],
+  "inventoryAddons": [],
+  "sizNorms": []
+}
