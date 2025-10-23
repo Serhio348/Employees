@@ -114,7 +114,6 @@ const Employees = () => {
                 dataSource={data}
                 columns={getColumns()}
                 rowKey={(record => record.id)}
-                scroll={isMobile ? { x: 400 } : undefined}
                 pagination={{
                     pageSize: isMobile ? 8 : 10,
                     showSizeChanger: false,
@@ -129,6 +128,69 @@ const Employees = () => {
                     }
                 }}
             />
+            
+            <style>
+                {`
+                    /* Убираем горизонтальный скролл на всех устройствах */
+                    .ant-table-container {
+                        overflow-x: hidden !important;
+                    }
+                    
+                    /* Адаптивные стили для мобильных устройств */
+                    @media (max-width: 768px) {
+                        .ant-table-thead > tr > th {
+                            padding: 8px 4px !important;
+                            font-size: 12px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td {
+                            padding: 8px 4px !important;
+                            font-size: 12px !important;
+                        }
+                        
+                        /* Адаптивная ширина колонки ФИО */
+                        .ant-table-tbody > tr > td:first-child,
+                        .ant-table-thead > tr > th:first-child {
+                            max-width: 0 !important;
+                            width: auto !important;
+                            min-width: 200px !important;
+                        }
+                        
+                        /* Скрываем лишние колонки на очень маленьких экранах */
+                        @media (max-width: 480px) {
+                            .ant-table-thead > tr > th:nth-child(n+2),
+                            .ant-table-tbody > tr > td:nth-child(n+2) {
+                                display: none !important;
+                            }
+                        }
+                    }
+                    
+                    /* Стили для очень маленьких экранов */
+                    @media (max-width: 420px) {
+                        .ant-table-thead > tr > th {
+                            padding: 6px 2px !important;
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td {
+                            padding: 6px 2px !important;
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-pagination {
+                            font-size: 10px !important;
+                        }
+                        
+                        .ant-pagination-item,
+                        .ant-pagination-prev,
+                        .ant-pagination-next {
+                            min-width: 20px !important;
+                            height: 20px !important;
+                            line-height: 18px !important;
+                        }
+                    }
+                `}
+            </style>
         </Layout>
     )
 }
