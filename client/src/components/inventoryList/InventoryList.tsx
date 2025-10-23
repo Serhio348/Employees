@@ -1,6 +1,6 @@
-import { Table, Tag, Button, Space, Popconfirm, Progress, Checkbox, Modal, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, ExclamationCircleOutlined, FileTextOutlined } from '@ant-design/icons';
-import React, { memo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Modal, Checkbox, Progress, Tag, Space, Popconfirm, message, Dropdown } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined, ExclamationCircleOutlined, FileTextOutlined, MoreOutlined } from '@ant-design/icons';
 import { InventoryItem } from '../../app/services/inventory';
 import { useSizNorms } from '../../hooks/useSizNorms';
 import dayjs from 'dayjs';
@@ -21,8 +21,10 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
     const { sizNorms } = useSizNorms();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isVerySmall, setIsVerySmall] = useState(false);
 
-    // Подавляем ошибку ResizeObserver
+    // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
     useEffect(() => {
         const handleError = (e: ErrorEvent) => {
             if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
@@ -30,10 +32,18 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
             }
         };
         
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+            setIsVerySmall(window.innerWidth < 420);
+        };
+        
         window.addEventListener('error', handleError);
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Вызываем сразу для установки начального состояния
         
         return () => {
             window.removeEventListener('error', handleError);
+            window.removeEventListener('resize', handleResize);
         };
     }, []);
 
@@ -169,6 +179,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
         setIsWriteOffModalVisible(true);
     };
 
+
     const columns = [
         ...(showWriteOffButton ? [{
             title: (
@@ -178,11 +189,11 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
                         indeterminate={selectedItems.length > 0 && selectedItems.length < inventory.filter(item => isExpired(item)).length}
                         onChange={(e) => handleSelectAll(e.target.checked)}
                     />
-                    <span>Выбрать</span>
+                    <span style={{ display: isMobile ? 'none' : 'inline' }}>Выбрать</span>
                 </div>
             ),
             key: 'select',
-            width: 80,
+            width: isMobile ? 50 : 80,
             render: (_: any, record: InventoryItem) => {
                 const expired = isExpired(record);
                 return (
@@ -199,174 +210,351 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
             title: 'Название',
             dataIndex: 'itemName',
             key: 'itemName',
+            width: isVerySmall ? '100%' : isMobile ? '70%' : undefined,
+            ellipsis: true,
+            render: (text: string, record: InventoryItem) => (
+                <div style={{ 
+                    fontSize: isMobile ? '12px' : '14px',
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    width: '100%'
+                }}>
+                    <span style={{ 
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        flex: 1,
+                        minWidth: 0
+                    }}>
+                        {text}
+                    </span>
+                    {isExpired(record) && (
+                        <ExclamationCircleOutlined style={{ color: '#ff4d4f', fontSize: '12px', flexShrink: 0 }} />
+                    )}
+                </div>
+            ),
         },
-        {
-            title: 'Тип',
-            dataIndex: 'itemType',
-            key: 'itemType',
-            render: (type: string) => {
-                const color = type === 'спецодежда' ? 'blue' : 
-                             type === 'инструмент' ? 'green' : 
-                             type === 'оборудование' ? 'orange' : 
-                             type === 'сиз' ? 'purple' : 'default';
-                return <Tag color={color}>{type}</Tag>;
-            },
-        },
-        {
-            title: 'Дата выдачи',
-            dataIndex: 'issueDate',
-            key: 'issueDate',
-            render: (date: string) => {
-                if (!date) return '-';
-                return new Date(date).toLocaleDateString('ru-RU');
-            }
-        },
-        {
+        ...(isMobile ? [] : [{
             title: 'Количество',
             dataIndex: 'quantity',
             key: 'quantity',
-        },
-        {
-            title: 'Процент износа',
-            key: 'wearPercentage',
-            width: 150,
+            align: 'center' as const,
+            render: (quantity: number) => (
+                <div style={{ 
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#1890ff'
+                }}>
+                    {quantity}
+                </div>
+            ),
+        }]),
+        ...(isMobile ? [] : [
+            {
+                title: 'Тип',
+                dataIndex: 'itemType',
+                key: 'itemType',
+                render: (type: string) => {
+                    const color = type === 'спецодежда' ? 'blue' : 
+                                 type === 'инструмент' ? 'green' : 
+                                 type === 'оборудование' ? 'orange' : 
+                                 type === 'сиз' ? 'purple' : 'default';
+                    return <Tag color={color}>{type}</Tag>;
+                },
+            },
+            {
+                title: 'Дата выдачи',
+                dataIndex: 'issueDate',
+                key: 'issueDate',
+                render: (date: string) => {
+                    if (!date) return '-';
+                    return new Date(date).toLocaleDateString('ru-RU');
+                }
+            },
+            {
+                title: 'Процент износа',
+                key: 'wearPercentage',
+                width: 150,
+                render: (_: any, record: InventoryItem) => {
+                    const percentage = calculateWearPercentage(record);
+                    const color = getProgressColor(percentage);
+                    
+                    // Дополнительная информация об оставшихся днях
+                    const getRemainingDays = (item: InventoryItem) => {
+                        if (!item.issueDate) return 0;
+                        
+                        const issueDate = dayjs(item.issueDate);
+                        const currentDate = dayjs();
+                        const daysPassed = currentDate.diff(issueDate, 'day');
+                        
+            const norm = findNormByItemName(item.itemName);
+                        if (!norm) return 0;
+                        
+                        let totalDays = 0;
+                        if (norm.periodType === 'months') {
+                            // Точный расчет с использованием dayjs для добавления месяцев
+                            const months = parseInt(norm.period);
+                            const endDate = issueDate.add(months, 'month');
+                            totalDays = endDate.diff(issueDate, 'day');
+                        } else if (norm.periodType === 'until_worn') {
+                            totalDays = 365;
+                        }
+                        
+                        return Math.max(0, Math.round(totalDays - daysPassed));
+                    };
+                    
+                    const remainingDays = getRemainingDays(record);
+                    
+                    return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Progress
+                                    percent={percentage}
+                                    size="small"
+                                    strokeColor={color}
+                                    showInfo={false}
+                                    style={{ flex: 1 }}
+                                />
+                                <span style={{ fontSize: '12px', color: color, fontWeight: 'bold' }}>
+                                    {percentage}%
+                                </span>
+                            </div>
+                            <div style={{ 
+                                fontSize: '10px', 
+                                color: remainingDays <= 0 ? '#ff4d4f' : '#666', 
+                                textAlign: 'center',
+                                fontWeight: remainingDays <= 0 ? 'bold' : 'normal'
+                            }}>
+                                {remainingDays > 0 ? `Осталось: ${remainingDays} дн.` : 'Срок истек'}
+                            </div>
+                        </div>
+                    );
+                },
+            },
+            {
+                title: 'Статус',
+                dataIndex: 'status',
+                key: 'status',
+                render: (status: string, record: InventoryItem) => {
+                    const expired = isExpired(record);
+                    const displayStatus = expired ? 'необходимо заменить' : status;
+                    
+                    let color = 'default';
+                    if (expired) {
+                        color = 'red';
+                    } else if (status === 'выдан') {
+                        color = 'green';
+                    } else if (status === 'возвращен') {
+                        color = 'blue';
+                    } else if (status === 'списан') {
+                        color = 'red';
+                    }
+                    
+                    return (
+                        <Tag 
+                            color={color}
+                            style={expired ? {
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                                fontWeight: 'bold',
+                                border: '2px solid #ff4d4f'
+                            } : {}}
+                            icon={expired ? <ExclamationCircleOutlined /> : undefined}
+                        >
+                            {displayStatus}
+                        </Tag>
+                    );
+                },
+            },
+            {
+                title: 'Действия',
+                key: 'actions',
+                render: (_: any, record: InventoryItem) => (
+                    <Space>
+                        <Button
+                            type="primary"
+                            icon={<EditOutlined />}
+                            onClick={() => onEdit(record)}
+                        >
+                            Редактировать
+                        </Button>
+                        {onViewAddons && (
+                            <Button
+                                type="default"
+                                icon={<PlusOutlined />}
+                                onClick={() => onViewAddons(record)}
+                            >
+                                Дополнения
+                            </Button>
+                        )}
+                        <Popconfirm
+                            title="Удалить предмет?"
+                            description="Вы уверены, что хотите удалить этот предмет из инвентаря?"
+                            onConfirm={() => record.id && onDelete(record.id)}
+                            onCancel={() => {
+                                if (record.id && onCancelDelete) {
+                                    onCancelDelete(record.id);
+                                }
+                            }}
+                            okText="Да"
+                            cancelText="Нет"
+                            disabled={deletingIds.includes(record.id || '')}
+                        >
+                            <Button
+                                type="primary"
+                                danger
+                                icon={<DeleteOutlined />}
+                                loading={deletingIds.includes(record.id || '')}
+                                disabled={deletingIds.includes(record.id || '')}
+                            >
+                                Удалить
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                ),
+            },
+        ]),
+        ...(isMobile ? [{
+            title: isVerySmall ? '' : 'Подробнее',
+            key: 'details',
+            width: isVerySmall ? '60px' : '30%',
+            align: 'center' as const,
             render: (_: any, record: InventoryItem) => {
                 const percentage = calculateWearPercentage(record);
                 const color = getProgressColor(percentage);
-                
-                // Дополнительная информация об оставшихся днях
-                const getRemainingDays = (item: InventoryItem) => {
-                    if (!item.issueDate) return 0;
-                    
-                    const issueDate = dayjs(item.issueDate);
-                    const currentDate = dayjs();
-                    const daysPassed = currentDate.diff(issueDate, 'day');
-                    
-        const norm = findNormByItemName(item.itemName);
-                    if (!norm) return 0;
-                    
-                    let totalDays = 0;
-                    if (norm.periodType === 'months') {
-                        // Точный расчет с использованием dayjs для добавления месяцев
-                        const months = parseInt(norm.period);
-                        const endDate = issueDate.add(months, 'month');
-                        totalDays = endDate.diff(issueDate, 'day');
-                    } else if (norm.periodType === 'until_worn') {
-                        totalDays = 365;
-                    }
-                    
-                    return Math.max(0, Math.round(totalDays - daysPassed));
-                };
-                
-                const remainingDays = getRemainingDays(record);
-                
-                return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Progress
-                                percent={percentage}
-                                size="small"
-                                strokeColor={color}
-                                showInfo={false}
-                                style={{ flex: 1 }}
-                            />
-                            <span style={{ fontSize: '12px', color: color, fontWeight: 'bold' }}>
-                                {percentage}%
-                            </span>
-                        </div>
-                        <div style={{ 
-                            fontSize: '10px', 
-                            color: remainingDays <= 0 ? '#ff4d4f' : '#666', 
-                            textAlign: 'center',
-                            fontWeight: remainingDays <= 0 ? 'bold' : 'normal'
-                        }}>
-                            {remainingDays > 0 ? `Осталось: ${remainingDays} дн.` : 'Срок истек'}
-                        </div>
-                    </div>
-                );
-            },
-        },
-        {
-            title: 'Статус',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: string, record: InventoryItem) => {
                 const expired = isExpired(record);
-                const displayStatus = expired ? 'необходимо заменить' : status;
-                
-                let color = 'default';
-                if (expired) {
-                    color = 'red';
-                } else if (status === 'выдан') {
-                    color = 'green';
-                } else if (status === 'возвращен') {
-                    color = 'blue';
-                } else if (status === 'списан') {
-                    color = 'red';
-                }
                 
                 return (
-                    <Tag 
-                        color={color}
-                        style={expired ? {
-                            animation: 'pulse 1.5s ease-in-out infinite',
-                            fontWeight: 'bold',
-                            border: '2px solid #ff4d4f'
-                        } : {}}
-                        icon={expired ? <ExclamationCircleOutlined /> : undefined}
+                    <Dropdown
+                        menu={{
+                            items: [
+                                {
+                                    key: 'quantity',
+                                    label: (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>Количество:</span>
+                                            <span style={{ 
+                                                fontSize: '16px',
+                                                fontWeight: 'bold',
+                                                color: '#1890ff'
+                                            }}>
+                                                {record.quantity}
+                                            </span>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'type',
+                                    label: (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>Тип:</span>
+                                            <Tag color={
+                                                record.itemType === 'спецодежда' ? 'blue' : 
+                                                record.itemType === 'инструмент' ? 'green' : 
+                                                record.itemType === 'оборудование' ? 'orange' : 
+                                                record.itemType === 'сиз' ? 'purple' : 'default'
+                                            }>
+                                                {record.itemType}
+                                            </Tag>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'date',
+                                    label: (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>Дата выдачи:</span>
+                                            <span>{record.issueDate ? new Date(record.issueDate).toLocaleDateString('ru-RU') : '-'}</span>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'status',
+                                    label: (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>Статус:</span>
+                                            <Tag color={
+                                                expired ? 'red' :
+                                                record.status === 'выдан' ? 'green' :
+                                                record.status === 'возвращен' ? 'blue' :
+                                                record.status === 'списан' ? 'red' : 'default'
+                                            }>
+                                                {expired ? 'необходимо заменить' : record.status}
+                                            </Tag>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'wear',
+                                    label: (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>Износ:</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <Progress
+                                                    percent={percentage}
+                                                    size="small"
+                                                    strokeColor={color}
+                                                    showInfo={false}
+                                                    style={{ width: '60px', height: '6px' }}
+                                                />
+                                                <span style={{ color, fontWeight: 'bold' }}>
+                                                    {percentage}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'actions',
+                                    label: 'Действия',
+                                    children: [
+                                        {
+                                            key: 'edit',
+                                            label: 'Редактировать',
+                                            icon: <EditOutlined />,
+                                            onClick: () => onEdit(record),
+                                        },
+                                        ...(onViewAddons ? [{
+                                            key: 'addons',
+                                            label: 'Дополнения',
+                                            icon: <PlusOutlined />,
+                                            onClick: () => onViewAddons(record),
+                                        }] : []),
+                                        {
+                                            key: 'delete',
+                                            label: 'Удалить',
+                                            icon: <DeleteOutlined />,
+                                            danger: true,
+                                            onClick: () => {
+                                                if (record.id) {
+                                                    onDelete(record.id);
+                                                }
+                                            },
+                                        },
+                                    ],
+                                },
+                            ],
+                        }}
+                        trigger={['click']}
+                        placement="bottomRight"
                     >
-                        {displayStatus}
-                    </Tag>
+                        <Button
+                            type="text"
+                            icon={<MoreOutlined />}
+                            size="small"
+                            style={{ 
+                                padding: isVerySmall ? '1px 2px' : '2px 4px',
+                                fontSize: isVerySmall ? '10px' : '12px',
+                                minWidth: isVerySmall ? '24px' : 'auto'
+                            }}
+                        >
+                            {isVerySmall ? '' : 'Подробнее'}
+                        </Button>
+                    </Dropdown>
                 );
             },
-        },
-        {
-            title: 'Действия',
-            key: 'actions',
-            render: (_: any, record: InventoryItem) => (
-                <Space>
-                    <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        onClick={() => onEdit(record)}
-                    >
-                        Редактировать
-                    </Button>
-                    {onViewAddons && (
-                        <Button
-                            type="default"
-                            icon={<PlusOutlined />}
-                            onClick={() => onViewAddons(record)}
-                        >
-                            Дополнения
-                        </Button>
-                    )}
-                    <Popconfirm
-                        title="Удалить предмет?"
-                        description="Вы уверены, что хотите удалить этот предмет из инвентаря?"
-                        onConfirm={() => record.id && onDelete(record.id)}
-                        onCancel={() => {
-                            if (record.id && onCancelDelete) {
-                                onCancelDelete(record.id);
-                            }
-                        }}
-                        okText="Да"
-                        cancelText="Нет"
-                        disabled={deletingIds.includes(record.id || '')}
-                    >
-                        <Button
-                            type="primary"
-                            danger
-                            icon={<DeleteOutlined />}
-                            loading={deletingIds.includes(record.id || '')}
-                            disabled={deletingIds.includes(record.id || '')}
-                        >
-                            Удалить
-                        </Button>
-                    </Popconfirm>
-                </Space>
-            ),
-        },
+        }] : []),
     ];
 
     const expiredItems = inventory.filter(item => isExpired(item));
@@ -446,16 +634,244 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
                         cursor: default !important;
                     }
 
+                    /* Добавляем курсор-указатель для всех интерактивных элементов */
+                    .ant-btn {
+                        cursor: pointer !important;
+                    }
+
+                    .ant-btn:hover {
+                        cursor: pointer !important;
+                    }
+
+                    .ant-btn:focus {
+                        cursor: pointer !important;
+                    }
+
+                    .ant-btn:active {
+                        cursor: pointer !important;
+                    }
+
+                    /* Курсор-указатель для всех интерактивных элементов в таблице */
+                    .ant-table-tbody .ant-btn,
+                    .ant-table-tbody .ant-checkbox,
+                    .ant-table-tbody .ant-checkbox-wrapper {
+                        cursor: pointer !important;
+                    }
+
+                    .ant-table-tbody .ant-btn:hover,
+                    .ant-table-tbody .ant-checkbox:hover,
+                    .ant-table-tbody .ant-checkbox-wrapper:hover {
+                        cursor: pointer !important;
+                    }
+
+                    /* Обычный курсор для строк таблицы */
+                    .ant-table-tbody > tr {
+                        cursor: default !important;
+                    }
+
+                    .ant-table-tbody > tr:hover {
+                        cursor: default !important;
+                    }
+
+                    .ant-table-tbody > tr > td {
+                        cursor: default !important;
+                    }
+
+                    .ant-table-tbody > tr:hover > td {
+                        cursor: default !important;
+                    }
+
+                    /* Адаптивные стили для мобильных устройств */
+                    @media (max-width: 768px) {
+                        .ant-table-thead > tr > th {
+                            padding: 6px 2px !important;
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td {
+                            padding: 6px 2px !important;
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-btn-sm {
+                            padding: 2px 4px !important;
+                            font-size: 10px !important;
+                            height: 24px !important;
+                        }
+                        
+                        .ant-tag {
+                            font-size: 10px !important;
+                            padding: 1px 4px !important;
+                        }
+                        
+                        .ant-pagination {
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-pagination-item,
+                        .ant-pagination-prev,
+                        .ant-pagination-next {
+                            min-width: 24px !important;
+                            height: 24px !important;
+                            line-height: 22px !important;
+                        }
+                        
+                        /* Адаптивная ширина колонки названия */
+                        .ant-table-tbody > tr > td:first-child,
+                        .ant-table-thead > tr > th:first-child {
+                            max-width: 0 !important;
+                            width: auto !important;
+                        }
+                        
+                        /* Убираем горизонтальный скролл на мобильных */
+                        .ant-table-container {
+                            overflow-x: hidden !important;
+                        }
+                    }
+
+                    /* Стили для очень маленьких экранов (меньше 420px) */
+                    @media (max-width: 420px) {
+                        .ant-table-thead > tr > th {
+                            padding: 4px 1px !important;
+                            font-size: 10px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td {
+                            padding: 4px 1px !important;
+                            font-size: 10px !important;
+                        }
+                        
+                        .ant-btn-sm {
+                            padding: 1px 2px !important;
+                            font-size: 8px !important;
+                            height: 20px !important;
+                            min-width: 20px !important;
+                        }
+                        
+                        .ant-tag {
+                            font-size: 8px !important;
+                            padding: 0px 2px !important;
+                        }
+                        
+                        .ant-pagination {
+                            font-size: 9px !important;
+                        }
+                        
+                        .ant-pagination-item,
+                        .ant-pagination-prev,
+                        .ant-pagination-next {
+                            min-width: 20px !important;
+                            height: 20px !important;
+                            line-height: 18px !important;
+                        }
+                        
+                        /* Максимальная компактность для очень маленьких экранов */
+                        .ant-table-tbody > tr > td:first-child,
+                        .ant-table-thead > tr > th:first-child {
+                            max-width: none !important;
+                            width: 100% !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td:last-child,
+                        .ant-table-thead > tr > th:last-child {
+                            width: 60px !important;
+                            min-width: 60px !important;
+                        }
+                    }
+
+                    /* Стили для модальных окон на мобильных устройствах */
+                    @media (max-width: 768px) {
+                        .ant-modal {
+                            margin: 0 !important;
+                            top: 20px !important;
+                            max-width: 90% !important;
+                        }
+                        
+                        .ant-modal-content {
+                            border-radius: 8px !important;
+                        }
+                        
+                        .ant-modal-header {
+                            padding: 12px 16px !important;
+                        }
+                        
+                        .ant-modal-title {
+                            font-size: 14px !important;
+                        }
+                        
+                        .ant-modal-body {
+                            padding: 12px 16px !important;
+                        }
+                        
+                        .ant-modal-footer {
+                            padding: 8px 16px !important;
+                        }
+                        
+                        .ant-btn {
+                            font-size: 12px !important;
+                            height: 32px !important;
+                            padding: 0 12px !important;
+                        }
+                    }
+
                 `}
             </style>
             
+
+            <Table
+                columns={columns}
+                dataSource={inventory}
+                rowKey="id"
+                loading={loading}
+                size={isMobile ? 'small' : 'middle'}
+                scroll={isMobile ? undefined : { x: 600 }}
+                onRow={(record) => ({
+                    style: { 
+                        cursor: 'default'
+                    }
+                })}
+                pagination={{
+                    pageSize: isMobile ? 5 : 10,
+                    showSizeChanger: !isMobile,
+                    showQuickJumper: !isMobile,
+                    showTotal: (total, range) => isMobile ? 
+                        `${range[0]}-${range[1]} из ${total}` : 
+                        `${range[0]}-${range[1]} из ${total} предметов`,
+                    size: isMobile ? 'small' : 'default',
+                }}
+                style={{
+                    fontSize: isMobile ? '12px' : '14px'
+                }}
+            />
+
             {expiredItems.length > 0 && showWriteOffButton && (
-                <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#fff2f0', border: '1px solid #ff4d4f', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
-                            <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
-                                Найдено {expiredItems.length} просроченных предметов
+                <div style={{ 
+                    marginTop: 16, 
+                    marginBottom: 16, 
+                    padding: isVerySmall ? '8px' : '12px', 
+                    backgroundColor: '#fff2f0', 
+                    border: '1px solid #ff4d4f', 
+                    borderRadius: '6px',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        gap: isVerySmall ? '6px' : '8px',
+                        flexDirection: isVerySmall ? 'column' : 'row'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <ExclamationCircleOutlined style={{ color: '#ff4d4f', fontSize: isVerySmall ? '12px' : '14px' }} />
+                            <span style={{ 
+                                fontWeight: 'bold', 
+                                color: '#ff4d4f',
+                                fontSize: isVerySmall ? '10px' : '12px'
+                            }}>
+                                {isVerySmall ? 
+                                    `${expiredItems.length} просрочено` : 
+                                    `Найдено ${expiredItems.length} просроченных предметов`
+                                }
                             </span>
                         </div>
                         <Button
@@ -463,30 +879,19 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
                             danger
                             icon={<FileTextOutlined />}
                             onClick={openWriteOffModal}
+                            size={isVerySmall ? 'small' : 'middle'}
+                            style={{
+                                fontSize: isVerySmall ? '10px' : '12px',
+                                height: isVerySmall ? '24px' : '32px',
+                                padding: isVerySmall ? '0 8px' : '0 12px',
+                                width: isVerySmall ? '100%' : 'auto'
+                            }}
                         >
-                            Списать просроченные
+                            {isVerySmall ? 'Списать' : 'Списать просроченные'}
                         </Button>
                     </div>
                 </div>
             )}
-
-            <Table
-                columns={columns}
-                dataSource={inventory}
-                rowKey="id"
-                loading={loading}
-                onRow={(record) => ({
-                    style: { 
-                        cursor: 'default'
-                    }
-                })}
-                pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                    showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} предметов`,
-                }}
-            />
 
             {showWriteOffButton && (
                 <Modal
@@ -500,6 +905,12 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
                     okText="Списать"
                     cancelText="Отмена"
                     okButtonProps={{ danger: true }}
+                    width={isMobile ? '90%' : 520}
+                    centered={isMobile}
+                    style={isMobile ? { 
+                        top: '20px',
+                        marginBottom: '20px'
+                    } : undefined}
                 >
                     <div style={{ marginBottom: 16 }}>
                         <p>Выберите предметы для списания:</p>
@@ -525,4 +936,4 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
     );
 };
 
-export default memo(InventoryList);
+export default InventoryList;

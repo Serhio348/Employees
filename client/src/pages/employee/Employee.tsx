@@ -135,59 +135,127 @@ const Employee = () => {
                     border: 'none',
                     borderRadius: '12px'
                 }}
-                bodyStyle={{ padding: '24px' }}
+                bodyStyle={{ padding: isMobile ? '16px' : '24px' }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        display: 'flex',
+                {isMobile ? (
+                    // Мобильная версия - иконка сверху
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '32px',
-                        color: 'white'
+                        gap: '12px'
                     }}>
-                        <UserOutlined />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <Title 
-                            level={1} 
-                            style={{ 
-                                color: 'white', 
-                                margin: 0, 
-                                fontSize: '32px',
-                                fontWeight: 'bold',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                            }}
-                        >
-                            {`${employeeData.lastName} ${employeeData.firstName} ${employeeData.surName || ''}`.trim()}
-                        </Title>
-                        <Text 
-                            style={{ 
-                                color: 'rgba(255, 255, 255, 0.9)', 
-                                fontSize: '16px',
-                                display: 'block',
-                                marginTop: '8px'
-                            }}
-                        >
-                            {employeeData.profession}
-                        </Text>
-                        {employeeData.employeeNumber && (
-                            <Text 
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '20px',
+                            color: 'white'
+                        }}>
+                            <UserOutlined />
+                        </div>
+                        <div style={{ 
+                            textAlign: 'center',
+                            width: '100%'
+                        }}>
+                            <Title 
+                                level={1} 
                                 style={{ 
-                                    color: 'rgba(255, 255, 255, 0.8)', 
-                                    fontSize: '14px',
-                                    display: 'block',
-                                    marginTop: '4px'
+                                    color: 'white', 
+                                    margin: 0, 
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                    lineHeight: '1.2',
+                                    wordBreak: 'break-word'
                                 }}
                             >
-                                Табельный номер: {employeeData.employeeNumber}
+                                {`${employeeData.lastName} ${employeeData.firstName} ${employeeData.surName || ''}`.trim()}
+                            </Title>
+                            <Text 
+                                style={{ 
+                                    color: 'rgba(255, 255, 255, 0.9)', 
+                                    fontSize: '12px',
+                                    display: 'block',
+                                    marginTop: '4px',
+                                    wordBreak: 'break-word'
+                                }}
+                            >
+                                {employeeData.profession}
                             </Text>
-                        )}
+                            {employeeData.employeeNumber && (
+                                <Text 
+                                    style={{ 
+                                        color: 'rgba(255, 255, 255, 0.8)', 
+                                        fontSize: '9px',
+                                        display: 'block',
+                                        marginTop: '2px',
+                                        wordBreak: 'break-word'
+                                    }}
+                                >
+                                    Табельный номер: {employeeData.employeeNumber}
+                                </Text>
+                            )}
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    // Десктопная версия - иконка слева
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '50%',
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '32px',
+                            color: 'white'
+                        }}>
+                            <UserOutlined />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <Title 
+                                level={1} 
+                                style={{ 
+                                    color: 'white', 
+                                    margin: 0, 
+                                    fontSize: '32px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                }}
+                            >
+                                {`${employeeData.lastName} ${employeeData.firstName} ${employeeData.surName || ''}`.trim()}
+                            </Title>
+                            <Text 
+                                style={{ 
+                                    color: 'rgba(255, 255, 255, 0.9)', 
+                                    fontSize: '16px',
+                                    display: 'block',
+                                    marginTop: '8px'
+                                }}
+                            >
+                                {employeeData.profession}
+                            </Text>
+                            {employeeData.employeeNumber && (
+                                <Text 
+                                    style={{ 
+                                        color: 'rgba(255, 255, 255, 0.8)', 
+                                        fontSize: '14px',
+                                        display: 'block',
+                                        marginTop: '4px'
+                                    }}
+                                >
+                                    Табельный номер: {employeeData.employeeNumber}
+                                </Text>
+                            )}
+                        </div>
+                    </div>
+                )}
             </Card>
 
             {/* Современный дизайн подробной информации */}
@@ -360,57 +428,69 @@ const Employee = () => {
             </Card>
             {user?.id === employeeData.userId && (
                 <>
-                    <Divider orientation="left">Действия</Divider>
-                    <Space 
-                        direction={isMobile ? "vertical" : "horizontal"} 
-                        size={isMobile ? "small" : "middle"}
-                        style={{ width: isMobile ? "100%" : "auto" }}
-                    >
+                    <Divider orientation="left">Управление</Divider>
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: isMobile ? 'column' : 'row',
+                        gap: isMobile ? '8px' : '12px',
+                        flexWrap: 'wrap'
+                    }}>
                         <Link to={`/employee/edit/${employeeData.id}`}>
                             <CustomButton
-                                shape="round"
-                                type="default"
+                                type="primary"
                                 icon={<EditOutlined />}
-                                size={isMobile ? "small" : "middle"}
+                                size="small"
                                 style={{
-                                    width: isMobile ? "100%" : "auto",
-                                    height: isMobile ? "36px" : "40px",
-                                    fontSize: isMobile ? "12px" : "14px"
+                                    width: isMobile ? "100%" : "140px",
+                                    height: "32px",
+                                    fontSize: "12px",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px'
                                 }}
                             >
-                                {isMobile ? "Редактировать" : "Редактировать"}
+                                Редактировать
                             </CustomButton>
                         </Link>
                         <Link to={`/employee/${employeeData.id}/inventory`}>
                             <CustomButton
-                                shape="round"
                                 type="default"
                                 icon={<ToolOutlined />}
-                                size={isMobile ? "small" : "middle"}
+                                size="small"
                                 style={{
-                                    width: isMobile ? "100%" : "auto",
-                                    height: isMobile ? "36px" : "40px",
-                                    fontSize: isMobile ? "12px" : "14px"
+                                    width: isMobile ? "100%" : "140px",
+                                    height: "32px",
+                                    fontSize: "12px",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    borderColor: '#1890ff',
+                                    color: '#1890ff'
                                 }}
                             >
-                                {isMobile ? "Инвентарь" : "Инвентарь"}
+                                Инвентарь
                             </CustomButton>
                         </Link>
                         <CustomButton
-                            shape="round"
                             danger
                             onClick={showModal}
                             icon={<DeleteOutlined />}
-                            size={isMobile ? "small" : "middle"}
+                            size="small"
                             style={{
-                                width: isMobile ? "100%" : "auto",
-                                height: isMobile ? "36px" : "40px",
-                                fontSize: isMobile ? "12px" : "14px"
+                                width: isMobile ? "100%" : "140px",
+                                height: "32px",
+                                fontSize: "12px",
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
                             }}
                         >
-                            {isMobile ? "Удалить" : "Удалить"}
+                            Удалить
                         </CustomButton>
-                    </Space>
+                    </div>
                 </>
             )}
             <ErrorMessage message={error} />
@@ -424,6 +504,47 @@ const Employee = () => {
             >
                 Вы действительно хотите удалить сотрудника из таблицы?
             </Modal>
+            
+            <style>
+                {`
+                    /* Адаптивные стили для карточки сотрудника */
+                    @media (max-width: 768px) {
+                        .ant-card-body {
+                            padding: 16px !important;
+                        }
+                        
+                        .ant-typography h1 {
+                            font-size: 16px !important;
+                            line-height: 1.2 !important;
+                            word-break: break-word !important;
+                        }
+                        
+                        .ant-typography {
+                            font-size: 12px !important;
+                            word-break: break-word !important;
+                        }
+                        
+                        /* Дополнительные стили для табельного номера */
+                        .ant-typography:last-child {
+                            font-size: 9px !important;
+                        }
+                    }
+
+                    @media (max-width: 480px) {
+                        .ant-typography h1 {
+                            font-size: 14px !important;
+                        }
+                        
+                        .ant-typography {
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-typography:last-child {
+                            font-size: 8px !important;
+                        }
+                    }
+                `}
+            </style>
         </Layout>
     )
 }

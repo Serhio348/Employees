@@ -31,6 +31,7 @@ const EmployeeInventory = () => {
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [deletingIds, setDeletingIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('active');
+    const [isMobile, setIsMobile] = useState(false);
 
     const { data: allInventory = [], isLoading } = useGetEmployeeInventoryQuery(employeeId!, {
         skip: !employeeId
@@ -61,6 +62,30 @@ const EmployeeInventory = () => {
         }
     }, [navigate, user]);
 
+    // Отслеживаем размер экрана для адаптивности
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Вызываем сразу для установки начального состояния
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Подавляем ошибку ResizeObserver
     useEffect(() => {
         const handleError = (e: ErrorEvent) => {
@@ -74,6 +99,11 @@ const EmployeeInventory = () => {
         return () => {
             window.removeEventListener('error', handleError);
         };
+    }, []);
+
+    // Прокрутка к началу страницы при загрузке компонента
+    useEffect(() => {
+        window.scrollTo(0, 0);
     }, []);
 
     const handleAddItem = async (values: InventoryItem) => {
@@ -247,59 +277,138 @@ const EmployeeInventory = () => {
                                     borderRadius: '12px',
                                     marginBottom: '16px'
                                 }}
-                                bodyStyle={{ padding: '20px' }}
+                                bodyStyle={{ padding: isMobile ? '16px' : '20px' }}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        borderRadius: '50%',
-                                        background: 'rgba(255, 255, 255, 0.2)',
-                                        display: 'flex',
+                                {isMobile ? (
+                                    // Мобильная версия - иконка сверху
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        flexDirection: 'column',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '24px',
-                                        color: 'white'
+                                        gap: '12px'
                                     }}>
-                                        <UserOutlined />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <Title 
-                                            level={2} 
-                                            style={{ 
-                                                color: 'white', 
-                                                margin: 0, 
-                                                fontSize: '24px',
-                                                fontWeight: 'bold',
-                                                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                                            }}
-                                        >
-                                            {employee.lastName} {employee.firstName} {employee.surName}
-                                        </Title>
-                                        <Text 
-                                            style={{ 
-                                                color: 'rgba(255, 255, 255, 0.9)', 
-                                                fontSize: '16px',
-                                                display: 'block',
-                                                marginTop: '4px'
-                                            }}
-                                        >
-                                            {employee.profession}
-                                        </Text>
-                                        {employee.employeeNumber && (
-                                            <Text 
+                                        <div style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '20px',
+                                            color: 'white'
+                                        }}>
+                                            <UserOutlined />
+                                        </div>
+                                        <div style={{ 
+                                            textAlign: 'center',
+                                            width: '100%'
+                                        }}>
+                                            <Title 
+                                                level={2} 
                                                 style={{ 
-                                                    color: 'rgba(255, 255, 255, 0.8)', 
-                                                    fontSize: '14px',
-                                                    display: 'block',
-                                                    marginTop: '2px'
+                                                    color: 'white', 
+                                                    margin: 0, 
+                                                    fontSize: '16px',
+                                                    fontWeight: 'bold',
+                                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                                    lineHeight: '1.2',
+                                                    wordBreak: 'break-word'
                                                 }}
                                             >
-                                                Табельный номер: {employee.employeeNumber}
+                                                {employee.lastName} {employee.firstName} {employee.surName}
+                                            </Title>
+                                            <Text 
+                                                style={{ 
+                                                    color: 'rgba(255, 255, 255, 0.9)', 
+                                                    fontSize: '12px',
+                                                    display: 'block',
+                                                    marginTop: '4px',
+                                                    wordBreak: 'break-word'
+                                                }}
+                                            >
+                                                {employee.profession}
                                             </Text>
-                                        )}
+                                            {employee.employeeNumber && (
+                                                <Text 
+                                                    style={{ 
+                                                        color: 'rgba(255, 255, 255, 0.8)', 
+                                                        fontSize: '9px',
+                                                        display: 'block',
+                                                        marginTop: '2px',
+                                                        wordBreak: 'break-word'
+                                                    }}
+                                                >
+                                                    Табельный номер: {employee.employeeNumber}
+                                                </Text>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    // Десктопная версия - иконка слева
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '16px'
+                                    }}>
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '24px',
+                                            color: 'white'
+                                        }}>
+                                            <UserOutlined />
+                                        </div>
+                                        <div style={{ 
+                                            flex: 1, 
+                                            textAlign: 'left'
+                                        }}>
+                                            <Title 
+                                                level={2} 
+                                                style={{ 
+                                                    color: 'white', 
+                                                    margin: 0, 
+                                                    fontSize: '24px',
+                                                    fontWeight: 'bold',
+                                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                                    lineHeight: '1.4',
+                                                    wordBreak: 'normal'
+                                                }}
+                                            >
+                                                {employee.lastName} {employee.firstName} {employee.surName}
+                                            </Title>
+                                            <Text 
+                                                style={{ 
+                                                    color: 'rgba(255, 255, 255, 0.9)', 
+                                                    fontSize: '16px',
+                                                    display: 'block',
+                                                    marginTop: '4px',
+                                                    wordBreak: 'normal'
+                                                }}
+                                            >
+                                                {employee.profession}
+                                            </Text>
+                                            {employee.employeeNumber && (
+                                                <Text 
+                                                    style={{ 
+                                                        color: 'rgba(255, 255, 255, 0.8)', 
+                                                        fontSize: '14px',
+                                                        display: 'block',
+                                                        marginTop: '2px',
+                                                        wordBreak: 'normal'
+                                                    }}
+                                                >
+                                                    Табельный номер: {employee.employeeNumber}
+                                                </Text>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </Card>
                         )}
                     </div>
@@ -307,25 +416,81 @@ const EmployeeInventory = () => {
 
                 {/* Статистика */}
                 <Col span={24}>
-                    <Row gutter={16}>
-                        <Col span={6}>
-                            <Card>
-                                <Statistic title="Всего предметов" value={totalItems} />
+                    <Row gutter={isMobile ? 8 : 16}>
+                        <Col span={isMobile ? 12 : 6}>
+                            <Card style={{ 
+                                textAlign: 'center',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                height: isMobile ? 'auto' : 'auto',
+                                minHeight: isMobile ? '80px' : 'auto'
+                            }}>
+                                <Statistic 
+                                    title={isMobile ? "Всего" : "Всего предметов"} 
+                                    value={totalItems}
+                                    valueStyle={{ 
+                                        fontSize: isMobile ? '18px' : '24px',
+                                        fontWeight: 'bold',
+                                        color: '#1890ff'
+                                    }}
+                                />
                             </Card>
                         </Col>
-                        <Col span={6}>
-                            <Card>
-                                <Statistic title="Выдано" value={issuedItems} valueStyle={{ color: '#3f8600' }} />
+                        <Col span={isMobile ? 12 : 6}>
+                            <Card style={{ 
+                                textAlign: 'center',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                height: isMobile ? 'auto' : 'auto',
+                                minHeight: isMobile ? '80px' : 'auto'
+                            }}>
+                                <Statistic 
+                                    title="Выдано" 
+                                    value={issuedItems} 
+                                    valueStyle={{ 
+                                        color: '#3f8600',
+                                        fontSize: isMobile ? '18px' : '24px',
+                                        fontWeight: 'bold'
+                                    }} 
+                                />
                             </Card>
                         </Col>
-                        <Col span={6}>
-                            <Card>
-                                <Statistic title="Возвращено" value={returnedItems} valueStyle={{ color: '#1890ff' }} />
+                        <Col span={isMobile ? 12 : 6}>
+                            <Card style={{ 
+                                textAlign: 'center',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                height: isMobile ? 'auto' : 'auto',
+                                minHeight: isMobile ? '80px' : 'auto'
+                            }}>
+                                <Statistic 
+                                    title="Возвращено" 
+                                    value={returnedItems} 
+                                    valueStyle={{ 
+                                        color: '#1890ff',
+                                        fontSize: isMobile ? '18px' : '24px',
+                                        fontWeight: 'bold'
+                                    }} 
+                                />
                             </Card>
                         </Col>
-                        <Col span={6}>
-                            <Card>
-                                <Statistic title="Списано" value={writtenOffItems} valueStyle={{ color: '#cf1322' }} />
+                        <Col span={isMobile ? 12 : 6}>
+                            <Card style={{ 
+                                textAlign: 'center',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                height: isMobile ? 'auto' : 'auto',
+                                minHeight: isMobile ? '80px' : 'auto'
+                            }}>
+                                <Statistic 
+                                    title="Списано" 
+                                    value={writtenOffItems} 
+                                    valueStyle={{ 
+                                        color: '#cf1322',
+                                        fontSize: isMobile ? '18px' : '24px',
+                                        fontWeight: 'bold'
+                                    }} 
+                                />
                             </Card>
                         </Col>
                     </Row>
@@ -333,57 +498,89 @@ const EmployeeInventory = () => {
 
                 <Col span={24}>
                     <div style={{ 
-                        background: '#f0f2f5', 
+                        background: 'linear-gradient(135deg, #f0f2f5 0%, #e6f7ff 100%)', 
                         padding: '16px', 
-                        borderRadius: '8px', 
+                        borderRadius: '12px', 
                         marginBottom: '16px',
-                        border: '2px solid #1890ff'
+                        border: '1px solid #d9d9d9',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                     }}>
-                        <Text strong style={{ color: '#1890ff', fontSize: '16px' }}>
-                            Кнопки управления инвентарем:
+                        <Text strong style={{ color: '#1890ff', fontSize: '16px', marginBottom: '12px', display: 'block' }}>
+                            Управление инвентарем
                         </Text>
+                        <div style={{ 
+                            display: 'flex', 
+                            flexDirection: isMobile ? 'column' : 'row',
+                            gap: isMobile ? '8px' : '12px',
+                            flexWrap: 'wrap',
+                            alignItems: isMobile ? 'stretch' : 'center'
+                        }}>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={openAddModal}
+                                size={isMobile ? "small" : "middle"}
+                                style={{ 
+                                    backgroundColor: '#52c41a',
+                                    borderColor: '#52c41a',
+                                    fontSize: isMobile ? '12px' : '14px',
+                                    height: isMobile ? '32px' : '36px',
+                                    padding: isMobile ? '0 12px' : '0 16px',
+                                    fontWeight: '500',
+                                    borderRadius: '6px',
+                                    boxShadow: '0 2px 4px rgba(82, 196, 26, 0.3)',
+                                    width: isMobile ? '100%' : 'auto'
+                                }}
+                            >
+                                {isMobile ? 'Добавить' : 'Добавить предмет'}
+                            </Button>
+                            <Button
+                                type="default"
+                                icon={<BookOutlined />}
+                                onClick={openNormsModal}
+                                size={isMobile ? "small" : "middle"}
+                                style={{
+                                    fontSize: isMobile ? '12px' : '14px',
+                                    height: isMobile ? '32px' : '36px',
+                                    padding: isMobile ? '0 12px' : '0 16px',
+                                    fontWeight: '500',
+                                    borderRadius: '6px',
+                                    borderColor: '#1890ff',
+                                    color: '#1890ff',
+                                    backgroundColor: '#f0f9ff',
+                                    width: isMobile ? '100%' : 'auto'
+                                }}
+                            >
+                                {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
+                            </Button>
+                            {employee && (
+                                <div style={{ 
+                                    marginLeft: isMobile ? '0' : 'auto',
+                                    width: isMobile ? '100%' : 'auto'
+                                }}>
+                                    <ExportCard 
+                                        employee={employee} 
+                                        inventory={allInventory} 
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <Space style={{ marginBottom: 16 }}>
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={openAddModal}
-                            size="large"
-                            style={{ 
-                                backgroundColor: '#1890ff',
-                                borderColor: '#1890ff',
-                                fontSize: '16px',
-                                height: '48px',
-                                padding: '0 24px',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Добавить предмет
-                        </Button>
-                        <Button
-                            type="primary"
-                            icon={<BookOutlined />}
-                            onClick={openNormsModal}
-                        >
-                            Нормативы СИЗ
-                        </Button>
-                        {employee && (
-                            <ExportCard 
-                                employee={employee} 
-                                inventory={allInventory} 
-                            />
-                        )}
-                    </Space>
                 </Col>
 
                 <Col span={24}>
                     <Tabs
                         activeKey={activeTab}
                         onChange={setActiveTab}
+                        tabPosition={isMobile ? 'top' : 'top'}
+                        type={isMobile ? 'card' : 'line'}
+                        size={isMobile ? 'small' : 'middle'}
                         items={[
                             {
                                 key: 'active',
-                                label: `Активный инвентарь (${activeInventory.length})`,
+                                label: isMobile ? 
+                                    `Активный (${activeInventory.length})` : 
+                                    `Активный инвентарь (${activeInventory.length})`,
                                 children: (
                                     <InventoryList
                                         inventory={activeInventory}
@@ -399,7 +596,9 @@ const EmployeeInventory = () => {
                             },
                             {
                                 key: 'written-off',
-                                label: `Списанный инвентарь (${writtenOffInventory.length})`,
+                                label: isMobile ? 
+                                    `Списанный (${writtenOffInventory.length})` : 
+                                    `Списанный инвентарь (${writtenOffInventory.length})`,
                                 children: (
                                     <InventoryList
                                         inventory={writtenOffInventory}
@@ -447,6 +646,125 @@ const EmployeeInventory = () => {
             >
                 <SizNormsTable />
             </Modal>
+
+            <style>
+                {`
+                    /* Адаптивные стили для вкладок на мобильных устройствах */
+                    @media (max-width: 768px) {
+                        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+                            padding: 8px 12px !important;
+                            font-size: 12px !important;
+                            min-width: 80px !important;
+                        }
+                        
+                        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+                            background-color: #1890ff !important;
+                            color: white !important;
+                        }
+                        
+                        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab:hover {
+                            background-color: #40a9ff !important;
+                            color: white !important;
+                        }
+                        
+                        .ant-tabs-content-holder {
+                            padding: 8px 0 !important;
+                        }
+                        
+                        .ant-tabs-tabpane {
+                            padding: 0 !important;
+                        }
+                    }
+
+                    /* Адаптивные стили для карточки сотрудника */
+                    @media (max-width: 768px) {
+                        .ant-card-body {
+                            padding: 16px !important;
+                        }
+                        
+                        .ant-typography h2 {
+                            font-size: 16px !important;
+                            line-height: 1.2 !important;
+                            word-break: break-word !important;
+                        }
+                        
+                        .ant-typography {
+                            font-size: 12px !important;
+                            word-break: break-word !important;
+                        }
+                        
+                        /* Дополнительные стили для табельного номера */
+                        .ant-typography:last-child {
+                            font-size: 9px !important;
+                        }
+                    }
+
+                    @media (max-width: 480px) {
+                        .ant-typography h2 {
+                            font-size: 14px !important;
+                        }
+                        
+                        .ant-typography {
+                            font-size: 11px !important;
+                        }
+                        
+                        .ant-typography:last-child {
+                            font-size: 8px !important;
+                        }
+                    }
+
+                    /* Адаптивные стили для статистических карточек */
+                    @media (max-width: 768px) {
+                        .ant-statistic-title {
+                            font-size: 12px !important;
+                            margin-bottom: 4px !important;
+                            line-height: 1.2 !important;
+                            word-break: break-word !important;
+                        }
+                        
+                        .ant-statistic-content {
+                            font-size: 18px !important;
+                            line-height: 1.2 !important;
+                        }
+                        
+                        .ant-card {
+                            min-height: 80px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                        }
+                        
+                        .ant-card-body {
+                            padding: 8px !important;
+                            height: 100% !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            flex-direction: column !important;
+                        }
+                    }
+
+                    @media (max-width: 480px) {
+                        .ant-statistic-title {
+                            font-size: 10px !important;
+                            margin-bottom: 2px !important;
+                        }
+                        
+                        .ant-statistic-content {
+                            font-size: 16px !important;
+                        }
+                        
+                        .ant-card {
+                            min-height: 70px !important;
+                        }
+                        
+                        .ant-card-body {
+                            padding: 6px !important;
+                        }
+                    }
+
+                `}
+            </style>
         </Layout>
     );
 };
