@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Modal, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
@@ -94,14 +94,14 @@ const SizNormsTable = () => {
         }
     };
 
-    const handleModalCancel = () => {
+    const handleModalCancel = useCallback(() => {
         console.log('Modal cancel clicked');
         setIsOpeningModal(false);
         setModalOpenedByUser(false);
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
-    };
+    }, [form]);
 
     // Дополнительная обработка закрытия модального окна
     useEffect(() => {
