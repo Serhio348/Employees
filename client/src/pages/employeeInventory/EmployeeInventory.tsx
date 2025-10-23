@@ -30,6 +30,7 @@ const EmployeeInventory = () => {
     const [error, setError] = useState("");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
+    const [isOpeningNormsModal, setIsOpeningNormsModal] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [deletingIds, setDeletingIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('active');
@@ -219,11 +220,17 @@ const EmployeeInventory = () => {
 
     const openNormsModal = () => {
         console.log('openNormsModal called');
+        if (isOpeningNormsModal) {
+            console.log('Already opening norms modal, ignoring');
+            return;
+        }
+        setIsOpeningNormsModal(true);
         setIsNormsModalVisible(true);
     };
 
     const closeNormsModal = () => {
         console.log('closeNormsModal called');
+        setIsOpeningNormsModal(false);
         setIsNormsModalVisible(false);
     };
 

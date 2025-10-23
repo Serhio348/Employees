@@ -9,6 +9,7 @@ const SizNormsTable = () => {
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [modalOpenedByUser, setModalOpenedByUser] = useState(false);
+    const [isOpeningModal, setIsOpeningModal] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
     const [isMobile, setIsMobile] = useState(false);
@@ -33,6 +34,11 @@ const SizNormsTable = () => {
 
     const handleAdd = () => {
         console.log('handleAdd called');
+        if (isOpeningModal) {
+            console.log('Already opening modal, ignoring');
+            return;
+        }
+        setIsOpeningModal(true);
         setModalOpenedByUser(true);
         setEditingNorm(null);
         form.resetFields();
@@ -40,6 +46,11 @@ const SizNormsTable = () => {
     };
 
     const handleEdit = (norm: SizNorm) => {
+        if (isOpeningModal) {
+            console.log('Already opening modal, ignoring');
+            return;
+        }
+        setIsOpeningModal(true);
         setModalOpenedByUser(true);
         setEditingNorm(norm);
         form.setFieldsValue(norm);
@@ -85,6 +96,7 @@ const SizNormsTable = () => {
 
     const handleModalCancel = () => {
         console.log('Modal cancel clicked');
+        setIsOpeningModal(false);
         setModalOpenedByUser(false);
         setIsModalVisible(false);
         form.resetFields();
@@ -95,6 +107,7 @@ const SizNormsTable = () => {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isModalVisible) {
+                setIsOpeningModal(false);
                 setModalOpenedByUser(false);
                 handleModalCancel();
             }
@@ -103,6 +116,7 @@ const SizNormsTable = () => {
         const handleMaskClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.classList.contains('ant-modal-mask') && isModalVisible) {
+                setIsOpeningModal(false);
                 setModalOpenedByUser(false);
                 handleModalCancel();
             }
