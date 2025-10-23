@@ -8,21 +8,34 @@ const SizNormsTable = () => {
     const { sizNorms, isLoading, addNorm, updateNorm, deleteNorm, initDefaults } = useSizNorms();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
+            const newIsMobile = window.innerWidth <= 768;
+            console.log('Resize detected, isMobile:', newIsMobile);
+            setIsMobile(newIsMobile);
         };
 
         handleResize();
+        setIsInitialized(true);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Защита от автоматического открытия модального окна
+    useEffect(() => {
+        if (isInitialized && isModalVisible) {
+            console.log('Modal opened automatically, closing it');
+            setIsModalVisible(false);
+        }
+    }, [isInitialized, isModalVisible]);
+
     const handleAdd = () => {
+        console.log('handleAdd called');
         setEditingNorm(null);
         form.resetFields();
         setIsModalVisible(true);

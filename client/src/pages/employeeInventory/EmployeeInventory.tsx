@@ -71,22 +71,12 @@ const EmployeeInventory = () => {
             setIsMobile(window.innerWidth <= 768);
         };
         
-        window.addEventListener('resize', handleResize);
         handleResize(); // Вызываем сразу для установки начального состояния
+        window.addEventListener('resize', handleResize);
         
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-        
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     // Подавляем ошибку ResizeObserver
