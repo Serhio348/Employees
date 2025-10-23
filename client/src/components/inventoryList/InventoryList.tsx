@@ -107,7 +107,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         const raw = (elapsed / totalDays) * 100;
         const percent = daysLeft > 0 ? Math.min(raw, 99) : 100;
         return Math.floor(percent);
-    }, []);
+    }, [findNormByItemName]);
 
     // Функция для получения цвета прогресс-бара
     const getProgressColor = useCallback((percentage: number) => {
@@ -136,7 +136,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         }
         
         return !currentDate.isBefore(endDate.startOf('day'));
-    }, []);
+    }, [findNormByItemName]);
 
     // Функции для массового списания
     const handleSelectItem = useCallback((itemId: string, checked: boolean) => {
@@ -555,7 +555,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                 );
             },
         }] : []),
-    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete]);
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete, deletingIds]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
