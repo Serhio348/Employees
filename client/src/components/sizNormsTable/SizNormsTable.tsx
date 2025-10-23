@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect } from 'react';
-import { Table, Tag, Button, Modal, Form, Input, InputNumber, Select, message, Row, Col, Dropdown, Menu } from 'antd';
+import { Table, Tag, Button, Modal, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { useSizNorms, SizNorm } from '../../hooks/useSizNorms';
