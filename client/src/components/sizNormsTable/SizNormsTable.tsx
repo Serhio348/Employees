@@ -292,6 +292,7 @@ const SizNormsTable = () => {
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
                 width={isMobile ? '98%' : 600}
+                centered
                 style={{ 
                     top: isMobile ? 5 : 100,
                     maxWidth: isMobile ? '100vw' : '600px'
@@ -403,6 +404,15 @@ const SizNormsTable = () => {
                         .ant-modal {
                             margin: 0 !important;
                             padding: 0 !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                        }
+                        
+                        .ant-modal-wrap {
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
                         }
                         
                         .ant-modal-content {
