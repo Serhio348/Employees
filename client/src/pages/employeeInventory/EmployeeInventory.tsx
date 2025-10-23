@@ -366,13 +366,18 @@ const EmployeeInventory = () => {
                         <Text strong style={{ color: '#1890ff', fontSize: '16px', marginBottom: '12px', display: 'block' }}>
                             Управление инвентарем
                         </Text>
-                        <div style={{ 
-                            display: 'flex', 
-                            flexDirection: isMobile ? 'column' : 'row',
-                            gap: isMobile ? '8px' : '12px',
-                            flexWrap: 'wrap',
-                            alignItems: isMobile ? 'stretch' : 'center'
-                        }}>
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                flexDirection: isMobile ? 'column' : 'row',
+                                gap: isMobile ? '8px' : '12px',
+                                flexWrap: 'wrap',
+                                alignItems: isMobile ? 'stretch' : 'center'
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
@@ -395,7 +400,20 @@ const EmployeeInventory = () => {
                         <Button
                                 type="default"
                             icon={<BookOutlined />}
-                            onClick={openNormsModal}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('Button clicked, calling openNormsModal');
+                                openNormsModal();
+                            }}
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                onTouchStart={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
                                 size={isMobile ? "small" : "middle"}
                                 style={{
                                     fontSize: isMobile ? '12px' : '14px',
@@ -406,7 +424,12 @@ const EmployeeInventory = () => {
                                     borderColor: '#1890ff',
                                     color: '#1890ff',
                                     backgroundColor: '#f0f9ff',
-                                    width: isMobile ? '100%' : 'auto'
+                                    width: isMobile ? '100%' : 'auto',
+                                    touchAction: 'manipulation',
+                                    userSelect: 'none',
+                                    WebkitUserSelect: 'none',
+                                    MozUserSelect: 'none',
+                                    msUserSelect: 'none'
                                 }}
                             >
                                 {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
