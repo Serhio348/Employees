@@ -535,68 +535,49 @@ const EmployeeInventory = () => {
 
             <style>
                 {`
-                    /* Адаптивные стили для вкладок на мобильных устройствах */
-                    @media (max-width: 768px) {
-                        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
-                            padding: 8px 12px !important;
-                            font-size: 12px !important;
-                            min-width: 80px !important;
-                        }
-                        
-                        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
-                            background-color: #1890ff !important;
-                            color: white !important;
-                        }
-                        
-                        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab:hover {
-                            background-color: #40a9ff !important;
-                            color: white !important;
-                        }
-                        
-                        .ant-tabs-content-holder {
-                            padding: 8px 0 !important;
-                        }
-                        
-                        .ant-tabs-tabpane {
-                            padding: 0 !important;
-                        }
+                    /* Простые адаптивные стили для вкладок */
+                    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+                        padding: 8px 12px !important;
+                        font-size: 12px !important;
+                        min-width: 80px !important;
+                    }
+                    
+                    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+                        background-color: #1890ff !important;
+                        color: white !important;
+                    }
+                    
+                    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab:hover {
+                        background-color: #40a9ff !important;
+                        color: white !important;
+                    }
+                    
+                    .ant-tabs-content-holder {
+                        padding: 8px 0 !important;
+                    }
+                    
+                    .ant-tabs-tabpane {
+                        padding: 0 !important;
                     }
 
-                    /* Адаптивные стили для карточки сотрудника */
-                    @media (max-width: 768px) {
-                        .ant-card-body {
-                            padding: 16px !important;
-                        }
-                        
-                        .ant-typography h2 {
-                            font-size: 16px !important;
-                            line-height: 1.2 !important;
-                            word-break: break-word !important;
-                        }
-                        
-                        .ant-typography {
-                            font-size: 12px !important;
-                            word-break: break-word !important;
-                        }
-                        
-                        /* Дополнительные стили для табельного номера */
-                        .ant-typography:last-child {
-                            font-size: 9px !important;
-                        }
+                    /* Простые стили для карточки сотрудника */
+                    .ant-card-body {
+                        padding: 16px !important;
                     }
-
-                    @media (max-width: 480px) {
-                        .ant-typography h2 {
-                            font-size: 14px !important;
-                        }
-                        
-                        .ant-typography {
-                            font-size: 11px !important;
-                        }
-                        
-                        .ant-typography:last-child {
-                            font-size: 8px !important;
-                        }
+                    
+                    .ant-typography h2 {
+                        font-size: 16px !important;
+                        line-height: 1.2 !important;
+                        word-break: break-word !important;
+                    }
+                    
+                    .ant-typography {
+                        font-size: 12px !important;
+                        word-break: break-word !important;
+                    }
+                    
+                    .ant-typography:last-child {
+                        font-size: 9px !important;
                     }
 
                     /* Адаптивные стили для статистических карточек */

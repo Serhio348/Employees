@@ -491,15 +491,6 @@ const SizNormsTable = () => {
                         .ant-modal {
                             margin: 0 !important;
                             padding: 0 !important;
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
-                        }
-                        
-                        .ant-modal-wrap {
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
                         }
                         
                         .ant-modal-content {
