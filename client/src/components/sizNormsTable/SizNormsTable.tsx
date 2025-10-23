@@ -179,7 +179,17 @@ const SizNormsTable = () => {
                     );
 
                     return (
-                        <Dropdown overlay={menu} trigger={['click']}>
+                        <Dropdown 
+                            overlay={menu} 
+                            trigger={['click']}
+                            placement="bottomRight"
+                            overlayStyle={{
+                                position: 'fixed',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                zIndex: 1050
+                            }}
+                        >
                             <Button 
                                 type="text" 
                                 icon={<MoreOutlined />}
@@ -357,6 +367,30 @@ const SizNormsTable = () => {
                     </Row>
                 </Form>
             </Modal>
+            
+            <style>
+                {`
+                    /* Стили для центрирования выпадающих меню на мобильных */
+                    @media (max-width: 768px) {
+                        .ant-dropdown {
+                            position: fixed !important;
+                            left: 50% !important;
+                            transform: translateX(-50%) !important;
+                            z-index: 1050 !important;
+                        }
+                        
+                        .ant-dropdown-menu {
+                            min-width: 120px !important;
+                            text-align: center !important;
+                        }
+                        
+                        .ant-dropdown-menu-item {
+                            text-align: center !important;
+                            padding: 8px 16px !important;
+                        }
+                    }
+                `}
+            </style>
         </>
     );
 };
