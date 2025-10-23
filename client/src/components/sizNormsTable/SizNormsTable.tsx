@@ -14,13 +14,22 @@ const SizNormsTable = () => {
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
+            const wasMobile = isMobile;
+            const nowMobile = window.innerWidth <= 768;
+            setIsMobile(nowMobile);
+            
+            // Если изменился режим мобильного/десктопного, закрываем модальное окно
+            if (wasMobile !== nowMobile && isModalVisible) {
+                setIsModalVisible(false);
+                form.resetFields();
+                setEditingNorm(null);
+            }
         };
-        
+
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [isModalVisible, form]);
 
     // Защита от случайного открытия модального окна при изменении разрешения
     useEffect(() => {
@@ -86,20 +95,31 @@ const SizNormsTable = () => {
         setEditingNorm(null);
     };
 
-    const forceCloseModal = () => {
-        console.log('Force closing modal');
-        // Принудительное закрытие через DOM
-        const modalWraps = document.querySelectorAll('.ant-modal-wrap');
-        modalWraps.forEach(wrap => {
-            if (wrap instanceof HTMLElement) {
-                wrap.style.display = 'none';
+    // Дополнительная обработка закрытия модального окна
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isModalVisible) {
+                handleModalCancel();
             }
-        });
-        
-        setIsModalVisible(false);
-        form.resetFields();
-        setEditingNorm(null);
-    };
+        };
+
+        const handleMaskClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.classList.contains('ant-modal-mask') && isModalVisible) {
+                handleModalCancel();
+            }
+        };
+
+        if (isModalVisible) {
+            document.addEventListener('keydown', handleEscape);
+            document.addEventListener('click', handleMaskClick);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('click', handleMaskClick);
+        };
+    }, [isModalVisible]);
 
     const columns: ColumnsType<SizNorm> = [
         {
@@ -319,7 +339,7 @@ const SizNormsTable = () => {
                 centered
                 maskClosable={true}
                 closable={true}
-                destroyOnClose={true}
+                destroyOnClose={false}
                 keyboard={true}
                 style={{ 
                     top: isMobile ? 5 : 100,
@@ -336,27 +356,6 @@ const SizNormsTable = () => {
                     layout="vertical"
                     initialValues={{ periodType: 'months' }}
                 >
-                    {/* Кнопка принудительного закрытия для мобильных */}
-                    {isMobile && (
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'flex-end', 
-                            marginBottom: '16px',
-                            padding: '8px',
-                            backgroundColor: '#f0f0f0',
-                            borderRadius: '4px'
-                        }}>
-                            <Button 
-                                onClick={forceCloseModal}
-                                type="primary"
-                                danger
-                                size="small"
-                            >
-                                ✕ Закрыть
-                            </Button>
-                        </div>
-                    )}
-                    
                     <Row gutter={isMobile ? [0, 12] : [16, 16]}>
                         <Col span={24}>
                             <Form.Item
@@ -569,23 +568,22 @@ const SizNormsTable = () => {
                         
                         /* Специальные стили для модального окна на мобильных */
                         .ant-modal-close {
-                            position: fixed !important;
-                            top: 10px !important;
-                            right: 10px !important;
                             z-index: 1002 !important;
-                            background: rgba(255, 255, 255, 0.9) !important;
-                            border-radius: 50% !important;
-                            width: 40px !important;
-                            height: 40px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
+                            background: #ff4d4f !important;
+                            border-radius: 4px !important;
+                            width: 32px !important;
+                            height: 32px !important;
                             cursor: pointer !important;
-                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+                            border: none !important;
                         }
                         
                         .ant-modal-close:hover {
-                            background: rgba(255, 255, 255, 1) !important;
+                            background: #ff7875 !important;
+                        }
+                        
+                        .ant-modal-close .anticon {
+                            color: #fff !important;
+                            font-size: 16px !important;
                         }
                         
                         .ant-modal-mask {
