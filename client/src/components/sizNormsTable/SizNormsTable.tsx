@@ -8,6 +8,7 @@ const SizNormsTable = () => {
     const { sizNorms, isLoading, addNorm, updateNorm, deleteNorm, initDefaults } = useSizNorms();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [modalOpenedByUser, setModalOpenedByUser] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
     const [isMobile, setIsMobile] = useState(false);
@@ -22,14 +23,24 @@ const SizNormsTable = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Защита от автоматического открытия модального окна
+    useEffect(() => {
+        if (isModalVisible && !modalOpenedByUser) {
+            console.log('Modal opened automatically, closing it');
+            setIsModalVisible(false);
+        }
+    }, [isModalVisible, modalOpenedByUser]);
+
     const handleAdd = () => {
         console.log('handleAdd called');
+        setModalOpenedByUser(true);
         setEditingNorm(null);
         form.resetFields();
         setIsModalVisible(true);
     };
 
     const handleEdit = (norm: SizNorm) => {
+        setModalOpenedByUser(true);
         setEditingNorm(norm);
         form.setFieldsValue(norm);
         setIsModalVisible(true);
@@ -74,6 +85,7 @@ const SizNormsTable = () => {
 
     const handleModalCancel = () => {
         console.log('Modal cancel clicked');
+        setModalOpenedByUser(false);
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
@@ -83,6 +95,7 @@ const SizNormsTable = () => {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isModalVisible) {
+                setModalOpenedByUser(false);
                 handleModalCancel();
             }
         };
@@ -90,6 +103,7 @@ const SizNormsTable = () => {
         const handleMaskClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.classList.contains('ant-modal-mask') && isModalVisible) {
+                setModalOpenedByUser(false);
                 handleModalCancel();
             }
         };
