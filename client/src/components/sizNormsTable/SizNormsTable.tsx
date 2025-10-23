@@ -14,30 +14,13 @@ const SizNormsTable = () => {
 
     useEffect(() => {
         const handleResize = () => {
-            const wasMobile = isMobile;
-            const nowMobile = window.innerWidth <= 768;
-            setIsMobile(nowMobile);
-            
-            // Если изменился режим мобильного/десктопного, закрываем модальное окно
-            if (wasMobile !== nowMobile && isModalVisible) {
-                setIsModalVisible(false);
-                form.resetFields();
-                setEditingNorm(null);
-            }
+            setIsMobile(window.innerWidth <= 768);
         };
 
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [isModalVisible, form]);
-
-    // Защита от случайного открытия модального окна при изменении разрешения
-    useEffect(() => {
-        if (!isModalVisible) {
-            // Убеждаемся, что модальное окно закрыто при изменении разрешения
-            setIsModalVisible(false);
-        }
-    }, [isMobile]);
+    }, []);
 
     const handleAdd = () => {
         setEditingNorm(null);
