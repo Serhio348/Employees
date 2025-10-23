@@ -119,8 +119,6 @@ const EmployeeInventory = () => {
             await addInventoryItem(itemData).unwrap();
             setIsModalVisible(false);
             setError("");
-            // Автоматическое обновление страницы
-            window.location.reload();
         } catch (error) {
             console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
@@ -150,8 +148,6 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Автоматическое обновление страницы
-            window.location.reload();
         } catch (error: any) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -167,8 +163,6 @@ const EmployeeInventory = () => {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
             setError("");
-            // Автоматическое обновление страницы
-            window.location.reload();
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -182,8 +176,7 @@ const EmployeeInventory = () => {
     };
 
     const handleCancelDelete = (id: string) => {
-        // Автоматическое обновление страницы при отмене удаления
-        window.location.reload();
+        setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
     };
 
     const handleWriteOff = async (ids: string[]) => {
@@ -196,8 +189,6 @@ const EmployeeInventory = () => {
                 }).unwrap();
             }
             setError("");
-            // Автоматическое обновление страницы
-            window.location.reload();
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -224,8 +215,6 @@ const EmployeeInventory = () => {
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
-        // Автоматическое обновление страницы после закрытия модального окна
-        window.location.reload();
     };
 
     const openNormsModal = () => {
@@ -234,8 +223,6 @@ const EmployeeInventory = () => {
 
     const closeNormsModal = () => {
         setIsNormsModalVisible(false);
-        // Автоматическое обновление страницы после закрытия модального окна с нормативами
-        window.location.reload();
     };
 
     const handleViewAddons = (item: InventoryItem) => {
@@ -353,63 +340,63 @@ const EmployeeInventory = () => {
                                         alignItems: 'center', 
                                         gap: '16px'
                                     }}>
-                                        <div style={{
-                                            width: '60px',
-                                            height: '60px',
-                                            borderRadius: '50%',
-                                            background: 'rgba(255, 255, 255, 0.2)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '24px',
-                                            color: 'white'
-                                        }}>
-                                            <UserOutlined />
-                                        </div>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '24px',
+                                        color: 'white'
+                                    }}>
+                                        <UserOutlined />
+                                    </div>
                                         <div style={{ 
                                             flex: 1, 
                                             textAlign: 'left'
                                         }}>
-                                            <Title 
-                                                level={2} 
-                                                style={{ 
-                                                    color: 'white', 
-                                                    margin: 0, 
-                                                    fontSize: '24px',
-                                                    fontWeight: 'bold',
+                                        <Title 
+                                            level={2} 
+                                            style={{ 
+                                                color: 'white', 
+                                                margin: 0, 
+                                                fontSize: '24px',
+                                                fontWeight: 'bold',
                                                     textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                                                     lineHeight: '1.4',
                                                     wordBreak: 'normal'
-                                                }}
-                                            >
-                                                {employee.lastName} {employee.firstName} {employee.surName}
-                                            </Title>
-                                            <Text 
-                                                style={{ 
-                                                    color: 'rgba(255, 255, 255, 0.9)', 
-                                                    fontSize: '16px',
-                                                    display: 'block',
+                                            }}
+                                        >
+                                            {employee.lastName} {employee.firstName} {employee.surName}
+                                        </Title>
+                                        <Text 
+                                            style={{ 
+                                                color: 'rgba(255, 255, 255, 0.9)', 
+                                                fontSize: '16px',
+                                                display: 'block',
                                                     marginTop: '4px',
                                                     wordBreak: 'normal'
-                                                }}
-                                            >
-                                                {employee.profession}
-                                            </Text>
-                                            {employee.employeeNumber && (
-                                                <Text 
-                                                    style={{ 
-                                                        color: 'rgba(255, 255, 255, 0.8)', 
-                                                        fontSize: '14px',
-                                                        display: 'block',
+                                            }}
+                                        >
+                                            {employee.profession}
+                                        </Text>
+                                        {employee.employeeNumber && (
+                                            <Text 
+                                                style={{ 
+                                                    color: 'rgba(255, 255, 255, 0.8)', 
+                                                    fontSize: '14px',
+                                                    display: 'block',
                                                         marginTop: '2px',
                                                         wordBreak: 'normal'
-                                                    }}
-                                                >
-                                                    Табельный номер: {employee.employeeNumber}
-                                                </Text>
-                                            )}
-                                        </div>
+                                                }}
+                                            >
+                                                Табельный номер: {employee.employeeNumber}
+                                            </Text>
+                                        )}
                                     </div>
+                                </div>
                                 )}
                             </Card>
                         )}
@@ -517,12 +504,12 @@ const EmployeeInventory = () => {
                             flexWrap: 'wrap',
                             alignItems: isMobile ? 'stretch' : 'center'
                         }}>
-                            <Button
-                                type="primary"
-                                icon={<PlusOutlined />}
-                                onClick={openAddModal}
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={openAddModal}
                                 size={isMobile ? "small" : "middle"}
-                                style={{ 
+                            style={{ 
                                     backgroundColor: '#52c41a',
                                     borderColor: '#52c41a',
                                     fontSize: isMobile ? '12px' : '14px',
@@ -535,11 +522,11 @@ const EmployeeInventory = () => {
                                 }}
                             >
                                 {isMobile ? 'Добавить' : 'Добавить предмет'}
-                            </Button>
-                            <Button
+                        </Button>
+                        <Button
                                 type="default"
-                                icon={<BookOutlined />}
-                                onClick={openNormsModal}
+                            icon={<BookOutlined />}
+                            onClick={openNormsModal}
                                 size={isMobile ? "small" : "middle"}
                                 style={{
                                     fontSize: isMobile ? '12px' : '14px',
@@ -554,18 +541,18 @@ const EmployeeInventory = () => {
                                 }}
                             >
                                 {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
-                            </Button>
-                            {employee && (
+                        </Button>
+                        {employee && (
                                 <div style={{ 
                                     marginLeft: isMobile ? '0' : 'auto',
                                     width: isMobile ? '100%' : 'auto'
                                 }}>
-                                    <ExportCard 
-                                        employee={employee} 
-                                        inventory={allInventory} 
-                                    />
+                            <ExportCard 
+                                employee={employee} 
+                                inventory={allInventory} 
+                            />
                                 </div>
-                            )}
+                        )}
                         </div>
                     </div>
                 </Col>

@@ -19,18 +19,24 @@ export const inventoryApi = api.injectEndpoints({
                 url: `/inventory`,
                 method: "GET",
             }),
+            providesTags: [{ type: 'Inventory', id: 'LIST' }],
         }),
         getInventoryItem: builder.query<InventoryItem, string>({
             query: (id) => ({
                 url: `/inventory/${id}`,
                 method: "GET",
             }),
+            providesTags: (result, error, id) => [{ type: 'Inventory', id }],
         }),
         getEmployeeInventory: builder.query<InventoryItem[], string>({
             query: (employeeId) => ({
                 url: `/inventory/employee/${employeeId}`,
                 method: "GET",
             }),
+            providesTags: (result, error, employeeId) => [
+                { type: 'Inventory', id: 'LIST' },
+                { type: 'Inventory', id: `EMPLOYEE-${employeeId}` }
+            ],
         }),
         addInventoryItem: builder.mutation<InventoryItem, Partial<InventoryItem>>({
             query: (item) => ({
@@ -38,6 +44,7 @@ export const inventoryApi = api.injectEndpoints({
                 method: "POST",
                 body: item,
             }),
+            invalidatesTags: [{ type: 'Inventory', id: 'LIST' }],
         }),
         updateInventoryItem: builder.mutation<InventoryItem, { id: string; data: Partial<InventoryItem> }>({
             query: ({ id, data }) => ({
@@ -45,12 +52,20 @@ export const inventoryApi = api.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Inventory', id },
+                { type: 'Inventory', id: 'LIST' }
+            ],
         }),
         deleteInventoryItem: builder.mutation<void, string>({
             query: (id) => ({
                 url: `/inventory/remove/${id}`,
                 method: "DELETE",
             }),
+            invalidatesTags: (result, error, id) => [
+                { type: 'Inventory', id },
+                { type: 'Inventory', id: 'LIST' }
+            ],
         }),
     }),
 });

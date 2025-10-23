@@ -33,5 +33,6 @@ export const api = createApi({
     refetchOnMountOrArgChange: false,
     refetchOnFocus: false,
     refetchOnReconnect: false,
+    tagTypes: ['Inventory', 'Employee', 'User'],
     endpoints: () => ({}),
 });
