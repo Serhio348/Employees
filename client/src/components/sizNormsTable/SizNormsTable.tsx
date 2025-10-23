@@ -274,8 +274,9 @@ const SizNormsTable = () => {
             </div>
             
             <div style={{ 
-                overflowX: isMobile ? 'hidden' : 'auto',
-                WebkitOverflowScrolling: 'touch'
+                overflowX: 'hidden',
+                WebkitOverflowScrolling: 'touch',
+                width: '100%'
             }}>
                 <Table
                     columns={columns}
@@ -283,13 +284,11 @@ const SizNormsTable = () => {
                     rowKey="id"
                     pagination={false}
                     size={isMobile ? "small" : "middle"}
-                    scroll={{ 
-                        x: isMobile ? undefined : 800,
-                        y: 400 
-                    }}
+                    scroll={isMobile ? { y: 300 } : { x: 800, y: 400 }}
                     loading={isLoading}
                     style={{
-                        minWidth: isMobile ? 'auto' : '800px'
+                        minWidth: isMobile ? '100%' : '800px',
+                        width: '100%'
                     }}
                 />
             </div>
@@ -468,6 +467,66 @@ const SizNormsTable = () => {
                         .ant-btn {
                             height: 36px !important;
                             font-size: 14px !important;
+                        }
+                    }
+                `}
+            </style>
+            
+            <style>
+                {`
+                    /* Адаптивные стили для таблицы нормативов СИЗ */
+                    @media (max-width: 768px) {
+                        .ant-table {
+                            font-size: 12px !important;
+                            table-layout: auto !important;
+                        }
+                        
+                        .ant-table-thead > tr > th {
+                            padding: 8px 4px !important;
+                            font-size: 11px !important;
+                            font-weight: 600 !important;
+                            white-space: nowrap !important;
+                            overflow: hidden !important;
+                            text-overflow: ellipsis !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td {
+                            padding: 8px 4px !important;
+                            font-size: 11px !important;
+                            word-wrap: break-word !important;
+                            word-break: break-word !important;
+                            white-space: normal !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td .ant-btn {
+                            padding: 2px 6px !important;
+                            font-size: 10px !important;
+                            height: 24px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td .ant-tag {
+                            font-size: 10px !important;
+                            padding: 1px 6px !important;
+                            margin: 1px !important;
+                        }
+                        
+                        .ant-table-container {
+                            overflow-x: hidden !important;
+                            width: 100% !important;
+                        }
+                        
+                        .ant-table-content {
+                            overflow-x: hidden !important;
+                            width: 100% !important;
+                        }
+                        
+                        .ant-table-wrapper {
+                            overflow-x: hidden !important;
+                            width: 100% !important;
+                        }
+                        
+                        .ant-table-scroll {
+                            overflow-x: hidden !important;
                         }
                     }
                 `}
