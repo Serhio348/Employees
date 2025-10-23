@@ -9,6 +9,7 @@ const SizNormsTable = () => {
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [userTriggered, setUserTriggered] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
     const [isMobile, setIsMobile] = useState(false);
@@ -18,6 +19,8 @@ const SizNormsTable = () => {
             const newIsMobile = window.innerWidth <= 768;
             console.log('Resize detected, isMobile:', newIsMobile);
             setIsMobile(newIsMobile);
+            // Сбрасываем флаг пользовательского действия при изменении размера экрана
+            setUserTriggered(false);
         };
 
         handleResize();
@@ -28,20 +31,22 @@ const SizNormsTable = () => {
 
     // Защита от автоматического открытия модального окна
     useEffect(() => {
-        if (isInitialized && isModalVisible) {
+        if (isInitialized && isModalVisible && !userTriggered) {
             console.log('Modal opened automatically, closing it');
             setIsModalVisible(false);
         }
-    }, [isInitialized, isModalVisible]);
+    }, [isInitialized, isModalVisible, userTriggered]);
 
     const handleAdd = () => {
         console.log('handleAdd called');
+        setUserTriggered(true);
         setEditingNorm(null);
         form.resetFields();
         setIsModalVisible(true);
     };
 
     const handleEdit = (norm: SizNorm) => {
+        setUserTriggered(true);
         setEditingNorm(norm);
         form.setFieldsValue(norm);
         setIsModalVisible(true);
@@ -86,6 +91,7 @@ const SizNormsTable = () => {
 
     const handleModalCancel = () => {
         console.log('Modal cancel clicked');
+        setUserTriggered(false);
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
@@ -94,6 +100,7 @@ const SizNormsTable = () => {
     // Принудительное закрытие модального окна
     const forceCloseModal = () => {
         console.log('Force closing modal');
+        setUserTriggered(false);
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
@@ -113,6 +120,7 @@ const SizNormsTable = () => {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isModalVisible) {
+                setUserTriggered(false);
                 forceCloseModal();
             }
         };
@@ -120,6 +128,7 @@ const SizNormsTable = () => {
         const handleMaskClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.classList.contains('ant-modal-mask') && isModalVisible) {
+                setUserTriggered(false);
                 forceCloseModal();
             }
         };
@@ -136,6 +145,7 @@ const SizNormsTable = () => {
             
             // Если свайп вниз больше 100px, закрываем модальное окно
             if (diff > 100 && isModalVisible) {
+                setUserTriggered(false);
                 forceCloseModal();
             }
         };
