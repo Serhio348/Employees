@@ -313,7 +313,8 @@ const SizNormsTable = () => {
             <div style={{ 
                 overflowX: 'hidden',
                 WebkitOverflowScrolling: 'touch',
-                width: '100%'
+                width: '100%',
+                maxWidth: '100%'
             }}>
                 <Table
                     columns={columns}
@@ -321,11 +322,12 @@ const SizNormsTable = () => {
                     rowKey="id"
                     pagination={false}
                     size={isMobile ? "small" : "middle"}
-                    scroll={isMobile ? { y: 300 } : { x: 800, y: 400 }}
+                    scroll={isMobile ? { y: 250 } : { x: 800, y: 400 }}
                     loading={isLoading}
                     style={{
                         minWidth: isMobile ? '100%' : '800px',
-                        width: '100%'
+                        width: '100%',
+                        fontSize: isMobile ? '11px' : '14px'
                     }}
                 />
             </div>
@@ -335,20 +337,22 @@ const SizNormsTable = () => {
                 open={isModalVisible}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
-                width={isMobile ? '98%' : 600}
+                width={isMobile ? '95%' : 600}
                 centered
                 maskClosable={true}
                 closable={true}
                 destroyOnClose={false}
                 keyboard={true}
                 style={{ 
-                    top: isMobile ? 5 : 100,
-                    maxWidth: isMobile ? '100vw' : '600px'
+                    top: isMobile ? 10 : 100,
+                    maxWidth: isMobile ? '95vw' : '600px',
+                    margin: isMobile ? '0 auto' : undefined
                 }}
                 bodyStyle={{ 
-                    padding: isMobile ? '12px' : '24px',
-                    maxHeight: isMobile ? '85vh' : '80vh',
-                    overflowY: 'auto'
+                    padding: isMobile ? '8px' : '24px',
+                    maxHeight: isMobile ? '80vh' : '80vh',
+                    overflowY: 'auto',
+                    fontSize: isMobile ? '12px' : '14px'
                 }}
             >
                 <Form
@@ -592,6 +596,57 @@ const SizNormsTable = () => {
                         
                         .ant-modal-wrap {
                             z-index: 1000 !important;
+                        }
+                        
+                        /* Адаптивные стили для модального окна */
+                        .ant-modal {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+                        
+                        .ant-modal-content {
+                            border-radius: 8px !important;
+                        }
+                        
+                        .ant-modal-header {
+                            padding: 12px 16px !important;
+                            border-bottom: 1px solid #f0f0f0 !important;
+                        }
+                        
+                        .ant-modal-title {
+                            font-size: 14px !important;
+                            font-weight: 600 !important;
+                        }
+                        
+                        .ant-modal-body {
+                            padding: 8px 16px !important;
+                        }
+                        
+                        .ant-form-item-label > label {
+                            font-size: 12px !important;
+                            height: auto !important;
+                            line-height: 1.2 !important;
+                        }
+                        
+                        .ant-input,
+                        .ant-select-selector {
+                            font-size: 12px !important;
+                            height: 32px !important;
+                        }
+                        
+                        .ant-select-dropdown {
+                            font-size: 12px !important;
+                        }
+                        
+                        .ant-modal-footer {
+                            padding: 8px 16px !important;
+                            border-top: 1px solid #f0f0f0 !important;
+                        }
+                        
+                        .ant-btn {
+                            font-size: 12px !important;
+                            height: 32px !important;
+                            padding: 4px 12px !important;
                         }
                     }
                 `}
