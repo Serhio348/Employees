@@ -22,6 +22,14 @@ const SizNormsTable = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Защита от случайного открытия модального окна при изменении разрешения
+    useEffect(() => {
+        if (!isModalVisible) {
+            // Убеждаемся, что модальное окно закрыто при изменении разрешения
+            setIsModalVisible(false);
+        }
+    }, [isMobile]);
+
     const handleAdd = () => {
         setEditingNorm(null);
         form.resetFields();
@@ -293,6 +301,10 @@ const SizNormsTable = () => {
                 onCancel={handleModalCancel}
                 width={isMobile ? '98%' : 600}
                 centered
+                maskClosable={true}
+                closable={true}
+                destroyOnClose={true}
+                keyboard={true}
                 style={{ 
                     top: isMobile ? 5 : 100,
                     maxWidth: isMobile ? '100vw' : '600px'
