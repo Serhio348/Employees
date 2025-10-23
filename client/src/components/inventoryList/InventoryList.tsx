@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Table, Button, Modal, Checkbox, Progress, Tag, Space, Popconfirm, message, Dropdown } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, ExclamationCircleOutlined, FileTextOutlined, MoreOutlined } from '@ant-design/icons';
 import { InventoryItem } from '../../app/services/inventory';
@@ -17,7 +17,7 @@ interface Props {
     showWriteOffButton?: boolean;
 }
 
-const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, deletingIds = [], onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
+const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading, deletingIds = [], onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
     const { sizNorms } = useSizNorms();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
@@ -48,17 +48,17 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
     }, []);
 
     // Нормализация названий для гибкого сопоставления (игнор регистра/ё/пунктуации/двойных пробелов)
-    const normalizeName = (value: string = '') => {
+    const normalizeName = useCallback((value: string = '') => {
         return value
             .toLowerCase()
             .replace(/ё/g, 'е')
             .replace(/[^a-zа-я0-9\s]/gi, '')
             .replace(/\s+/g, ' ')
             .trim();
-    };
+    }, []);
 
     // Попытка найти подходящий норматив по названию предмета (учитываем возможные расхождения)
-    const findNormByItemName = (itemName: string) => {
+    const findNormByItemName = useCallback((itemName: string) => {
         const normItem = normalizeName(itemName);
 
         // 1) Точное совпадение (нормализованное)
@@ -73,10 +73,10 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
         if (norm) return norm;
 
         return undefined;
-    };
+    }, [sizNorms, normalizeName]);
 
     // Функция для расчета процента износа
-    const calculateWearPercentage = (item: InventoryItem) => {
+    const calculateWearPercentage = useCallback((item: InventoryItem) => {
         if (!item.issueDate) return 0;
 
         const issueDate = dayjs(item.issueDate).startOf('day');
@@ -107,18 +107,18 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
         const raw = (elapsed / totalDays) * 100;
         const percent = daysLeft > 0 ? Math.min(raw, 99) : 100;
         return Math.floor(percent);
-    };
+    }, []);
 
     // Функция для получения цвета прогресс-бара
-    const getProgressColor = (percentage: number) => {
+    const getProgressColor = useCallback((percentage: number) => {
         if (percentage < 30) return '#52c41a'; // Зеленый
         if (percentage < 60) return '#faad14'; // Желтый
         if (percentage < 90) return '#fa8c16'; // Оранжевый
         return '#f5222d'; // Красный
-    };
+    }, []);
 
     // Функция для проверки истечения срока
-    const isExpired = (item: InventoryItem) => {
+    const isExpired = useCallback((item: InventoryItem) => {
         if (!item.issueDate) return false;
         
         const issueDate = dayjs(item.issueDate).startOf('day');
@@ -136,27 +136,27 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
         }
         
         return !currentDate.isBefore(endDate.startOf('day'));
-    };
+    }, []);
 
     // Функции для массового списания
-    const handleSelectItem = (itemId: string, checked: boolean) => {
+    const handleSelectItem = useCallback((itemId: string, checked: boolean) => {
         if (checked) {
             setSelectedItems(prev => [...prev, itemId]);
         } else {
             setSelectedItems(prev => prev.filter(id => id !== itemId));
         }
-    };
+    }, []);
 
-    const handleSelectAll = (checked: boolean) => {
+    const handleSelectAll = useCallback((checked: boolean) => {
         if (checked) {
             const expiredItems = inventory.filter(item => isExpired(item)).map(item => item.id!);
             setSelectedItems(expiredItems);
         } else {
             setSelectedItems([]);
         }
-    };
+    }, [inventory, isExpired]);
 
-    const handleWriteOff = () => {
+    const handleWriteOff = useCallback(() => {
         if (selectedItems.length === 0) {
             message.warning('Выберите предметы для списания');
             return;
@@ -168,19 +168,19 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
             setIsWriteOffModalVisible(false);
             message.success(`Списано ${selectedItems.length} предметов`);
         }
-    };
+    }, [selectedItems, onWriteOff]);
 
-    const openWriteOffModal = () => {
+    const openWriteOffModal = useCallback(() => {
         const expiredItems = inventory.filter(item => isExpired(item));
         if (expiredItems.length === 0) {
             message.info('Нет просроченных предметов для списания');
             return;
         }
         setIsWriteOffModalVisible(true);
-    };
+    }, [inventory, isExpired]);
 
 
-    const columns = [
+    const columns = useMemo(() => [
         ...(showWriteOffButton ? [{
             title: (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -252,168 +252,168 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
             ),
         }]),
         ...(isMobile ? [] : [
-            {
-                title: 'Тип',
-                dataIndex: 'itemType',
-                key: 'itemType',
-                render: (type: string) => {
-                    const color = type === 'спецодежда' ? 'blue' : 
-                                 type === 'инструмент' ? 'green' : 
-                                 type === 'оборудование' ? 'orange' : 
-                                 type === 'сиз' ? 'purple' : 'default';
-                    return <Tag color={color}>{type}</Tag>;
-                },
+        {
+            title: 'Тип',
+            dataIndex: 'itemType',
+            key: 'itemType',
+            render: (type: string) => {
+                const color = type === 'спецодежда' ? 'blue' : 
+                             type === 'инструмент' ? 'green' : 
+                             type === 'оборудование' ? 'orange' : 
+                             type === 'сиз' ? 'purple' : 'default';
+                return <Tag color={color}>{type}</Tag>;
             },
-            {
-                title: 'Дата выдачи',
-                dataIndex: 'issueDate',
-                key: 'issueDate',
-                render: (date: string) => {
-                    if (!date) return '-';
-                    return new Date(date).toLocaleDateString('ru-RU');
-                }
-            },
-            {
-                title: 'Процент износа',
-                key: 'wearPercentage',
-                width: 150,
-                render: (_: any, record: InventoryItem) => {
-                    const percentage = calculateWearPercentage(record);
-                    const color = getProgressColor(percentage);
+        },
+        {
+            title: 'Дата выдачи',
+            dataIndex: 'issueDate',
+            key: 'issueDate',
+            render: (date: string) => {
+                if (!date) return '-';
+                return new Date(date).toLocaleDateString('ru-RU');
+            }
+        },
+        {
+            title: 'Процент износа',
+            key: 'wearPercentage',
+            width: 150,
+            render: (_: any, record: InventoryItem) => {
+                const percentage = calculateWearPercentage(record);
+                const color = getProgressColor(percentage);
+                
+                // Дополнительная информация об оставшихся днях
+                const getRemainingDays = (item: InventoryItem) => {
+                    if (!item.issueDate) return 0;
                     
-                    // Дополнительная информация об оставшихся днях
-                    const getRemainingDays = (item: InventoryItem) => {
-                        if (!item.issueDate) return 0;
-                        
-                        const issueDate = dayjs(item.issueDate);
-                        const currentDate = dayjs();
-                        const daysPassed = currentDate.diff(issueDate, 'day');
-                        
-            const norm = findNormByItemName(item.itemName);
-                        if (!norm) return 0;
-                        
-                        let totalDays = 0;
-                        if (norm.periodType === 'months') {
-                            // Точный расчет с использованием dayjs для добавления месяцев
-                            const months = parseInt(norm.period);
-                            const endDate = issueDate.add(months, 'month');
-                            totalDays = endDate.diff(issueDate, 'day');
-                        } else if (norm.periodType === 'until_worn') {
-                            totalDays = 365;
-                        }
-                        
-                        return Math.max(0, Math.round(totalDays - daysPassed));
-                    };
+                    const issueDate = dayjs(item.issueDate);
+                    const currentDate = dayjs();
+                    const daysPassed = currentDate.diff(issueDate, 'day');
                     
-                    const remainingDays = getRemainingDays(record);
+        const norm = findNormByItemName(item.itemName);
+                    if (!norm) return 0;
                     
-                    return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Progress
-                                    percent={percentage}
-                                    size="small"
-                                    strokeColor={color}
-                                    showInfo={false}
-                                    style={{ flex: 1 }}
-                                />
-                                <span style={{ fontSize: '12px', color: color, fontWeight: 'bold' }}>
-                                    {percentage}%
-                                </span>
-                            </div>
-                            <div style={{ 
-                                fontSize: '10px', 
-                                color: remainingDays <= 0 ? '#ff4d4f' : '#666', 
-                                textAlign: 'center',
-                                fontWeight: remainingDays <= 0 ? 'bold' : 'normal'
-                            }}>
-                                {remainingDays > 0 ? `Осталось: ${remainingDays} дн.` : 'Срок истек'}
-                            </div>
-                        </div>
-                    );
-                },
-            },
-            {
-                title: 'Статус',
-                dataIndex: 'status',
-                key: 'status',
-                render: (status: string, record: InventoryItem) => {
-                    const expired = isExpired(record);
-                    const displayStatus = expired ? 'необходимо заменить' : status;
-                    
-                    let color = 'default';
-                    if (expired) {
-                        color = 'red';
-                    } else if (status === 'выдан') {
-                        color = 'green';
-                    } else if (status === 'возвращен') {
-                        color = 'blue';
-                    } else if (status === 'списан') {
-                        color = 'red';
+                    let totalDays = 0;
+                    if (norm.periodType === 'months') {
+                        // Точный расчет с использованием dayjs для добавления месяцев
+                        const months = parseInt(norm.period);
+                        const endDate = issueDate.add(months, 'month');
+                        totalDays = endDate.diff(issueDate, 'day');
+                    } else if (norm.periodType === 'until_worn') {
+                        totalDays = 365;
                     }
                     
-                    return (
-                        <Tag 
-                            color={color}
-                            style={expired ? {
-                                animation: 'pulse 1.5s ease-in-out infinite',
-                                fontWeight: 'bold',
-                                border: '2px solid #ff4d4f'
-                            } : {}}
-                            icon={expired ? <ExclamationCircleOutlined /> : undefined}
-                        >
-                            {displayStatus}
-                        </Tag>
-                    );
-                },
+                    return Math.max(0, Math.round(totalDays - daysPassed));
+                };
+                
+                const remainingDays = getRemainingDays(record);
+                
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Progress
+                                percent={percentage}
+                                size="small"
+                                strokeColor={color}
+                                showInfo={false}
+                                style={{ flex: 1 }}
+                            />
+                            <span style={{ fontSize: '12px', color: color, fontWeight: 'bold' }}>
+                                {percentage}%
+                            </span>
+                        </div>
+                        <div style={{ 
+                            fontSize: '10px', 
+                            color: remainingDays <= 0 ? '#ff4d4f' : '#666', 
+                            textAlign: 'center',
+                            fontWeight: remainingDays <= 0 ? 'bold' : 'normal'
+                        }}>
+                            {remainingDays > 0 ? `Осталось: ${remainingDays} дн.` : 'Срок истек'}
+                        </div>
+                    </div>
+                );
             },
-            {
-                title: 'Действия',
-                key: 'actions',
-                render: (_: any, record: InventoryItem) => (
-                    <Space>
+        },
+        {
+            title: 'Статус',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status: string, record: InventoryItem) => {
+                const expired = isExpired(record);
+                const displayStatus = expired ? 'необходимо заменить' : status;
+                
+                let color = 'default';
+                if (expired) {
+                    color = 'red';
+                } else if (status === 'выдан') {
+                    color = 'green';
+                } else if (status === 'возвращен') {
+                    color = 'blue';
+                } else if (status === 'списан') {
+                    color = 'red';
+                }
+                
+                return (
+                    <Tag 
+                        color={color}
+                        style={expired ? {
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            fontWeight: 'bold',
+                            border: '2px solid #ff4d4f'
+                        } : {}}
+                        icon={expired ? <ExclamationCircleOutlined /> : undefined}
+                    >
+                        {displayStatus}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: 'Действия',
+            key: 'actions',
+            render: (_: any, record: InventoryItem) => (
+                <Space>
+                    <Button
+                        type="primary"
+                        icon={<EditOutlined />}
+                        onClick={() => onEdit(record)}
+                    >
+                        Редактировать
+                    </Button>
+                    {onViewAddons && (
+                        <Button
+                            type="default"
+                            icon={<PlusOutlined />}
+                            onClick={() => onViewAddons(record)}
+                        >
+                            Дополнения
+                        </Button>
+                    )}
+                    <Popconfirm
+                        title="Удалить предмет?"
+                        description="Вы уверены, что хотите удалить этот предмет из инвентаря?"
+                        onConfirm={() => record.id && onDelete(record.id)}
+                        onCancel={() => {
+                            if (record.id && onCancelDelete) {
+                                onCancelDelete(record.id);
+                            }
+                        }}
+                        okText="Да"
+                        cancelText="Нет"
+                        disabled={deletingIds.includes(record.id || '')}
+                    >
                         <Button
                             type="primary"
-                            icon={<EditOutlined />}
-                            onClick={() => onEdit(record)}
-                        >
-                            Редактировать
-                        </Button>
-                        {onViewAddons && (
-                            <Button
-                                type="default"
-                                icon={<PlusOutlined />}
-                                onClick={() => onViewAddons(record)}
-                            >
-                                Дополнения
-                            </Button>
-                        )}
-                        <Popconfirm
-                            title="Удалить предмет?"
-                            description="Вы уверены, что хотите удалить этот предмет из инвентаря?"
-                            onConfirm={() => record.id && onDelete(record.id)}
-                            onCancel={() => {
-                                if (record.id && onCancelDelete) {
-                                    onCancelDelete(record.id);
-                                }
-                            }}
-                            okText="Да"
-                            cancelText="Нет"
+                            danger
+                            icon={<DeleteOutlined />}
+                            loading={deletingIds.includes(record.id || '')}
                             disabled={deletingIds.includes(record.id || '')}
                         >
-                            <Button
-                                type="primary"
-                                danger
-                                icon={<DeleteOutlined />}
-                                loading={deletingIds.includes(record.id || '')}
-                                disabled={deletingIds.includes(record.id || '')}
-                            >
-                                Удалить
-                            </Button>
-                        </Popconfirm>
-                    </Space>
-                ),
-            },
+                            Удалить
+                        </Button>
+                    </Popconfirm>
+                </Space>
+            ),
+        },
         ]),
         ...(isMobile ? [{
             title: isVerySmall ? '' : 'Подробнее',
@@ -555,9 +555,9 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
                 );
             },
         }] : []),
-    ];
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete]);
 
-    const expiredItems = inventory.filter(item => isExpired(item));
+    const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
     return (
         <>
@@ -934,6 +934,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, del
             )}
         </>
     );
-};
+});
 
 export default InventoryList;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
@@ -247,10 +247,12 @@ const EmployeeInventory = () => {
     };
 
     // Статистика для активного инвентаря
-    const totalItems = activeInventory.length;
-    const issuedItems = activeInventory.filter(item => item.status === 'выдан').length;
-    const returnedItems = activeInventory.filter(item => item.status === 'возвращен').length;
-    const writtenOffItems = writtenOffInventory.length;
+    const statistics = useMemo(() => ({
+        totalItems: activeInventory.length,
+        issuedItems: activeInventory.filter(item => item.status === 'выдан').length,
+        returnedItems: activeInventory.filter(item => item.status === 'возвращен').length,
+        writtenOffItems: writtenOffInventory.length
+    }), [activeInventory, writtenOffInventory]);
 
     return (
         <Layout>
@@ -427,7 +429,7 @@ const EmployeeInventory = () => {
                             }}>
                                 <Statistic 
                                     title={isMobile ? "Всего" : "Всего предметов"} 
-                                    value={totalItems}
+                                    value={statistics.totalItems}
                                     valueStyle={{ 
                                         fontSize: isMobile ? '18px' : '24px',
                                         fontWeight: 'bold',
@@ -446,7 +448,7 @@ const EmployeeInventory = () => {
                             }}>
                                 <Statistic 
                                     title="Выдано" 
-                                    value={issuedItems} 
+                                    value={statistics.issuedItems} 
                                     valueStyle={{ 
                                         color: '#3f8600',
                                         fontSize: isMobile ? '18px' : '24px',
@@ -465,7 +467,7 @@ const EmployeeInventory = () => {
                             }}>
                                 <Statistic 
                                     title="Возвращено" 
-                                    value={returnedItems} 
+                                    value={statistics.returnedItems} 
                                     valueStyle={{ 
                                         color: '#1890ff',
                                         fontSize: isMobile ? '18px' : '24px',
@@ -484,7 +486,7 @@ const EmployeeInventory = () => {
                             }}>
                                 <Statistic 
                                     title="Списано" 
-                                    value={writtenOffItems} 
+                                    value={statistics.writtenOffItems} 
                                     valueStyle={{ 
                                         color: '#cf1322',
                                         fontSize: isMobile ? '18px' : '24px',
