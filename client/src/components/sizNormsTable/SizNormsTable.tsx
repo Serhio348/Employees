@@ -291,11 +291,14 @@ const SizNormsTable = () => {
                 open={isModalVisible}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
-                width={isMobile ? '95%' : 600}
-                style={{ top: isMobile ? 10 : 100 }}
+                width={isMobile ? '98%' : 600}
+                style={{ 
+                    top: isMobile ? 5 : 100,
+                    maxWidth: isMobile ? '100vw' : '600px'
+                }}
                 bodyStyle={{ 
-                    padding: isMobile ? '16px' : '24px',
-                    maxHeight: isMobile ? '70vh' : '80vh',
+                    padding: isMobile ? '12px' : '24px',
+                    maxHeight: isMobile ? '85vh' : '80vh',
                     overflowY: 'auto'
                 }}
             >
@@ -304,7 +307,7 @@ const SizNormsTable = () => {
                     layout="vertical"
                     initialValues={{ periodType: 'months' }}
                 >
-                    <Row gutter={isMobile ? [0, 8] : [16, 16]}>
+                    <Row gutter={isMobile ? [0, 12] : [16, 16]}>
                         <Col span={24}>
                             <Form.Item
                                 name="name"
@@ -314,11 +317,12 @@ const SizNormsTable = () => {
                                 <Input 
                                     placeholder="Введите наименование СИЗ"
                                     size={isMobile ? "small" : "middle"}
+                                    style={{ width: '100%' }}
                                 />
                             </Form.Item>
                         </Col>
                         
-                        <Col span={isMobile ? 24 : 12}>
+                        <Col span={24}>
                             <Form.Item
                                 name="classification"
                                 label={isMobile ? "Классификация" : "Классификация (маркировка)"}
@@ -327,6 +331,7 @@ const SizNormsTable = () => {
                                     placeholder="Выберите классификацию" 
                                     allowClear
                                     size={isMobile ? "small" : "middle"}
+                                    style={{ width: '100%' }}
                                 >
                                     <Select.Option value="Тн">Тн (теплозащитные)</Select.Option>
                                     <Select.Option value="ЗМи">ЗМи (защитные от механических воздействий)</Select.Option>
@@ -338,21 +343,23 @@ const SizNormsTable = () => {
                             </Form.Item>
                         </Col>
                         
-                        
-                        <Col span={isMobile ? 24 : 12}>
+                        <Col span={24}>
                             <Form.Item
                                 name="periodType"
                                 label="Тип срока носки"
                                 rules={[{ required: true, message: 'Выберите тип срока носки' }]}
                             >
-                                <Select size={isMobile ? "small" : "middle"}>
+                                <Select 
+                                    size={isMobile ? "small" : "middle"}
+                                    style={{ width: '100%' }}
+                                >
                                     <Select.Option value="months">В месяцах</Select.Option>
                                     <Select.Option value="until_worn">До износа</Select.Option>
                                 </Select>
                             </Form.Item>
                         </Col>
                         
-                        <Col span={isMobile ? 24 : 12}>
+                        <Col span={24}>
                             <Form.Item
                                 name="period"
                                 label="Срок носки"
@@ -361,6 +368,7 @@ const SizNormsTable = () => {
                                 <Input 
                                     placeholder="Введите срок носки"
                                     size={isMobile ? "small" : "middle"}
+                                    style={{ width: '100%' }}
                                 />
                             </Form.Item>
                         </Col>
@@ -387,6 +395,57 @@ const SizNormsTable = () => {
                         .ant-dropdown-menu-item {
                             text-align: center !important;
                             padding: 8px 16px !important;
+                        }
+                    }
+
+                    /* Адаптивные стили для модального окна нормативов СИЗ */
+                    @media (max-width: 768px) {
+                        .ant-modal {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+                        
+                        .ant-modal-content {
+                            border-radius: 8px !important;
+                        }
+                        
+                        .ant-modal-header {
+                            padding: 12px 16px !important;
+                            border-bottom: 1px solid #f0f0f0 !important;
+                        }
+                        
+                        .ant-modal-title {
+                            font-size: 16px !important;
+                            font-weight: 600 !important;
+                        }
+                        
+                        .ant-modal-body {
+                            padding: 12px !important;
+                        }
+                        
+                        .ant-form-item-label > label {
+                            font-size: 14px !important;
+                            font-weight: 500 !important;
+                        }
+                        
+                        .ant-input,
+                        .ant-select-selector {
+                            font-size: 14px !important;
+                            height: 36px !important;
+                        }
+                        
+                        .ant-select-dropdown {
+                            font-size: 14px !important;
+                        }
+                        
+                        .ant-modal-footer {
+                            padding: 12px 16px !important;
+                            border-top: 1px solid #f0f0f0 !important;
+                        }
+                        
+                        .ant-btn {
+                            height: 36px !important;
+                            font-size: 14px !important;
                         }
                     }
                 `}
