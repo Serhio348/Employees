@@ -30,6 +30,7 @@ const EmployeeInventory = () => {
     const [error, setError] = useState("");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
+    const [normsModalUserTriggered, setNormsModalUserTriggered] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [deletingIds, setDeletingIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('active');
@@ -69,6 +70,8 @@ const EmployeeInventory = () => {
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth <= 768);
+            // Сбрасываем флаг пользовательского действия при изменении размера экрана
+            setNormsModalUserTriggered(false);
         };
         
         handleResize(); // Вызываем сразу для установки начального состояния
@@ -78,6 +81,14 @@ const EmployeeInventory = () => {
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
+    // Защита от автоматического открытия модального окна норм СИЗ
+    useEffect(() => {
+        if (isNormsModalVisible && !normsModalUserTriggered) {
+            console.log('Norms modal opened automatically, closing it');
+            setIsNormsModalVisible(false);
+        }
+    }, [isNormsModalVisible, normsModalUserTriggered]);
 
     // Подавляем ошибку ResizeObserver
     useEffect(() => {
@@ -218,10 +229,14 @@ const EmployeeInventory = () => {
     };
 
     const openNormsModal = () => {
+        console.log('openNormsModal called');
+        setNormsModalUserTriggered(true);
         setIsNormsModalVisible(true);
     };
 
     const closeNormsModal = () => {
+        console.log('closeNormsModal called');
+        setNormsModalUserTriggered(false);
         setIsNormsModalVisible(false);
     };
 

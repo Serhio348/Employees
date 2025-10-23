@@ -8,45 +8,28 @@ const SizNormsTable = () => {
     const { sizNorms, isLoading, addNorm, updateNorm, deleteNorm, initDefaults } = useSizNorms();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isInitialized, setIsInitialized] = useState(false);
-    const [userTriggered, setUserTriggered] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
-            const newIsMobile = window.innerWidth <= 768;
-            console.log('Resize detected, isMobile:', newIsMobile);
-            setIsMobile(newIsMobile);
-            // Сбрасываем флаг пользовательского действия при изменении размера экрана
-            setUserTriggered(false);
+            setIsMobile(window.innerWidth <= 768);
         };
 
         handleResize();
-        setIsInitialized(true);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Защита от автоматического открытия модального окна
-    useEffect(() => {
-        if (isInitialized && isModalVisible && !userTriggered) {
-            console.log('Modal opened automatically, closing it');
-            setIsModalVisible(false);
-        }
-    }, [isInitialized, isModalVisible, userTriggered]);
-
     const handleAdd = () => {
         console.log('handleAdd called');
-        setUserTriggered(true);
         setEditingNorm(null);
         form.resetFields();
         setIsModalVisible(true);
     };
 
     const handleEdit = (norm: SizNorm) => {
-        setUserTriggered(true);
         setEditingNorm(norm);
         form.setFieldsValue(norm);
         setIsModalVisible(true);
@@ -91,77 +74,34 @@ const SizNormsTable = () => {
 
     const handleModalCancel = () => {
         console.log('Modal cancel clicked');
-        setUserTriggered(false);
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
-    };
-
-    // Принудительное закрытие модального окна
-    const forceCloseModal = () => {
-        console.log('Force closing modal');
-        setUserTriggered(false);
-        setIsModalVisible(false);
-        form.resetFields();
-        setEditingNorm(null);
-        
-        // Дополнительно скрываем через DOM
-        setTimeout(() => {
-            const modalWraps = document.querySelectorAll('.ant-modal-wrap');
-            modalWraps.forEach(wrap => {
-                if (wrap instanceof HTMLElement) {
-                    wrap.style.display = 'none';
-                }
-            });
-        }, 100);
     };
 
     // Дополнительная обработка закрытия модального окна
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isModalVisible) {
-                setUserTriggered(false);
-                forceCloseModal();
+                handleModalCancel();
             }
         };
 
         const handleMaskClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.classList.contains('ant-modal-mask') && isModalVisible) {
-                setUserTriggered(false);
-                forceCloseModal();
-            }
-        };
-
-        // Обработка свайпа вниз для закрытия на мобильных
-        let startY = 0;
-        const handleTouchStart = (e: TouchEvent) => {
-            startY = e.touches[0].clientY;
-        };
-
-        const handleTouchEnd = (e: TouchEvent) => {
-            const endY = e.changedTouches[0].clientY;
-            const diff = startY - endY;
-            
-            // Если свайп вниз больше 100px, закрываем модальное окно
-            if (diff > 100 && isModalVisible) {
-                setUserTriggered(false);
-                forceCloseModal();
+                handleModalCancel();
             }
         };
 
         if (isModalVisible) {
             document.addEventListener('keydown', handleEscape);
             document.addEventListener('click', handleMaskClick);
-            document.addEventListener('touchstart', handleTouchStart);
-            document.addEventListener('touchend', handleTouchEnd);
         }
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('click', handleMaskClick);
-            document.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('touchend', handleTouchEnd);
         };
     }, [isModalVisible]);
 
@@ -382,7 +322,7 @@ const SizNormsTable = () => {
                         <span>{editingNorm ? "Редактировать норматив" : "Добавить норматив"}</span>
                         {isMobile && (
                             <Button 
-                                onClick={forceCloseModal}
+                                onClick={handleModalCancel}
                                 type="text"
                                 danger
                                 size="small"
