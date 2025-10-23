@@ -345,26 +345,7 @@ const SizNormsTable = () => {
             </div>
             
             <Modal
-                title={
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>{editingNorm ? "Редактировать норматив" : "Добавить норматив"}</span>
-                        {isMobile && (
-                            <Button 
-                                onClick={handleModalCancel}
-                                type="text"
-                                danger
-                                size="small"
-                                style={{ 
-                                    padding: '4px 8px',
-                                    fontSize: '12px',
-                                    height: '24px'
-                                }}
-                            >
-                                ✕ Закрыть
-                            </Button>
-                        )}
-                    </div>
-                }
+                title={editingNorm ? "Редактировать норматив" : "Добавить норматив"}
                 open={isModalVisible}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
