@@ -4,7 +4,7 @@ export interface SizNorm {
     id?: string;
     name: string;
     classification?: string;
-    quantity: number;
+    quantity?: number; // Норматив количества (опционально)
     period: string;
     periodType: 'months' | 'until_worn';
     createdAt?: string;

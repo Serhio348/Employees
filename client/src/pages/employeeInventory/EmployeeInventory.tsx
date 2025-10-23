@@ -500,8 +500,13 @@ const EmployeeInventory = () => {
                 open={isNormsModalVisible}
                 onCancel={closeNormsModal}
                 footer={null}
-                width={1000}
-                style={{ top: 20 }}
+                width={isMobile ? '95%' : 1000}
+                style={{ top: isMobile ? 10 : 20 }}
+                bodyStyle={{ 
+                    padding: isMobile ? '8px' : '24px',
+                    maxHeight: isMobile ? '85vh' : '80vh',
+                    overflowY: 'auto'
+                }}
             >
                 <SizNormsTable />
             </Modal>
@@ -619,6 +624,37 @@ const EmployeeInventory = () => {
                         
                         .ant-card-body {
                             padding: 6px !important;
+                        }
+                    }
+
+                    /* Адаптивные стили для таблицы нормативов СИЗ */
+                    @media (max-width: 768px) {
+                        .ant-table-thead > tr > th {
+                            padding: 8px 4px !important;
+                            font-size: 11px !important;
+                            line-height: 1.2 !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td {
+                            padding: 8px 4px !important;
+                            font-size: 11px !important;
+                            line-height: 1.2 !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td .ant-tag {
+                            font-size: 10px !important;
+                            padding: 2px 6px !important;
+                            margin: 1px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td .ant-btn {
+                            font-size: 10px !important;
+                            padding: 2px 6px !important;
+                            height: 24px !important;
+                        }
+                        
+                        .ant-table-tbody > tr > td .ant-btn .anticon {
+                            font-size: 10px !important;
                         }
                     }
 

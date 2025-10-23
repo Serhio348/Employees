@@ -59,7 +59,7 @@ const add = async (req, res) => {
             data: {
                 name: data.name,
                 classification: data.classification || null,
-                quantity: parseInt(data.quantity) || 1,
+                quantity: parseInt(data.quantity) || 1, // По умолчанию 1, если не указано
                 period: data.period,
                 periodType: data.periodType,
             },
