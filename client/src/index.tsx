@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { HeaderProvider } from "./contexts/HeaderContext";
 import ThemeWrapper from "./components/theme/ThemeWrapper";
 import { store } from "./app/store";
 import Login from "./pages/login/Login";
@@ -79,11 +80,13 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <ThemeProvider>
-        <ThemeWrapper>
-          <Auth>
-            <RouterProvider router={router} />
-          </Auth>
-        </ThemeWrapper>
+        <HeaderProvider>
+          <ThemeWrapper>
+            <Auth>
+              <RouterProvider router={router} />
+            </Auth>
+          </ThemeWrapper>
+        </HeaderProvider>
       </ThemeProvider>
     </Provider>
   </React.StrictMode>

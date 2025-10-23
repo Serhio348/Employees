@@ -4,14 +4,16 @@ import { useGetEmployeeQuery, useRemoveEmployeeMutation } from '../../app/servic
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
-import { Divider, Modal, Space, Typography, Card, Row, Col, Tag } from 'antd';
-import { DeleteOutlined, EditOutlined, ToolOutlined, ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
+import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
+import { useHeader } from '../../contexts/HeaderContext';
+import { Divider, Modal, Typography, Card, Row, Col, Tag } from 'antd';
+import { DeleteOutlined, EditOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 import CustomButton from '../../components/customButton/CustomButton';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 import { Paths } from '../../path';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 // Расширенный интерфейс Employee с новыми полями
 interface ExtendedEmployee {
@@ -42,6 +44,7 @@ const Employee = () => {
     const employeeData = data as ExtendedEmployee | undefined
     const [removeEmployee] = useRemoveEmployeeMutation();
     const user = useSelector(selectUser);
+    const { hideHeader } = useHeader();
 
     useEffect(() => {
         const handleResize = () => {
@@ -52,6 +55,18 @@ const Employee = () => {
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
+
+    // Скрываем хедер при загрузке страницы сотрудника
+    useEffect(() => {
+        if (employeeData) {
+            hideHeader();
+        }
+        
+        return () => {
+            // При размонтировании компонента показываем хедер обратно
+            // Это произойдет автоматически при переходе на другую страницу
+        };
+    }, [employeeData, hideHeader]);
 
     if (isLoading) {
         return <span>Загрузка</span>;
@@ -87,9 +102,6 @@ const Employee = () => {
         }
     };
 
-    const handleGoBack = () => {
-        navigate(Paths.home);
-    };
 
     // Функция для расчета возраста на основе даты рождения
     const calculateAge = (birthDate: string | null | undefined): number | null => {
@@ -117,146 +129,17 @@ const Employee = () => {
 
     return (
         <Layout>
-            <Space style={{ marginBottom: 16 }}>
-                <CustomButton
-                    type="default"
-                    icon={<ArrowLeftOutlined />}
-                    onClick={handleGoBack}
-                >
-                    Назад к списку сотрудников
-                </CustomButton>
-            </Space>
-            
-            {/* Выделенная карточка с ФИО */}
-            <Card 
-                style={{ 
-                    marginBottom: 24, 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    border: 'none',
-                    borderRadius: '12px'
+            <EmployeeHeader 
+                employee={{
+                    id: employeeData.id,
+                    firstName: employeeData.firstName,
+                    lastName: employeeData.lastName,
+                    surName: employeeData.surName,
+                    profession: employeeData.profession,
+                    employeeNumber: employeeData.employeeNumber
                 }}
-                bodyStyle={{ padding: isMobile ? '16px' : '24px' }}
-            >
-                {isMobile ? (
-                    // Мобильная версия - иконка сверху
-                    <div style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '12px'
-                    }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            background: 'rgba(255, 255, 255, 0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '20px',
-                            color: 'white'
-                        }}>
-                            <UserOutlined />
-                        </div>
-                        <div style={{ 
-                            textAlign: 'center',
-                            width: '100%'
-                        }}>
-                            <Title 
-                                level={1} 
-                                style={{ 
-                                    color: 'white', 
-                                    margin: 0, 
-                                    fontSize: '16px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                    lineHeight: '1.2',
-                                    wordBreak: 'break-word'
-                                }}
-                            >
-                                {`${employeeData.lastName} ${employeeData.firstName} ${employeeData.surName || ''}`.trim()}
-                            </Title>
-                            <Text 
-                                style={{ 
-                                    color: 'rgba(255, 255, 255, 0.9)', 
-                                    fontSize: '12px',
-                                    display: 'block',
-                                    marginTop: '4px',
-                                    wordBreak: 'break-word'
-                                }}
-                            >
-                                {employeeData.profession}
-                            </Text>
-                            {employeeData.employeeNumber && (
-                                <Text 
-                                    style={{ 
-                                        color: 'rgba(255, 255, 255, 0.8)', 
-                                        fontSize: '9px',
-                                        display: 'block',
-                                        marginTop: '2px',
-                                        wordBreak: 'break-word'
-                                    }}
-                                >
-                                    Табельный номер: {employeeData.employeeNumber}
-                                </Text>
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    // Десктопная версия - иконка слева
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{
-                            width: '80px',
-                            height: '80px',
-                            borderRadius: '50%',
-                            background: 'rgba(255, 255, 255, 0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '32px',
-                            color: 'white'
-                        }}>
-                            <UserOutlined />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <Title 
-                                level={1} 
-                                style={{ 
-                                    color: 'white', 
-                                    margin: 0, 
-                                    fontSize: '32px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                                }}
-                            >
-                                {`${employeeData.lastName} ${employeeData.firstName} ${employeeData.surName || ''}`.trim()}
-                            </Title>
-                            <Text 
-                                style={{ 
-                                    color: 'rgba(255, 255, 255, 0.9)', 
-                                    fontSize: '16px',
-                                    display: 'block',
-                                    marginTop: '8px'
-                                }}
-                            >
-                                {employeeData.profession}
-                            </Text>
-                            {employeeData.employeeNumber && (
-                                <Text 
-                                    style={{ 
-                                        color: 'rgba(255, 255, 255, 0.8)', 
-                                        fontSize: '14px',
-                                        display: 'block',
-                                        marginTop: '4px'
-                                    }}
-                                >
-                                    Табельный номер: {employeeData.employeeNumber}
-                                </Text>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </Card>
+                backPath={Paths.home}
+            />
 
             {/* Современный дизайн подробной информации */}
             <Card 

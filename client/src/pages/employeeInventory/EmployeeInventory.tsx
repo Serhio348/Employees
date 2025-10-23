@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
-import { Row, Col, Button, Modal, Space, Typography, Statistic, Card, Tabs } from 'antd';
-import { PlusOutlined, ArrowLeftOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
+import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
+import { useHeader } from '../../contexts/HeaderContext';
+import { Row, Col, Button, Modal, Typography, Statistic, Card, Tabs } from 'antd';
+import { PlusOutlined, BookOutlined } from '@ant-design/icons';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
 import SizNormsTable from '../../components/sizNormsTable/SizNormsTable';
@@ -32,6 +34,7 @@ const EmployeeInventory = () => {
     const [deletingIds, setDeletingIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('active');
     const [isMobile, setIsMobile] = useState(false);
+    const { hideHeader } = useHeader();
 
     const { data: allInventory = [], isLoading } = useGetEmployeeInventoryQuery(employeeId!, {
         skip: !employeeId
@@ -105,6 +108,13 @@ const EmployeeInventory = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    // Скрываем хедер при загрузке страницы инвентаря
+    useEffect(() => {
+        if (employee) {
+            hideHeader();
+        }
+    }, [employee, hideHeader]);
 
     const handleAddItem = async (values: InventoryItem) => {
         try {
@@ -229,9 +239,6 @@ const EmployeeInventory = () => {
         navigate(`/inventory/${item.id}/addons`);
     };
 
-    const handleGoBack = () => {
-        navigate(`/employee/${employeeId}`);
-    };
 
     // Статистика для активного инвентаря
     const statistics = useMemo(() => ({
@@ -243,163 +250,26 @@ const EmployeeInventory = () => {
 
     return (
         <Layout>
+            {employee && (
+                <EmployeeHeader 
+                    employee={{
+                        id: employee.id,
+                        firstName: employee.firstName,
+                        lastName: employee.lastName,
+                        surName: employee.surName,
+                        profession: employee.profession,
+                        employeeNumber: employee.employeeNumber
+                    }}
+                    backPath={`/employee/${employeeId}`}
+                />
+            )}
+            
             <Row gutter={[16, 16]}>
                 <Col span={24}>
-                    <Space style={{ marginBottom: 16 }}>
-                        <Button
-                            type="default"
-                            icon={<ArrowLeftOutlined />}
-                            onClick={handleGoBack}
-                        >
-                            Назад к сотруднику
-                        </Button>
-                    </Space>
                     <div style={{ marginBottom: '24px' }}>
                         <Title level={2} style={{ marginBottom: '16px' }}>
                             Инвентарь сотрудника
                         </Title>
-                        {employee && (
-                            <Card 
-                                style={{ 
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    marginBottom: '16px'
-                                }}
-                                bodyStyle={{ padding: isMobile ? '16px' : '20px' }}
-                            >
-                                {isMobile ? (
-                                    // Мобильная версия - иконка сверху
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: '12px'
-                                    }}>
-                                        <div style={{
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '50%',
-                                            background: 'rgba(255, 255, 255, 0.2)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '20px',
-                                            color: 'white'
-                                        }}>
-                                            <UserOutlined />
-                                        </div>
-                                        <div style={{ 
-                                            textAlign: 'center',
-                                            width: '100%'
-                                        }}>
-                                            <Title 
-                                                level={2} 
-                                                style={{ 
-                                                    color: 'white', 
-                                                    margin: 0, 
-                                                    fontSize: '16px',
-                                                    fontWeight: 'bold',
-                                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                                    lineHeight: '1.2',
-                                                    wordBreak: 'break-word'
-                                                }}
-                                            >
-                                                {employee.lastName} {employee.firstName} {employee.surName}
-                                            </Title>
-                                            <Text 
-                                                style={{ 
-                                                    color: 'rgba(255, 255, 255, 0.9)', 
-                                                    fontSize: '12px',
-                                                    display: 'block',
-                                                    marginTop: '4px',
-                                                    wordBreak: 'break-word'
-                                                }}
-                                            >
-                                                {employee.profession}
-                                            </Text>
-                                            {employee.employeeNumber && (
-                                                <Text 
-                                                    style={{ 
-                                                        color: 'rgba(255, 255, 255, 0.8)', 
-                                                        fontSize: '9px',
-                                                        display: 'block',
-                                                        marginTop: '2px',
-                                                        wordBreak: 'break-word'
-                                                    }}
-                                                >
-                                                    Табельный номер: {employee.employeeNumber}
-                                                </Text>
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    // Десктопная версия - иконка слева
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '16px'
-                                    }}>
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        borderRadius: '50%',
-                                        background: 'rgba(255, 255, 255, 0.2)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '24px',
-                                        color: 'white'
-                                    }}>
-                                        <UserOutlined />
-                                    </div>
-                                        <div style={{ 
-                                            flex: 1, 
-                                            textAlign: 'left'
-                                        }}>
-                                        <Title 
-                                            level={2} 
-                                            style={{ 
-                                                color: 'white', 
-                                                margin: 0, 
-                                                fontSize: '24px',
-                                                fontWeight: 'bold',
-                                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                                    lineHeight: '1.4',
-                                                    wordBreak: 'normal'
-                                            }}
-                                        >
-                                            {employee.lastName} {employee.firstName} {employee.surName}
-                                        </Title>
-                                        <Text 
-                                            style={{ 
-                                                color: 'rgba(255, 255, 255, 0.9)', 
-                                                fontSize: '16px',
-                                                display: 'block',
-                                                    marginTop: '4px',
-                                                    wordBreak: 'normal'
-                                            }}
-                                        >
-                                            {employee.profession}
-                                        </Text>
-                                        {employee.employeeNumber && (
-                                            <Text 
-                                                style={{ 
-                                                    color: 'rgba(255, 255, 255, 0.8)', 
-                                                    fontSize: '14px',
-                                                    display: 'block',
-                                                        marginTop: '2px',
-                                                        wordBreak: 'normal'
-                                                }}
-                                            >
-                                                Табельный номер: {employee.employeeNumber}
-                                            </Text>
-                                        )}
-                                    </div>
-                                </div>
-                                )}
-                            </Card>
-                        )}
                     </div>
                 </Col>
 

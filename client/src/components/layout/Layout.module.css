@@ -10,7 +10,6 @@
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
     position: relative;
-    overflow: hidden;
 }
 
 
@@ -114,4 +113,45 @@
 .main .ant-select-focused .ant-select-selector {
     border-color: var(--border-accent);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Компактные стили для таблиц */
+.main .ant-table {
+    margin-bottom: 16px;
+}
+
+/* Компактные стили для карточек */
+.main .ant-card {
+    margin-bottom: 12px;
+}
+
+.main .ant-card-body {
+    padding: 16px;
+}
+
+/* Компактные стили для модальных окон */
+.main .ant-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .main {
+        padding: 16px;
+    }
+    
+    .main .ant-card-body {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main {
+        padding: 8px;
+    }
+    
+    .main .ant-card-body {
+        padding: 8px;
+    }
 }
