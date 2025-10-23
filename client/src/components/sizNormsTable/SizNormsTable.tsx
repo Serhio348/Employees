@@ -80,8 +80,25 @@ const SizNormsTable = () => {
     };
 
     const handleModalCancel = () => {
+        console.log('Modal cancel clicked');
         setIsModalVisible(false);
         form.resetFields();
+        setEditingNorm(null);
+    };
+
+    const forceCloseModal = () => {
+        console.log('Force closing modal');
+        // Принудительное закрытие через DOM
+        const modalWraps = document.querySelectorAll('.ant-modal-wrap');
+        modalWraps.forEach(wrap => {
+            if (wrap instanceof HTMLElement) {
+                wrap.style.display = 'none';
+            }
+        });
+        
+        setIsModalVisible(false);
+        form.resetFields();
+        setEditingNorm(null);
     };
 
     const columns: ColumnsType<SizNorm> = [
@@ -319,6 +336,27 @@ const SizNormsTable = () => {
                     layout="vertical"
                     initialValues={{ periodType: 'months' }}
                 >
+                    {/* Кнопка принудительного закрытия для мобильных */}
+                    {isMobile && (
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'flex-end', 
+                            marginBottom: '16px',
+                            padding: '8px',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '4px'
+                        }}>
+                            <Button 
+                                onClick={forceCloseModal}
+                                type="primary"
+                                danger
+                                size="small"
+                            >
+                                ✕ Закрыть
+                            </Button>
+                        </div>
+                    )}
+                    
                     <Row gutter={isMobile ? [0, 12] : [16, 16]}>
                         <Col span={24}>
                             <Form.Item
@@ -527,6 +565,35 @@ const SizNormsTable = () => {
                         
                         .ant-table-scroll {
                             overflow-x: hidden !important;
+                        }
+                        
+                        /* Специальные стили для модального окна на мобильных */
+                        .ant-modal-close {
+                            position: fixed !important;
+                            top: 10px !important;
+                            right: 10px !important;
+                            z-index: 1002 !important;
+                            background: rgba(255, 255, 255, 0.9) !important;
+                            border-radius: 50% !important;
+                            width: 40px !important;
+                            height: 40px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            cursor: pointer !important;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+                        }
+                        
+                        .ant-modal-close:hover {
+                            background: rgba(255, 255, 255, 1) !important;
+                        }
+                        
+                        .ant-modal-mask {
+                            z-index: 1000 !important;
+                        }
+                        
+                        .ant-modal-wrap {
+                            z-index: 1000 !important;
                         }
                     }
                 `}
