@@ -131,7 +131,7 @@ const SizNormsTable = () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('click', handleMaskClick);
         };
-    }, [isModalVisible]);
+    }, [isModalVisible, handleModalCancel]);
 
     const columns: ColumnsType<SizNorm> = [
         {
