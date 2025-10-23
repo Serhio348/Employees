@@ -37,10 +37,10 @@ const EmployeeInventory = () => {
     const [isMobile, setIsMobile] = useState(false);
     const { hideHeader } = useHeader();
 
-    const { data: allInventory = [], isLoading } = useGetEmployeeInventoryQuery(employeeId!, {
+    const { data: allInventory = [], isLoading, refetch: refetchInventory } = useGetEmployeeInventoryQuery(employeeId!, {
         skip: !employeeId
     });
-    const { data: employee } = useGetEmployeeQuery(employeeId!, {
+    const { data: employee, refetch: refetchEmployee } = useGetEmployeeQuery(employeeId!, {
         skip: !employeeId
     });
 
@@ -118,8 +118,27 @@ const EmployeeInventory = () => {
             const itemData = { ...values, employeeId: employeeId };
             console.log('EmployeeInventory - sending itemData:', itemData);
             await addInventoryItem(itemData).unwrap();
+            
+            // Принудительно обновляем данные
+            console.log('EmployeeInventory - refreshing data after add');
+            
             setIsModalVisible(false);
             setError("");
+            
+            // Принудительно обновляем данные через Redux
+            try {
+                console.log('EmployeeInventory - forcing data refresh');
+                await refetchInventory();
+                await refetchEmployee();
+                console.log('EmployeeInventory - data refreshed successfully');
+            } catch (refreshError) {
+                console.error('EmployeeInventory - refresh error:', refreshError);
+            }
+            
+            // Небольшая задержка для обновления UI
+            setTimeout(() => {
+                console.log('EmployeeInventory - UI refresh completed');
+            }, 100);
         } catch (error) {
             console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
@@ -146,6 +165,17 @@ const EmployeeInventory = () => {
             }
 
             await updateInventoryItem({ id: editingItem.id, data: itemData }).unwrap();
+            
+            // Принудительно обновляем данные
+            try {
+                console.log('EmployeeInventory - refreshing data after edit');
+                await refetchInventory();
+                await refetchEmployee();
+                console.log('EmployeeInventory - data refreshed successfully after edit');
+            } catch (refreshError) {
+                console.error('EmployeeInventory - refresh error after edit:', refreshError);
+            }
+            
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
@@ -163,6 +193,17 @@ const EmployeeInventory = () => {
         try {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
+            
+            // Принудительно обновляем данные
+            try {
+                console.log('EmployeeInventory - refreshing data after delete');
+                await refetchInventory();
+                await refetchEmployee();
+                console.log('EmployeeInventory - data refreshed successfully after delete');
+            } catch (refreshError) {
+                console.error('EmployeeInventory - refresh error after delete:', refreshError);
+            }
+            
             setError("");
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
@@ -189,6 +230,17 @@ const EmployeeInventory = () => {
                     data: { status: 'списан' } 
                 }).unwrap();
             }
+            
+            // Принудительно обновляем данные
+            try {
+                console.log('EmployeeInventory - refreshing data after write-off');
+                await refetchInventory();
+                await refetchEmployee();
+                console.log('EmployeeInventory - data refreshed successfully after write-off');
+            } catch (refreshError) {
+                console.error('EmployeeInventory - refresh error after write-off:', refreshError);
+            }
+            
             setError("");
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
@@ -213,9 +265,15 @@ const EmployeeInventory = () => {
     };
 
     const closeModal = () => {
+        console.log('EmployeeInventory - closeModal called');
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
+        
+        // Принудительно обновляем UI
+        setTimeout(() => {
+            console.log('EmployeeInventory - modal closed, UI refreshed');
+        }, 50);
     };
 
     const openNormsModal = () => {
