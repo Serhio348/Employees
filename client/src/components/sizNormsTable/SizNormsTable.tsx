@@ -95,29 +95,67 @@ const SizNormsTable = () => {
         setEditingNorm(null);
     };
 
+    // Принудительное закрытие модального окна
+    const forceCloseModal = () => {
+        console.log('Force closing modal');
+        setIsModalVisible(false);
+        form.resetFields();
+        setEditingNorm(null);
+        
+        // Дополнительно скрываем через DOM
+        setTimeout(() => {
+            const modalWraps = document.querySelectorAll('.ant-modal-wrap');
+            modalWraps.forEach(wrap => {
+                if (wrap instanceof HTMLElement) {
+                    wrap.style.display = 'none';
+                }
+            });
+        }, 100);
+    };
+
     // Дополнительная обработка закрытия модального окна
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isModalVisible) {
-                handleModalCancel();
+                forceCloseModal();
             }
         };
 
         const handleMaskClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.classList.contains('ant-modal-mask') && isModalVisible) {
-                handleModalCancel();
+                forceCloseModal();
+            }
+        };
+
+        // Обработка свайпа вниз для закрытия на мобильных
+        let startY = 0;
+        const handleTouchStart = (e: TouchEvent) => {
+            startY = e.touches[0].clientY;
+        };
+
+        const handleTouchEnd = (e: TouchEvent) => {
+            const endY = e.changedTouches[0].clientY;
+            const diff = startY - endY;
+            
+            // Если свайп вниз больше 100px, закрываем модальное окно
+            if (diff > 100 && isModalVisible) {
+                forceCloseModal();
             }
         };
 
         if (isModalVisible) {
             document.addEventListener('keydown', handleEscape);
             document.addEventListener('click', handleMaskClick);
+            document.addEventListener('touchstart', handleTouchStart);
+            document.addEventListener('touchend', handleTouchEnd);
         }
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('click', handleMaskClick);
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchend', handleTouchEnd);
         };
     }, [isModalVisible]);
 
@@ -333,7 +371,26 @@ const SizNormsTable = () => {
             </div>
             
             <Modal
-                title={editingNorm ? "Редактировать норматив" : "Добавить норматив"}
+                title={
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{editingNorm ? "Редактировать норматив" : "Добавить норматив"}</span>
+                        {isMobile && (
+                            <Button 
+                                onClick={forceCloseModal}
+                                type="text"
+                                danger
+                                size="small"
+                                style={{ 
+                                    padding: '4px 8px',
+                                    fontSize: '12px',
+                                    height: '24px'
+                                }}
+                            >
+                                ✕ Закрыть
+                            </Button>
+                        )}
+                    </div>
+                }
                 open={isModalVisible}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
@@ -583,6 +640,9 @@ const SizNormsTable = () => {
                             height: 32px !important;
                             cursor: pointer !important;
                             border: none !important;
+                            position: fixed !important;
+                            top: 10px !important;
+                            right: 10px !important;
                         }
                         
                         .ant-modal-close:hover {
@@ -592,6 +652,18 @@ const SizNormsTable = () => {
                         .ant-modal-close .anticon {
                             color: #fff !important;
                             font-size: 16px !important;
+                        }
+                        
+                        /* Стили для кнопки закрытия в заголовке */
+                        .ant-modal-header .ant-btn {
+                            background: #ff4d4f !important;
+                            border: none !important;
+                            color: #fff !important;
+                            font-weight: bold !important;
+                        }
+                        
+                        .ant-modal-header .ant-btn:hover {
+                            background: #ff7875 !important;
                         }
                         
                         .ant-modal-mask {
