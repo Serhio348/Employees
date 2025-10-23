@@ -337,22 +337,26 @@ const SizNormsTable = () => {
                 open={isModalVisible}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
-                width={isMobile ? '95%' : 600}
-                centered
+                width={isMobile ? '100%' : 600}
+                centered={!isMobile}
                 maskClosable={true}
                 closable={true}
                 destroyOnClose={false}
                 keyboard={true}
                 style={{ 
-                    top: isMobile ? 10 : 100,
-                    maxWidth: isMobile ? '95vw' : '600px',
-                    margin: isMobile ? '0 auto' : undefined
+                    top: isMobile ? 0 : 100,
+                    left: isMobile ? 0 : undefined,
+                    right: isMobile ? 0 : undefined,
+                    bottom: isMobile ? 0 : undefined,
+                    margin: isMobile ? 0 : undefined,
+                    maxWidth: isMobile ? '100vw' : '600px',
+                    maxHeight: isMobile ? '100vh' : '80vh'
                 }}
                 bodyStyle={{ 
-                    padding: isMobile ? '8px' : '24px',
-                    maxHeight: isMobile ? '80vh' : '80vh',
+                    padding: isMobile ? '4px' : '24px',
+                    maxHeight: isMobile ? 'calc(100vh - 120px)' : '60vh',
                     overflowY: 'auto',
-                    fontSize: isMobile ? '12px' : '14px'
+                    fontSize: isMobile ? '11px' : '14px'
                 }}
             >
                 <Form
@@ -598,55 +602,76 @@ const SizNormsTable = () => {
                             z-index: 1000 !important;
                         }
                         
-                        /* Адаптивные стили для модального окна */
+                        /* Полная адаптивность модального окна для мобильных */
                         .ant-modal {
                             margin: 0 !important;
                             padding: 0 !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            bottom: 0 !important;
+                            max-width: 100vw !important;
+                            max-height: 100vh !important;
                         }
                         
                         .ant-modal-content {
-                            border-radius: 8px !important;
+                            border-radius: 0 !important;
+                            height: 100vh !important;
+                            display: flex !important;
+                            flex-direction: column !important;
                         }
                         
                         .ant-modal-header {
-                            padding: 12px 16px !important;
+                            padding: 8px 12px !important;
                             border-bottom: 1px solid #f0f0f0 !important;
+                            flex-shrink: 0 !important;
                         }
                         
                         .ant-modal-title {
                             font-size: 14px !important;
                             font-weight: 600 !important;
+                            margin: 0 !important;
                         }
                         
                         .ant-modal-body {
-                            padding: 8px 16px !important;
+                            padding: 4px 8px !important;
+                            flex: 1 !important;
+                            overflow-y: auto !important;
+                        }
+                        
+                        .ant-form-item {
+                            margin-bottom: 8px !important;
                         }
                         
                         .ant-form-item-label > label {
-                            font-size: 12px !important;
+                            font-size: 11px !important;
                             height: auto !important;
                             line-height: 1.2 !important;
+                            margin-bottom: 2px !important;
                         }
                         
                         .ant-input,
                         .ant-select-selector {
-                            font-size: 12px !important;
-                            height: 32px !important;
+                            font-size: 11px !important;
+                            height: 28px !important;
+                            padding: 2px 6px !important;
                         }
                         
                         .ant-select-dropdown {
-                            font-size: 12px !important;
+                            font-size: 11px !important;
                         }
                         
                         .ant-modal-footer {
-                            padding: 8px 16px !important;
+                            padding: 6px 12px !important;
                             border-top: 1px solid #f0f0f0 !important;
+                            flex-shrink: 0 !important;
                         }
                         
                         .ant-btn {
-                            font-size: 12px !important;
-                            height: 32px !important;
-                            padding: 4px 12px !important;
+                            font-size: 11px !important;
+                            height: 28px !important;
+                            padding: 2px 8px !important;
+                            margin: 0 2px !important;
                         }
                     }
                 `}
