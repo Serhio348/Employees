@@ -21,6 +21,10 @@ const ExportCard = ({ employee, inventory }: Props) => {
             exportToExcel();
         }
         setIsModalVisible(false);
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            setIsModalVisible(false);
+        }, 100);
     };
 
     const exportToPDF = () => {

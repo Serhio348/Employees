@@ -105,6 +105,10 @@ const InventoryAddons = () => {
     const handleCancelDelete = (id: string) => {
         // Автоматическое обновление страницы при отмене удаления
         window.location.reload();
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            window.location.reload();
+        }, 100);
     };
 
     const openAddModal = () => {
@@ -123,6 +127,12 @@ const InventoryAddons = () => {
         setIsModalVisible(false);
         setEditingAddon(null);
         setError("");
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            setIsModalVisible(false);
+            setEditingAddon(null);
+            setError("");
+        }, 100);
     };
 
     const handleGoBack = () => {

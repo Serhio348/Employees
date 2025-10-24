@@ -46,6 +46,10 @@ const InventoryForm = ({
         };
         console.log('InventoryForm - processed values:', processedValues);
         onFinish(processedValues);
+        // Принудительно очищаем форму после отправки
+        setTimeout(() => {
+            // Форма будет очищена автоматически при закрытии модального окна
+        }, 100);
     };
 
     const initialValues = item ? {

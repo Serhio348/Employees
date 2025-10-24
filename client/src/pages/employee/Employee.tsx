@@ -82,6 +82,10 @@ const Employee = () => {
 
     const hideModal = () => {
         setIsModalOpen(false);
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            setIsModalOpen(false);
+        }, 100);
     };
 
     const handleDeleteUser = async () => {

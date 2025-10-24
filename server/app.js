@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 
 const app = express();
 

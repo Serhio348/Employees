@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config();
 // Устанавливаем JWT_SECRET напрямую, если он не загрузился из .env
 if (!process.env.JWT_SECRET) {
     process.env.JWT_SECRET = 'your-super-secret-jwt-key-here-12345';

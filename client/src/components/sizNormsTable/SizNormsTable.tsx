@@ -79,7 +79,14 @@ const SizNormsTable = () => {
                 message.success('Норма СИЗ добавлена');
             }
             setIsModalVisible(false);
+            setEditingNorm(null);
             form.resetFields();
+            // Принудительно очищаем состояние
+            setTimeout(() => {
+                setIsModalVisible(false);
+                setEditingNorm(null);
+                form.resetFields();
+            }, 100);
         } catch (error) {
             message.error('Ошибка при сохранении нормы СИЗ');
         }
@@ -101,6 +108,14 @@ const SizNormsTable = () => {
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            setIsOpeningModal(false);
+            setModalOpenedByUser(false);
+            setIsModalVisible(false);
+            form.resetFields();
+            setEditingNorm(null);
+        }, 100);
     }, [form]);
 
     // Дополнительная обработка закрытия модального окна
