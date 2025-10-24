@@ -8,8 +8,8 @@
     "server": "nodemon ./server/bin/www",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "dev:local": "NODE_ENV=development npm run dev",
-    "dev:staging": "NODE_ENV=staging npm run dev",
+    "dev:local": "set NODE_ENV=development && npm run dev",
+    "dev:staging": "set NODE_ENV=staging && npm run dev",
     "test:local": "npm run dev:local",
     "deploy:staging": "git push origin development",
     "deploy:production": "git push origin main"
