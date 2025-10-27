@@ -600,7 +600,17 @@ const EmployeeInventory = () => {
                 open={isModalVisible}
                 onCancel={closeModal}
                 footer={null}
-                width={600}
+                width={isMobile ? '95%' : 600}
+                centered={true}
+                style={{ 
+                    top: isMobile ? 20 : undefined,
+                    margin: isMobile ? '0 auto' : undefined
+                }}
+                bodyStyle={{ 
+                    padding: isMobile ? '16px' : '24px',
+                    maxHeight: isMobile ? '80vh' : '70vh',
+                    overflowY: 'auto'
+                }}
             >
                 <InventoryForm
                     title=""
@@ -619,10 +629,14 @@ const EmployeeInventory = () => {
                 onCancel={closeNormsModal}
                 footer={null}
                 width={isMobile ? '95%' : 1000}
-                style={{ top: isMobile ? 10 : 20 }}
+                centered={true}
+                style={{ 
+                    top: isMobile ? 20 : undefined,
+                    margin: isMobile ? '0 auto' : undefined
+                }}
                 bodyStyle={{ 
-                    padding: isMobile ? '8px' : '24px',
-                    maxHeight: isMobile ? '85vh' : '80vh',
+                    padding: isMobile ? '16px' : '24px',
+                    maxHeight: isMobile ? '80vh' : '70vh',
                     overflowY: 'auto'
                 }}
             >
