@@ -7,7 +7,12 @@
     "build": "cd client && npm install --omit=dev && npm run build",
     "server": "nodemon ./server/bin/www",
     "client": "npm start --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev:local": "cross-env NODE_ENV=development npm run dev",
+    "dev:staging": "cross-env NODE_ENV=staging npm run dev",
+    "test:local": "npm run dev:local",
+    "deploy:staging": "git push origin development",
+    "deploy:production": "git push origin main"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
@@ -25,6 +30,7 @@
     "sass": "^1.69.5"
   },
   "devDependencies": {
+    "cross-env": "7.0.3",
     "nodemon": "^3.0.1",
     "prisma": "^6.18.0"
   }

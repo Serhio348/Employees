@@ -1,5 +1,5 @@
-import { Card, Form, Space, Select, DatePicker } from 'antd';
-import React, { memo } from 'react';
+import { Form, Select, DatePicker } from 'antd';
+import React, { memo, useState, useEffect } from 'react';
 import CustomInput from '../customInput/CustomInput';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import CustomButton from '../customButton/CustomButton';
@@ -36,6 +36,24 @@ const InventoryForm = ({
     loading = false
 }: Props) => {
     const { sizNorms } = useSizNorms();
+    const [isMobile, setIsMobile] = useState(false);
+    const [isTablet, setIsTablet] = useState(false);
+
+    // Отслеживаем размер экрана для адаптивности
+    useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            setIsMobile(width <= 768);
+            setIsTablet(width <= 1024 && width > 768);
+        };
+        
+        handleResize(); // Вызываем сразу для установки начального состояния
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const handleFinish = (values: any) => {
         console.log('InventoryForm - received values:', values);
@@ -46,6 +64,10 @@ const InventoryForm = ({
         };
         console.log('InventoryForm - processed values:', processedValues);
         onFinish(processedValues);
+        // Принудительно очищаем форму после отправки
+        setTimeout(() => {
+            // Форма будет очищена автоматически при закрытии модального окна
+        }, 100);
     };
 
     const initialValues = item ? {
@@ -60,12 +82,54 @@ const InventoryForm = ({
     };
 
     return (
-        <Card title={title} style={{ width: '30rem' }}>
-            <Form name='inventory-form' onFinish={handleFinish} initialValues={initialValues}>
-                <Form.Item name="itemName" rules={[{ required: true, message: 'Выберите наименование предмета' }]}>
+        <div style={{
+            width: '100%',
+            margin: 0,
+            padding: 0,
+            boxSizing: 'border-box'
+        }}>
+            {title && (
+                <div style={{ 
+                    fontSize: isMobile ? '16px' : isTablet ? '18px' : '20px',
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    marginBottom: '20px',
+                    padding: '0 16px'
+                }}>
+                    {title}
+                </div>
+            )}
+            
+            <Form 
+                name='inventory-form' 
+                onFinish={handleFinish} 
+                initialValues={initialValues}
+                layout="vertical"
+                size={isMobile ? 'small' : 'middle'}
+                style={{ width: '100%', margin: 0 }}
+            >
+                <Form.Item 
+                    name="itemName" 
+                    label={
+                        <span style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            fontWeight: '500'
+                        }}>
+                            Наименование предмета
+                        </span>
+                    }
+                    rules={[{ required: true, message: 'Выберите наименование предмета' }]}
+                    style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
+                >
                     <Select 
                         placeholder="Выберите наименование предмета" 
                         showSearch
+                        size={isMobile ? 'small' : 'middle'}
+                        style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            width: '100%',
+                            margin: 0
+                        }}
                         filterOption={(input, option) =>
                             (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
                         }
@@ -78,8 +142,28 @@ const InventoryForm = ({
                     </Select>
                 </Form.Item>
                 
-                <Form.Item name="itemType" rules={[{ required: true, message: 'Выберите тип предмета' }]}>
-                    <Select placeholder="Тип предмета">
+                <Form.Item 
+                    name="itemType" 
+                    label={
+                        <span style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            fontWeight: '500'
+                        }}>
+                            Тип предмета
+                        </span>
+                    }
+                    rules={[{ required: true, message: 'Выберите тип предмета' }]}
+                    style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
+                >
+                    <Select 
+                        placeholder="Тип предмета"
+                        size={isMobile ? 'small' : 'middle'}
+                        style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            width: '100%',
+                            margin: 0
+                        }}
+                    >
                         <Select.Option value="спецодежда">Спецодежда</Select.Option>
                         <Select.Option value="инструмент">Инструмент</Select.Option>
                         <Select.Option value="оборудование">Оборудование</Select.Option>
@@ -87,20 +171,78 @@ const InventoryForm = ({
                     </Select>
                 </Form.Item>
                 
-                <Form.Item name="issueDate" label="Дата выдачи" rules={[{ required: true, message: 'Выберите дату выдачи' }]}>
+                <Form.Item 
+                    name="issueDate" 
+                    label={
+                        <span style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            fontWeight: '500'
+                        }}>
+                            Дата выдачи
+                        </span>
+                    }
+                    rules={[{ required: true, message: 'Выберите дату выдачи' }]}
+                    style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
+                >
                     <DatePicker
-                        style={{ width: '100%' }}
+                        style={{ 
+                            width: '100%',
+                            fontSize: isMobile ? '12px' : '14px',
+                            margin: 0
+                        }}
+                        size={isMobile ? 'small' : 'middle'}
                         format="DD.MM.YYYY"
                         placeholder="Выберите дату выдачи"
                     />
                 </Form.Item>
                 
-                <Form.Item name="quantity" rules={[{ required: true, message: 'Введите количество' }]}>
-                    <CustomInput type="number" name='quantity' placeholder='Количество' />
+                <Form.Item 
+                    name="quantity" 
+                    label={
+                        <span style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            fontWeight: '500'
+                        }}>
+                            Количество
+                        </span>
+                    }
+                    rules={[{ required: true, message: 'Введите количество' }]}
+                    style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
+                >
+                    <CustomInput 
+                        type="number" 
+                        name='quantity' 
+                        placeholder='Количество'
+                        style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            width: '100%',
+                            margin: 0
+                        }}
+                    />
                 </Form.Item>
                 
-                <Form.Item name="status" rules={[{ required: true, message: 'Выберите статус' }]}>
-                    <Select placeholder="Статус">
+                <Form.Item 
+                    name="status" 
+                    label={
+                        <span style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            fontWeight: '500'
+                        }}>
+                            Статус
+                        </span>
+                    }
+                    rules={[{ required: true, message: 'Выберите статус' }]}
+                    style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
+                >
+                    <Select 
+                        placeholder="Статус"
+                        size={isMobile ? 'small' : 'middle'}
+                        style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            width: '100%',
+                            margin: 0
+                        }}
+                    >
                         <Select.Option value="выдан">Выдан</Select.Option>
                         <Select.Option value="возвращен">Возвращен</Select.Option>
                         <Select.Option value="списан">Списан</Select.Option>
@@ -113,14 +255,262 @@ const InventoryForm = ({
                     </Form.Item>
                 )}
 
-                <Space>
+                <div style={{ 
+                    width: '100%',
+                    marginTop: isMobile ? '16px' : '20px',
+                    display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    alignItems: isMobile ? 'center' : 'flex-start',
+                    gap: isMobile ? '8px' : '12px'
+                }}>
                     <ErrorMessage message={error} />
-                    <CustomButton htmlType="submit" loading={loading}>
+                    <CustomButton 
+                        htmlType="submit" 
+                        loading={loading}
+                        size={isMobile ? 'small' : 'middle'}
+                        style={{ 
+                            fontSize: isMobile ? '12px' : '14px',
+                            height: isMobile ? '32px' : '40px',
+                            minWidth: isMobile ? '80px' : '100px',
+                            width: isMobile ? '100%' : 'auto',
+                            margin: 0
+                        }}
+                    >
                         {btnText}
                     </CustomButton>
-                </Space>
+                </div>
             </Form>
-        </Card>
+
+            <style>
+                {`
+                    /* Стили для формы в модальном окне */
+                    .ant-form {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    
+                    .ant-form-item {
+                        margin: 0 0 16px 0 !important;
+                        padding: 0 !important;
+                    }
+                    
+                    .ant-form-item-label {
+                        margin: 0 !important;
+                        padding: 0 0 4px 0 !important;
+                    }
+                    
+                    .ant-form-item-control {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    
+                    .ant-form-item-control-input {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    
+                    .ant-select, .ant-picker, .ant-input {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    
+                    .ant-select-selector, .ant-picker-input {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    
+                    /* Отступы и размер текста для placeholder */
+                    .ant-select-selector {
+                        padding-left: 8px !important;
+                        padding-right: 8px !important;
+                        padding-top: 8px !important;
+                        padding-bottom: 8px !important;
+                    }
+                    
+                    .ant-select-selection-placeholder {
+                        padding-left: 0 !important;
+                        padding-right: 0 !important;
+                        padding-top: 0 !important;
+                        padding-bottom: 0 !important;
+                        font-size: 14px !important;
+                        color: #bfbfbf !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    .ant-picker-input {
+                        padding-left: 8px !important;
+                        padding-right: 8px !important;
+                        padding-top: 8px !important;
+                        padding-bottom: 8px !important;
+                    }
+                    
+                    .ant-picker-input input {
+                        padding-left: 0 !important;
+                        padding-right: 0 !important;
+                        padding-top: 0 !important;
+                        padding-bottom: 0 !important;
+                        font-size: 14px !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    .ant-picker-input input::placeholder {
+                        font-size: 14px !important;
+                        color: #bfbfbf !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    .ant-input {
+                        padding-left: 8px !important;
+                        padding-right: 8px !important;
+                        padding-top: 8px !important;
+                        padding-bottom: 8px !important;
+                        font-size: 14px !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    .ant-input::placeholder {
+                        font-size: 14px !important;
+                        color: #bfbfbf !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    /* Адаптивные стили для формы в модальном окне */
+                    @media (max-width: 768px) {
+                        .ant-form-item-label > label { 
+                            font-size: 12px !important; 
+                            font-weight: 500 !important; 
+                        }
+                        .ant-select-selector, .ant-picker, .ant-input { 
+                            font-size: 12px !important; 
+                            height: 32px !important;
+                        }
+                        
+                        /* Отступы и размер текста для мобильных устройств */
+                        .ant-select-selector {
+                            padding-left: 6px !important;
+                            padding-right: 6px !important;
+                            padding-top: 6px !important;
+                            padding-bottom: 6px !important;
+                        }
+                        
+                        .ant-select-selection-placeholder {
+                            padding-top: 0 !important;
+                            padding-bottom: 0 !important;
+                            font-size: 12px !important;
+                            color: #bfbfbf !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-picker-input {
+                            padding-left: 6px !important;
+                            padding-right: 6px !important;
+                            padding-top: 6px !important;
+                            padding-bottom: 6px !important;
+                        }
+                        
+                        .ant-picker-input input {
+                            padding-top: 0 !important;
+                            padding-bottom: 0 !important;
+                            font-size: 12px !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-picker-input input::placeholder {
+                            font-size: 12px !important;
+                            color: #bfbfbf !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-input {
+                            padding-left: 6px !important;
+                            padding-right: 6px !important;
+                            padding-top: 6px !important;
+                            padding-bottom: 6px !important;
+                            font-size: 12px !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-input::placeholder {
+                            font-size: 12px !important;
+                            color: #bfbfbf !important;
+                            line-height: 1.4 !important;
+                        }
+                        .ant-btn { 
+                            font-size: 12px !important; 
+                            height: 32px !important; 
+                        }
+                        .ant-form-item { 
+                            margin-bottom: 12px !important; 
+                        }
+                    }
+                    @media (min-width: 769px) and (max-width: 1024px) {
+                        .ant-form-item-label > label { 
+                            font-size: 14px !important; 
+                        }
+                        .ant-select-selector, .ant-picker, .ant-input { 
+                            font-size: 14px !important; 
+                        }
+                        
+                        /* Отступы и размер текста для планшетов */
+                        .ant-select-selector {
+                            padding-left: 8px !important;
+                            padding-right: 8px !important;
+                            padding-top: 8px !important;
+                            padding-bottom: 8px !important;
+                        }
+                        
+                        .ant-select-selection-placeholder {
+                            padding-top: 0 !important;
+                            padding-bottom: 0 !important;
+                            font-size: 14px !important;
+                            color: #bfbfbf !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-picker-input {
+                            padding-left: 8px !important;
+                            padding-right: 8px !important;
+                            padding-top: 8px !important;
+                            padding-bottom: 8px !important;
+                        }
+                        
+                        .ant-picker-input input {
+                            padding-top: 0 !important;
+                            padding-bottom: 0 !important;
+                            font-size: 14px !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-picker-input input::placeholder {
+                            font-size: 14px !important;
+                            color: #bfbfbf !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-input {
+                            padding-left: 8px !important;
+                            padding-right: 8px !important;
+                            padding-top: 8px !important;
+                            padding-bottom: 8px !important;
+                            font-size: 14px !important;
+                            line-height: 1.4 !important;
+                        }
+                        
+                        .ant-input::placeholder {
+                            font-size: 14px !important;
+                            color: #bfbfbf !important;
+                            line-height: 1.4 !important;
+                        }
+                        .ant-btn { 
+                            font-size: 14px !important; 
+                        }
+                        .ant-form-item { 
+                            margin-bottom: 16px !important; 
+                        }
+                    }
+                `}
+            </style>
+        </div>
     );
 };
 

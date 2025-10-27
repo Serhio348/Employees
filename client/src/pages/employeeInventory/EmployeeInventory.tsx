@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
@@ -95,6 +95,61 @@ const EmployeeInventory = () => {
         };
     }, []);
 
+    // Принудительное обновление компонента после операций с инвентарем
+    const [forceUpdate, setForceUpdate] = useState(0);
+    const triggerForceUpdate = useCallback(() => {
+        setForceUpdate(prev => prev + 1);
+    }, []);
+
+    // Принудительное обновление компонента при изменении forceUpdate
+    useEffect(() => {
+        if (forceUpdate > 0) {
+            // Принудительно обновляем компонент
+            console.log('Force update triggered:', forceUpdate);
+            // Принудительно обновляем все состояния
+            setError("");
+            setEditingItem(null);
+            setIsModalVisible(false);
+            setIsNormsModalVisible(false);
+            setIsOpeningNormsModal(false);
+            // Принудительно обновляем DOM
+            setTimeout(() => {
+                // Принудительно обновляем все кнопки и интерактивные элементы
+                const buttons = document.querySelectorAll('button, .ant-btn');
+                buttons.forEach(button => {
+                    const htmlButton = button as HTMLElement;
+                    htmlButton.style.pointerEvents = 'auto';
+                    htmlButton.style.cursor = 'pointer';
+                });
+                // Принудительно обновляем все интерактивные элементы
+                const interactiveElements = document.querySelectorAll('a, input, select, textarea, [role="button"]');
+                interactiveElements.forEach(element => {
+                    const htmlElement = element as HTMLElement;
+                    htmlElement.style.pointerEvents = 'auto';
+                    htmlElement.style.cursor = 'pointer';
+                });
+                // Принудительно обновляем все таблицы и их элементы
+                const tableElements = document.querySelectorAll('table, tr, td, th');
+                tableElements.forEach(element => {
+                    const htmlElement = element as HTMLElement;
+                    htmlElement.style.pointerEvents = 'auto';
+                });
+                // Принудительно обновляем все модальные окна
+                const modalElements = document.querySelectorAll('.ant-modal, .ant-modal-content, .ant-modal-header, .ant-modal-body, .ant-modal-footer');
+                modalElements.forEach(element => {
+                    const htmlElement = element as HTMLElement;
+                    htmlElement.style.pointerEvents = 'auto';
+                });
+                // Принудительно обновляем все карточки и их элементы
+                const cardElements = document.querySelectorAll('.ant-card, .ant-card-body, .ant-card-header');
+                cardElements.forEach(element => {
+                    const htmlElement = element as HTMLElement;
+                    htmlElement.style.pointerEvents = 'auto';
+                });
+            }, 50);
+        }
+    }, [forceUpdate]);
+
     // Прокрутка к началу страницы при загрузке компонента
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -119,7 +174,15 @@ const EmployeeInventory = () => {
             console.log('EmployeeInventory - sending itemData:', itemData);
             await addInventoryItem(itemData).unwrap();
             setIsModalVisible(false);
+            setEditingItem(null);
             setError("");
+            // Принудительно очищаем состояние после успешного добавления
+            setTimeout(() => {
+                setIsModalVisible(false);
+                setEditingItem(null);
+                setError("");
+                triggerForceUpdate(); // Принудительное обновление компонента
+            }, 100);
         } catch (error) {
             console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
@@ -149,6 +212,13 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
+            // Принудительно очищаем состояние после успешного редактирования
+            setTimeout(() => {
+                setIsModalVisible(false);
+                setEditingItem(null);
+                setError("");
+                triggerForceUpdate(); // Принудительное обновление компонента
+            }, 100);
         } catch (error: any) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -164,6 +234,11 @@ const EmployeeInventory = () => {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
             setError("");
+            // Принудительно очищаем состояние после успешного удаления
+            setTimeout(() => {
+                setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
+                triggerForceUpdate(); // Принудительное обновление компонента
+            }, 100);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -178,6 +253,10 @@ const EmployeeInventory = () => {
 
     const handleCancelDelete = (id: string) => {
         setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
+        }, 100);
     };
 
     const handleWriteOff = async (ids: string[]) => {
@@ -190,6 +269,10 @@ const EmployeeInventory = () => {
                 }).unwrap();
             }
             setError("");
+            // Принудительное обновление после списания
+            setTimeout(() => {
+                triggerForceUpdate();
+            }, 100);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -216,6 +299,13 @@ const EmployeeInventory = () => {
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
+        // Принудительно очищаем все состояния
+        setTimeout(() => {
+            setIsModalVisible(false);
+            setEditingItem(null);
+            setError("");
+            triggerForceUpdate(); // Принудительное обновление компонента
+        }, 100);
     };
 
     const openNormsModal = () => {
@@ -232,6 +322,12 @@ const EmployeeInventory = () => {
         console.log('closeNormsModal called');
         setIsOpeningNormsModal(false);
         setIsNormsModalVisible(false);
+        // Принудительно очищаем состояние
+        setTimeout(() => {
+            setIsOpeningNormsModal(false);
+            setIsNormsModalVisible(false);
+            triggerForceUpdate(); // Принудительное обновление компонента
+        }, 100);
     };
 
     const handleViewAddons = (item: InventoryItem) => {
@@ -504,7 +600,17 @@ const EmployeeInventory = () => {
                 open={isModalVisible}
                 onCancel={closeModal}
                 footer={null}
-                width={600}
+                width={isMobile ? '95%' : 600}
+                centered={true}
+                style={{ 
+                    top: isMobile ? 20 : undefined,
+                    margin: isMobile ? '0 auto' : undefined
+                }}
+                bodyStyle={{ 
+                    padding: isMobile ? '16px' : '24px',
+                    maxHeight: isMobile ? '80vh' : '70vh',
+                    overflowY: 'auto'
+                }}
             >
                 <InventoryForm
                     title=""
@@ -523,10 +629,14 @@ const EmployeeInventory = () => {
                 onCancel={closeNormsModal}
                 footer={null}
                 width={isMobile ? '95%' : 1000}
-                style={{ top: isMobile ? 10 : 20 }}
+                centered={true}
+                style={{ 
+                    top: isMobile ? 20 : undefined,
+                    margin: isMobile ? '0 auto' : undefined
+                }}
                 bodyStyle={{ 
-                    padding: isMobile ? '8px' : '24px',
-                    maxHeight: isMobile ? '85vh' : '80vh',
+                    padding: isMobile ? '16px' : '24px',
+                    maxHeight: isMobile ? '80vh' : '70vh',
                     overflowY: 'auto'
                 }}
             >

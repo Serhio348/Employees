@@ -1,31 +1,30 @@
 import React from "react";
-import { Form, Input } from "antd";
-
+import { Input } from "antd";
 
 type Props = {
     name: string,
     placeholder: string,
     type?: string,
-    required?: boolean
+    required?: boolean,
+    size?: 'small' | 'middle' | 'large',
+    style?: React.CSSProperties
 }
 
 const CustomInput = ({
     name,
     placeholder,
     type = "text",
-    required = true
+    required = true,
+    size = "large",
+    style
 }: Props) => {
     return (
-        <Form.Item
-            rules={required ? [{ required: true, message: 'Обязательное поле' }] : []}
-            name={name}
-        >
-            <Input
-                placeholder={placeholder}
-                type={type}
-                size="large"
-            />
-        </Form.Item>
+        <Input
+            placeholder={placeholder}
+            type={type}
+            size={size}
+            style={style}
+        />
     );
 };
 
