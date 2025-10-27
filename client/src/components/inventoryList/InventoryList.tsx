@@ -204,7 +204,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             }
             triggerForceUpdate(); // Принудительное обновление компонента
         }, 100);
-    }, []);
+    }, [triggerForceUpdate]);
 
     const handleSelectAll = useCallback((checked: boolean) => {
         if (checked) {
@@ -223,7 +223,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             }
             triggerForceUpdate(); // Принудительное обновление компонента
         }, 100);
-    }, [inventory, isExpired]);
+    }, [inventory, isExpired, triggerForceUpdate]);
 
     const handleWriteOff = useCallback(() => {
         if (selectedItems.length === 0) {
@@ -243,7 +243,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                 triggerForceUpdate(); // Принудительное обновление компонента
             }, 100);
         }
-    }, [selectedItems, onWriteOff]);
+    }, [selectedItems, onWriteOff, triggerForceUpdate]);
 
     const openWriteOffModal = useCallback(() => {
         const expiredItems = inventory.filter(item => isExpired(item));
@@ -257,7 +257,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             setIsWriteOffModalVisible(true);
             triggerForceUpdate(); // Принудительное обновление компонента
         }, 100);
-    }, [inventory, isExpired]);
+    }, [inventory, isExpired, triggerForceUpdate]);
 
 
     const columns = useMemo(() => [
