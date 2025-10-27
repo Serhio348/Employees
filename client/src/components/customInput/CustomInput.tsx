@@ -1,5 +1,5 @@
 import React from "react";
-import { Input } from "antd";
+import { Input, Form } from "antd";
 
 type Props = {
     name: string,
@@ -19,12 +19,26 @@ const CustomInput = ({
     style
 }: Props) => {
     return (
-        <Input
-            placeholder={placeholder}
-            type={type}
-            size={size}
-            style={style}
-        />
+        <Form.Item
+            name={name}
+            rules={[
+                {
+                    required: required,
+                    message: 'Пожалуйста заполните обязательные поля'
+                },
+                ...(type === "email" ? [{
+                    type: "email" as const,
+                    message: "Введите корректный email"
+                }] : [])
+            ]}
+        >
+            <Input
+                placeholder={placeholder}
+                type={type}
+                size={size}
+                style={style}
+            />
+        </Form.Item>
     );
 };
 
