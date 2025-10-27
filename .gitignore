@@ -70,3 +70,10 @@ client/build/
 # SSH keys
 5
 5.pub
+
+# Database files (local development)
+prisma/dev.db
+prisma/prisma/dev.db
+*.db
+*.sqlite
+*.sqlite3
