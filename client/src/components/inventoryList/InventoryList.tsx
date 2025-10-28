@@ -450,49 +450,65 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         {
             title: 'Действия',
             key: 'actions',
-            render: (_: any, record: InventoryItem) => (
-                <Space>
-                    <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        onClick={() => onEdit(record)}
-                    >
-                        Редактировать
-                    </Button>
-                    {onViewAddons && (
-                        <Button
-                            type="default"
-                            icon={<PlusOutlined />}
-                            onClick={() => onViewAddons(record)}
-                        >
-                            Дополнения
-                        </Button>
-                    )}
-                    <Popconfirm
-                        title="Удалить предмет?"
-                        description="Вы уверены, что хотите удалить этот предмет из инвентаря?"
-                        onConfirm={() => record.id && onDelete(record.id)}
-                        onCancel={() => {
-                            if (record.id && onCancelDelete) {
-                                onCancelDelete(record.id);
+            width: 80,
+            align: 'center' as const,
+            render: (_: any, record: InventoryItem) => {
+                const menuItems = [
+                    {
+                        key: 'edit',
+                        label: 'Редактировать',
+                        icon: <EditOutlined />,
+                        onClick: () => onEdit(record),
+                    },
+                    ...(onViewAddons ? [{
+                        key: 'addons',
+                        label: 'Дополнения',
+                        icon: <PlusOutlined />,
+                        onClick: () => onViewAddons(record),
+                    }] : []),
+                    {
+                        key: 'delete',
+                        label: 'Удалить',
+                        icon: <DeleteOutlined />,
+                        danger: true,
+                        onClick: () => {
+                            if (record.id) {
+                                Modal.confirm({
+                                    title: 'Удалить предмет?',
+                                    content: 'Вы уверены, что хотите удалить этот предмет из инвентаря?',
+                                    okText: 'Да',
+                                    cancelText: 'Нет',
+                                    onOk: () => onDelete(record.id!),
+                                    onCancel: () => {
+                                        if (onCancelDelete) {
+                                            onCancelDelete(record.id!);
+                                        }
+                                    },
+                                });
                             }
-                        }}
-                        okText="Да"
-                        cancelText="Нет"
-                        disabled={deletingIds.includes(record.id || '')}
+                        },
+                    },
+                ];
+
+                return (
+                    <Dropdown
+                        menu={{ items: menuItems }}
+                        trigger={['click']}
+                        placement="bottomRight"
                     >
                         <Button
-                            type="primary"
-                            danger
-                            icon={<DeleteOutlined />}
-                            loading={deletingIds.includes(record.id || '')}
-                            disabled={deletingIds.includes(record.id || '')}
-                        >
-                            Удалить
-                        </Button>
-                    </Popconfirm>
-                </Space>
-            ),
+                            type="text"
+                            icon={<MoreOutlined />}
+                            size="small"
+                            style={{ 
+                                padding: '4px 8px',
+                                fontSize: '12px',
+                                minWidth: '32px'
+                            }}
+                        />
+                    </Dropdown>
+                );
+            },
         },
         ]),
         ...(isMobile ? [{
@@ -892,6 +908,31 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                             height: 32px !important;
                             padding: 0 12px !important;
                         }
+                    }
+
+                    /* Стили для Dropdown меню действий */
+                    .ant-dropdown-menu {
+                        min-width: 140px !important;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                        border-radius: 6px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item {
+                        padding: 8px 12px !important;
+                        font-size: 13px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item .anticon {
+                        margin-right: 8px !important;
+                        font-size: 12px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item-danger {
+                        color: #ff4d4f !important;
+                    }
+                    
+                    .ant-dropdown-menu-item-danger:hover {
+                        background-color: #fff2f0 !important;
                     }
 
                 `}
