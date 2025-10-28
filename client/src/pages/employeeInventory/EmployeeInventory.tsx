@@ -609,7 +609,9 @@ const EmployeeInventory = () => {
                 bodyStyle={{ 
                     padding: isMobile ? '16px' : '24px',
                     maxHeight: isMobile ? '80vh' : '70vh',
-                    overflowY: 'auto'
+                    overflowY: 'auto',
+                    marginTop: 0,
+                    paddingTop: isMobile ? '16px' : '24px'
                 }}
             >
                 <InventoryForm
@@ -740,6 +742,21 @@ const EmployeeInventory = () => {
                         }
                     }
 
+                    /* Стили для модального окна с формой инвентаря */
+                    .ant-modal-body {
+                        margin-top: 0 !important;
+                        padding-top: 24px !important;
+                    }
+                    
+                    .ant-modal-body .ant-form {
+                        margin-top: 0 !important;
+                        padding-top: 0 !important;
+                    }
+                    
+                    .ant-modal-body .ant-form-item:first-child {
+                        margin-top: 0 !important;
+                    }
+
                     /* Адаптивные стили для таблицы нормативов СИЗ */
                     @media (max-width: 768px) {
                         .ant-table-thead > tr > th {
@@ -768,6 +785,10 @@ const EmployeeInventory = () => {
                         
                         .ant-table-tbody > tr > td .ant-btn .anticon {
                             font-size: 10px !important;
+                        }
+                        
+                        .ant-modal-body {
+                            padding-top: 16px !important;
                         }
                     }
 
