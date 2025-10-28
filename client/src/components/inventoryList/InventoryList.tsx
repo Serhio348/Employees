@@ -23,56 +23,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isVerySmall, setIsVerySmall] = useState(false);
-    const [forceUpdate, setForceUpdate] = useState(0);
-    const triggerForceUpdate = useCallback(() => {
-        setForceUpdate(prev => prev + 1);
-    }, []);
-
-    // Принудительное обновление компонента при изменении forceUpdate
-    useEffect(() => {
-        if (forceUpdate > 0) {
-            // Принудительно обновляем компонент
-            console.log('InventoryList force update triggered:', forceUpdate);
-            // Принудительно обновляем все состояния
-            setSelectedItems([]);
-            setIsWriteOffModalVisible(false);
-            // Принудительно обновляем DOM
-            setTimeout(() => {
-                // Принудительно обновляем все кнопки и интерактивные элементы
-                const buttons = document.querySelectorAll('button, .ant-btn');
-                buttons.forEach(button => {
-                    const htmlButton = button as HTMLElement;
-                    htmlButton.style.pointerEvents = 'auto';
-                    htmlButton.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все интерактивные элементы
-                const interactiveElements = document.querySelectorAll('a, input, select, textarea, [role="button"]');
-                interactiveElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                    htmlElement.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все таблицы и их элементы
-                const tableElements = document.querySelectorAll('table, tr, td, th');
-                tableElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все модальные окна
-                const modalElements = document.querySelectorAll('.ant-modal, .ant-modal-content, .ant-modal-header, .ant-modal-body, .ant-modal-footer');
-                modalElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все карточки и их элементы
-                const cardElements = document.querySelectorAll('.ant-card, .ant-card-body, .ant-card-header');
-                cardElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-            }, 50);
-        }
-    }, [forceUpdate]);
 
     // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
     useEffect(() => {
@@ -202,9 +152,8 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             } else {
                 setSelectedItems(prev => prev.filter(id => id !== itemId));
             }
-            triggerForceUpdate(); // Принудительное обновление компонента
         }, 100);
-    }, [triggerForceUpdate]);
+    }, []);
 
     const handleSelectAll = useCallback((checked: boolean) => {
         if (checked) {
@@ -221,9 +170,8 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             } else {
                 setSelectedItems([]);
             }
-            triggerForceUpdate(); // Принудительное обновление компонента
         }, 100);
-    }, [inventory, isExpired, triggerForceUpdate]);
+    }, [inventory, isExpired]);
 
     const handleWriteOff = useCallback(() => {
         if (selectedItems.length === 0) {
@@ -240,10 +188,9 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             setTimeout(() => {
                 setSelectedItems([]);
                 setIsWriteOffModalVisible(false);
-                triggerForceUpdate(); // Принудительное обновление компонента
             }, 100);
         }
-    }, [selectedItems, onWriteOff, triggerForceUpdate]);
+    }, [selectedItems, onWriteOff]);
 
     const openWriteOffModal = useCallback(() => {
         const expiredItems = inventory.filter(item => isExpired(item));
@@ -255,9 +202,8 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         // Принудительно очищаем состояние
         setTimeout(() => {
             setIsWriteOffModalVisible(true);
-            triggerForceUpdate(); // Принудительное обновление компонента
         }, 100);
-    }, [inventory, isExpired, triggerForceUpdate]);
+    }, [inventory, isExpired]);
 
 
     const columns = useMemo(() => [

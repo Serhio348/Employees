@@ -95,60 +95,6 @@ const EmployeeInventory = () => {
         };
     }, []);
 
-    // Принудительное обновление компонента после операций с инвентарем
-    const [forceUpdate, setForceUpdate] = useState(0);
-    const triggerForceUpdate = useCallback(() => {
-        setForceUpdate(prev => prev + 1);
-    }, []);
-
-    // Принудительное обновление компонента при изменении forceUpdate
-    useEffect(() => {
-        if (forceUpdate > 0) {
-            // Принудительно обновляем компонент
-            console.log('Force update triggered:', forceUpdate);
-            // Принудительно обновляем все состояния
-            setError("");
-            setEditingItem(null);
-            setIsModalVisible(false);
-            setIsNormsModalVisible(false);
-            setIsOpeningNormsModal(false);
-            // Принудительно обновляем DOM
-            setTimeout(() => {
-                // Принудительно обновляем все кнопки и интерактивные элементы
-                const buttons = document.querySelectorAll('button, .ant-btn');
-                buttons.forEach(button => {
-                    const htmlButton = button as HTMLElement;
-                    htmlButton.style.pointerEvents = 'auto';
-                    htmlButton.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все интерактивные элементы
-                const interactiveElements = document.querySelectorAll('a, input, select, textarea, [role="button"]');
-                interactiveElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                    htmlElement.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все таблицы и их элементы
-                const tableElements = document.querySelectorAll('table, tr, td, th');
-                tableElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все модальные окна
-                const modalElements = document.querySelectorAll('.ant-modal, .ant-modal-content, .ant-modal-header, .ant-modal-body, .ant-modal-footer');
-                modalElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все карточки и их элементы
-                const cardElements = document.querySelectorAll('.ant-card, .ant-card-body, .ant-card-header');
-                cardElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-            }, 50);
-        }
-    }, [forceUpdate]);
 
     // Прокрутка к началу страницы при загрузке компонента
     useEffect(() => {
@@ -176,13 +122,6 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно очищаем состояние после успешного добавления
-            setTimeout(() => {
-                setIsModalVisible(false);
-                setEditingItem(null);
-                setError("");
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
         } catch (error) {
             console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
@@ -212,13 +151,6 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно очищаем состояние после успешного редактирования
-            setTimeout(() => {
-                setIsModalVisible(false);
-                setEditingItem(null);
-                setError("");
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
         } catch (error: any) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -234,11 +166,7 @@ const EmployeeInventory = () => {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
             setError("");
-            // Принудительно очищаем состояние после успешного удаления
-            setTimeout(() => {
-                setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
+            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -269,10 +197,6 @@ const EmployeeInventory = () => {
                 }).unwrap();
             }
             setError("");
-            // Принудительное обновление после списания
-            setTimeout(() => {
-                triggerForceUpdate();
-            }, 100);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -299,13 +223,6 @@ const EmployeeInventory = () => {
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
-        // Принудительно очищаем все состояния
-        setTimeout(() => {
-            setIsModalVisible(false);
-            setEditingItem(null);
-            setError("");
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
     };
 
     const openNormsModal = () => {
@@ -322,12 +239,6 @@ const EmployeeInventory = () => {
         console.log('closeNormsModal called');
         setIsOpeningNormsModal(false);
         setIsNormsModalVisible(false);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsOpeningNormsModal(false);
-            setIsNormsModalVisible(false);
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
     };
 
     const handleViewAddons = (item: InventoryItem) => {
@@ -602,6 +513,9 @@ const EmployeeInventory = () => {
                 footer={null}
                 width={isMobile ? '95%' : 600}
                 centered={true}
+                destroyOnClose
+                maskClosable
+                keyboard
                 style={{ 
                     top: isMobile ? 20 : undefined,
                     margin: isMobile ? '0 auto' : undefined
@@ -632,6 +546,9 @@ const EmployeeInventory = () => {
                 footer={null}
                 width={isMobile ? '95%' : 1000}
                 centered={true}
+                destroyOnClose
+                maskClosable
+                keyboard
                 style={{ 
                     top: isMobile ? 20 : undefined,
                     margin: isMobile ? '0 auto' : undefined
