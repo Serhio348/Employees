@@ -389,12 +389,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                             }, 50);
                         },
                     },
-                    ...(onViewAddons ? [{
-                        key: 'addons',
-                        label: 'Дополнения',
-                        icon: <PlusOutlined />,
-                        onClick: () => onViewAddons(record),
-                    }] : []),
+                    // Кнопка "Дополнения" удалена как неиспользуемая
                     {
                         key: 'delete',
                         label: 'Удалить',
@@ -553,12 +548,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                                 }, 50);
                                             },
                                         },
-                                        ...(onViewAddons ? [{
-                                            key: 'addons',
-                                            label: 'Дополнения',
-                                            icon: <PlusOutlined />,
-                                            onClick: () => onViewAddons(record),
-                                        }] : []),
+                                        // Кнопка "Дополнения" удалена как неиспользуемая
                                         {
                                             key: 'delete',
                                             label: 'Удалить',
