@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Table, Button, Modal, Checkbox, Progress, Tag, Space, Popconfirm, message, Dropdown } from 'antd';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Table, Button, Modal, Checkbox, Progress, Tag, Popconfirm, message, Dropdown } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, ExclamationCircleOutlined, FileTextOutlined, MoreOutlined } from '@ant-design/icons';
 import { InventoryItem } from '../../app/services/inventory';
 import { useSizNorms } from '../../hooks/useSizNorms';
@@ -11,13 +11,12 @@ interface Props {
     onDelete: (id: string) => void;
     onViewAddons?: (item: InventoryItem) => void;
     loading?: boolean;
-    deletingIds?: string[];
     onCancelDelete?: (id: string) => void;
     onWriteOff?: (ids: string[]) => void;
     showWriteOffButton?: boolean;
 }
 
-const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading, deletingIds = [], onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
+const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
     const { sizNorms } = useSizNorms();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
@@ -145,14 +144,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         } else {
             setSelectedItems(prev => prev.filter(id => id !== itemId));
         }
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            if (checked) {
-                setSelectedItems(prev => [...prev, itemId]);
-            } else {
-                setSelectedItems(prev => prev.filter(id => id !== itemId));
-            }
-        }, 100);
     }, []);
 
     const handleSelectAll = useCallback((checked: boolean) => {
@@ -162,15 +153,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         } else {
             setSelectedItems([]);
         }
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            if (checked) {
-                const expiredItems = inventory.filter(item => isExpired(item)).map(item => item.id!);
-                setSelectedItems(expiredItems);
-            } else {
-                setSelectedItems([]);
-            }
-        }, 100);
     }, [inventory, isExpired]);
 
     const handleWriteOff = useCallback(() => {
@@ -184,11 +166,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             setSelectedItems([]);
             setIsWriteOffModalVisible(false);
             message.success(`Списано ${selectedItems.length} предметов`);
-            // Принудительно очищаем состояние
-            setTimeout(() => {
-                setSelectedItems([]);
-                setIsWriteOffModalVisible(false);
-            }, 100);
         }
     }, [selectedItems, onWriteOff]);
 
@@ -199,10 +176,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             return;
         }
         setIsWriteOffModalVisible(true);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsWriteOffModalVisible(true);
-        }, 100);
     }, [inventory, isExpired]);
 
 
@@ -404,7 +377,17 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                         key: 'edit',
                         label: 'Редактировать',
                         icon: <EditOutlined />,
-                        onClick: () => onEdit(record),
+                        onClick: () => {
+                            onEdit(record);
+                            // Принудительно очищаем все dropdown элементы
+                            setTimeout(() => {
+                                const dropdowns = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu, .ant-dropdown-menu-item');
+                                dropdowns.forEach(dropdown => dropdown.remove());
+                                // Также очищаем все overlay элементы
+                                const overlays = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu');
+                                overlays.forEach(overlay => overlay.remove());
+                            }, 50);
+                        },
                     },
                     ...(onViewAddons ? [{
                         key: 'addons',
@@ -424,6 +407,8 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                                     content: 'Вы уверены, что хотите удалить этот предмет из инвентаря?',
                                     okText: 'Да',
                                     cancelText: 'Нет',
+                                    maskClosable: true,
+                                    keyboard: true,
                                     onOk: () => onDelete(record.id!),
                                     onCancel: () => {
                                         if (onCancelDelete) {
@@ -441,6 +426,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                         menu={{ items: menuItems }}
                         trigger={['click']}
                         placement="bottomRight"
+                        destroyPopupOnHide
                     >
                         <Button
                             type="text"
@@ -555,7 +541,17 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                                             key: 'edit',
                                             label: 'Редактировать',
                                             icon: <EditOutlined />,
-                                            onClick: () => onEdit(record),
+                                            onClick: () => {
+                                                onEdit(record);
+                                                // Принудительно очищаем все dropdown элементы
+                                                setTimeout(() => {
+                                                    const dropdowns = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu, .ant-dropdown-menu-item');
+                                                    dropdowns.forEach(dropdown => dropdown.remove());
+                                                    // Также очищаем все overlay элементы
+                                                    const overlays = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu');
+                                                    overlays.forEach(overlay => overlay.remove());
+                                                }, 50);
+                                            },
                                         },
                                         ...(onViewAddons ? [{
                                             key: 'addons',
@@ -597,7 +593,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                 );
             },
         }] : []),
-    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete, deletingIds]);
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
@@ -974,6 +970,9 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                     okButtonProps={{ danger: true }}
                     width={isMobile ? '90%' : 520}
                     centered={isMobile}
+                    destroyOnClose
+                    maskClosable
+                    keyboard
                     style={isMobile ? { 
                         top: '20px',
                         marginBottom: '20px'
@@ -1001,6 +1000,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             )}
         </>
     );
-});
+};
 
 export default InventoryList;
