@@ -86,7 +86,8 @@ const InventoryForm = ({
             width: '100%',
             margin: 0,
             padding: 0,
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            marginTop: 0
         }}>
             {title && (
                 <div style={{ 
@@ -94,7 +95,8 @@ const InventoryForm = ({
                     fontWeight: '600',
                     textAlign: 'center',
                     marginBottom: '20px',
-                    padding: '0 16px'
+                    padding: '0 16px',
+                    marginTop: 0
                 }}>
                     {title}
                 </div>
@@ -287,11 +289,17 @@ const InventoryForm = ({
                     .ant-form {
                         margin: 0 !important;
                         padding: 0 !important;
+                        margin-top: 0 !important;
                     }
                     
                     .ant-form-item {
                         margin: 0 0 16px 0 !important;
                         padding: 0 !important;
+                        margin-top: 0 !important;
+                    }
+                    
+                    .ant-form-item:first-child {
+                        margin-top: 0 !important;
                     }
                     
                     .ant-form-item-label {
@@ -323,8 +331,11 @@ const InventoryForm = ({
                     .ant-select-selector {
                         padding-left: 8px !important;
                         padding-right: 8px !important;
-                        padding-top: 8px !important;
-                        padding-bottom: 8px !important;
+                        padding-top: 4px !important;
+                        padding-bottom: 4px !important;
+                        height: 40px !important;
+                        display: flex !important;
+                        align-items: center !important;
                     }
                     
                     .ant-select-selection-placeholder {
@@ -335,13 +346,18 @@ const InventoryForm = ({
                         font-size: 14px !important;
                         color: #bfbfbf !important;
                         line-height: 1.4 !important;
+                        display: flex !important;
+                        align-items: center !important;
                     }
                     
                     .ant-picker-input {
                         padding-left: 8px !important;
                         padding-right: 8px !important;
-                        padding-top: 8px !important;
-                        padding-bottom: 8px !important;
+                        padding-top: 4px !important;
+                        padding-bottom: 4px !important;
+                        height: 40px !important;
+                        display: flex !important;
+                        align-items: center !important;
                     }
                     
                     .ant-picker-input input {
@@ -351,6 +367,9 @@ const InventoryForm = ({
                         padding-bottom: 0 !important;
                         font-size: 14px !important;
                         line-height: 1.4 !important;
+                        height: auto !important;
+                        border: none !important;
+                        background: transparent !important;
                     }
                     
                     .ant-picker-input input::placeholder {
@@ -362,15 +381,35 @@ const InventoryForm = ({
                     .ant-input {
                         padding-left: 8px !important;
                         padding-right: 8px !important;
-                        padding-top: 8px !important;
-                        padding-bottom: 8px !important;
+                        padding-top: 4px !important;
+                        padding-bottom: 4px !important;
                         font-size: 14px !important;
                         line-height: 1.4 !important;
+                        height: 40px !important;
+                        display: flex !important;
+                        align-items: center !important;
                     }
                     
                     .ant-input::placeholder {
                         font-size: 14px !important;
                         color: #bfbfbf !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    /* Дополнительные стили для выравнивания текста */
+                    .ant-select-selection-item {
+                        display: flex !important;
+                        align-items: center !important;
+                        line-height: 1.4 !important;
+                    }
+                    
+                    .ant-select-selection-search {
+                        display: flex !important;
+                        align-items: center !important;
+                    }
+                    
+                    .ant-select-selection-search-input {
+                        height: auto !important;
                         line-height: 1.4 !important;
                     }
                     
@@ -389,8 +428,11 @@ const InventoryForm = ({
                         .ant-select-selector {
                             padding-left: 6px !important;
                             padding-right: 6px !important;
-                            padding-top: 6px !important;
-                            padding-bottom: 6px !important;
+                            padding-top: 4px !important;
+                            padding-bottom: 4px !important;
+                            height: 32px !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
                         
                         .ant-select-selection-placeholder {
@@ -404,8 +446,11 @@ const InventoryForm = ({
                         .ant-picker-input {
                             padding-left: 6px !important;
                             padding-right: 6px !important;
-                            padding-top: 6px !important;
-                            padding-bottom: 6px !important;
+                            padding-top: 4px !important;
+                            padding-bottom: 4px !important;
+                            height: 32px !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
                         
                         .ant-picker-input input {
@@ -424,10 +469,13 @@ const InventoryForm = ({
                         .ant-input {
                             padding-left: 6px !important;
                             padding-right: 6px !important;
-                            padding-top: 6px !important;
-                            padding-bottom: 6px !important;
+                            padding-top: 4px !important;
+                            padding-bottom: 4px !important;
                             font-size: 12px !important;
                             line-height: 1.4 !important;
+                            height: 32px !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
                         
                         .ant-input::placeholder {
@@ -455,8 +503,11 @@ const InventoryForm = ({
                         .ant-select-selector {
                             padding-left: 8px !important;
                             padding-right: 8px !important;
-                            padding-top: 8px !important;
-                            padding-bottom: 8px !important;
+                            padding-top: 4px !important;
+                            padding-bottom: 4px !important;
+                            height: 40px !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
                         
                         .ant-select-selection-placeholder {
@@ -470,8 +521,11 @@ const InventoryForm = ({
                         .ant-picker-input {
                             padding-left: 8px !important;
                             padding-right: 8px !important;
-                            padding-top: 8px !important;
-                            padding-bottom: 8px !important;
+                            padding-top: 4px !important;
+                            padding-bottom: 4px !important;
+                            height: 40px !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
                         
                         .ant-picker-input input {
@@ -490,10 +544,13 @@ const InventoryForm = ({
                         .ant-input {
                             padding-left: 8px !important;
                             padding-right: 8px !important;
-                            padding-top: 8px !important;
-                            padding-bottom: 8px !important;
+                            padding-top: 4px !important;
+                            padding-bottom: 4px !important;
                             font-size: 14px !important;
                             line-height: 1.4 !important;
+                            height: 40px !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
                         
                         .ant-input::placeholder {

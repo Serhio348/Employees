@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Table, Button, Modal, Checkbox, Progress, Tag, Space, Popconfirm, message, Dropdown } from 'antd';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Table, Button, Modal, Checkbox, Progress, Tag, Popconfirm, message, Dropdown } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, ExclamationCircleOutlined, FileTextOutlined, MoreOutlined } from '@ant-design/icons';
 import { InventoryItem } from '../../app/services/inventory';
 import { useSizNorms } from '../../hooks/useSizNorms';
@@ -11,68 +11,48 @@ interface Props {
     onDelete: (id: string) => void;
     onViewAddons?: (item: InventoryItem) => void;
     loading?: boolean;
-    deletingIds?: string[];
     onCancelDelete?: (id: string) => void;
     onWriteOff?: (ids: string[]) => void;
     showWriteOffButton?: boolean;
 }
 
-const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading, deletingIds = [], onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
+const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
     const { sizNorms } = useSizNorms();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isVerySmall, setIsVerySmall] = useState(false);
     const [forceUpdate, setForceUpdate] = useState(0);
-    const triggerForceUpdate = useCallback(() => {
-        setForceUpdate(prev => prev + 1);
-    }, []);
 
-    // Принудительное обновление компонента при изменении forceUpdate
-    useEffect(() => {
-        if (forceUpdate > 0) {
-            // Принудительно обновляем компонент
-            console.log('InventoryList force update triggered:', forceUpdate);
-            // Принудительно обновляем все состояния
-            setSelectedItems([]);
-            setIsWriteOffModalVisible(false);
-            // Принудительно обновляем DOM
-            setTimeout(() => {
-                // Принудительно обновляем все кнопки и интерактивные элементы
-                const buttons = document.querySelectorAll('button, .ant-btn');
-                buttons.forEach(button => {
-                    const htmlButton = button as HTMLElement;
-                    htmlButton.style.pointerEvents = 'auto';
-                    htmlButton.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все интерактивные элементы
-                const interactiveElements = document.querySelectorAll('a, input, select, textarea, [role="button"]');
-                interactiveElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                    htmlElement.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все таблицы и их элементы
-                const tableElements = document.querySelectorAll('table, tr, td, th');
-                tableElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все модальные окна
-                const modalElements = document.querySelectorAll('.ant-modal, .ant-modal-content, .ant-modal-header, .ant-modal-body, .ant-modal-footer');
-                modalElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все карточки и их элементы
-                const cardElements = document.querySelectorAll('.ant-card, .ant-card-body, .ant-card-header');
-                cardElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-            }, 50);
+    // Агрессивная очистка скрытых элементов AntD для предотвращения aria-hidden ошибок
+    const ensureSafeFocus = useCallback(() => {
+        try {
+            // Сначала убираем фокус с активного элемента
+            const activeElement = document.activeElement as HTMLElement | null;
+            if (activeElement && typeof activeElement.blur === 'function') {
+                activeElement.blur();
+            }
+            
+            // Удаляем все скрытые элементы AntD с aria-hidden
+            const hiddenElements = document.querySelectorAll('[aria-hidden="true"]');
+            hiddenElements.forEach(el => {
+                // Проверяем, что это скрытый элемент AntD (обычно с tabindex="0")
+                if (el.hasAttribute('tabindex') && el.getAttribute('tabindex') === '0') {
+                    el.remove();
+                }
+            });
+            
+            // Дополнительно очищаем все элементы с нулевыми размерами и aria-hidden
+            const zeroSizeElements = document.querySelectorAll('[style*="width: 0px"][style*="height: 0px"][aria-hidden="true"]');
+            zeroSizeElements.forEach(el => el.remove());
+            
+            // Перенаправляем фокус на body
+            const body = document.body as HTMLElement;
+            body.focus?.({ preventScroll: true });
+        } catch (error) {
+            console.warn('Error in ensureSafeFocus:', error);
         }
-    }, [forceUpdate]);
+    }, []);
 
     // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
     useEffect(() => {
@@ -96,6 +76,23 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
+    // Очищаем скрытые элементы AntD при каждом обновлении компонента
+    useEffect(() => {
+        const cleanup = () => {
+            ensureSafeFocus();
+        };
+        
+        // Очищаем сразу
+        cleanup();
+        
+        // И через небольшую задержку для надежности
+        const timeoutId = setTimeout(cleanup, 100);
+        
+        return () => {
+            clearTimeout(timeoutId);
+        };
+    }, [forceUpdate, ensureSafeFocus]);
 
     // Нормализация названий для гибкого сопоставления (игнор регистра/ё/пунктуации/двойных пробелов)
     const normalizeName = useCallback((value: string = '') => {
@@ -195,16 +192,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         } else {
             setSelectedItems(prev => prev.filter(id => id !== itemId));
         }
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            if (checked) {
-                setSelectedItems(prev => [...prev, itemId]);
-            } else {
-                setSelectedItems(prev => prev.filter(id => id !== itemId));
-            }
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
-    }, [triggerForceUpdate]);
+    }, []);
 
     const handleSelectAll = useCallback((checked: boolean) => {
         if (checked) {
@@ -213,17 +201,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         } else {
             setSelectedItems([]);
         }
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            if (checked) {
-                const expiredItems = inventory.filter(item => isExpired(item)).map(item => item.id!);
-                setSelectedItems(expiredItems);
-            } else {
-                setSelectedItems([]);
-            }
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
-    }, [inventory, isExpired, triggerForceUpdate]);
+    }, [inventory, isExpired]);
 
     const handleWriteOff = useCallback(() => {
         if (selectedItems.length === 0) {
@@ -236,14 +214,8 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             setSelectedItems([]);
             setIsWriteOffModalVisible(false);
             message.success(`Списано ${selectedItems.length} предметов`);
-            // Принудительно очищаем состояние
-            setTimeout(() => {
-                setSelectedItems([]);
-                setIsWriteOffModalVisible(false);
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
         }
-    }, [selectedItems, onWriteOff, triggerForceUpdate]);
+    }, [selectedItems, onWriteOff]);
 
     const openWriteOffModal = useCallback(() => {
         const expiredItems = inventory.filter(item => isExpired(item));
@@ -252,12 +224,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             return;
         }
         setIsWriteOffModalVisible(true);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsWriteOffModalVisible(true);
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
-    }, [inventory, isExpired, triggerForceUpdate]);
+    }, [inventory, isExpired]);
 
 
     const columns = useMemo(() => [
@@ -450,49 +417,74 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
         {
             title: 'Действия',
             key: 'actions',
-            render: (_: any, record: InventoryItem) => (
-                <Space>
-                    <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        onClick={() => onEdit(record)}
-                    >
-                        Редактировать
-                    </Button>
-                    {onViewAddons && (
-                        <Button
-                            type="default"
-                            icon={<PlusOutlined />}
-                            onClick={() => onViewAddons(record)}
-                        >
-                            Дополнения
-                        </Button>
-                    )}
-                    <Popconfirm
-                        title="Удалить предмет?"
-                        description="Вы уверены, что хотите удалить этот предмет из инвентаря?"
-                        onConfirm={() => record.id && onDelete(record.id)}
-                        onCancel={() => {
-                            if (record.id && onCancelDelete) {
-                                onCancelDelete(record.id);
+            width: 80,
+            align: 'center' as const,
+            render: (_: any, record: InventoryItem) => {
+                const menuItems = [
+                    {
+                        key: 'edit',
+                        label: 'Редактировать',
+                        icon: <EditOutlined />,
+                        onClick: () => {
+                            ensureSafeFocus();
+                            onEdit(record);
+                            setForceUpdate(prev => prev + 1);
+                        },
+                    },
+                    // Кнопка "Дополнения" удалена как неиспользуемая
+                    {
+                        key: 'delete',
+                        label: 'Удалить',
+                        icon: <DeleteOutlined />,
+                        danger: true,
+                        onClick: () => {
+                            if (record.id) {
+                                Modal.confirm({
+                                    title: 'Удалить предмет?',
+                                    content: 'Вы уверены, что хотите удалить этот предмет из инвентаря?',
+                                    okText: 'Да',
+                                    cancelText: 'Нет',
+                                    maskClosable: true,
+                                    keyboard: true,
+                                    onOk: () => onDelete(record.id!),
+                                    onCancel: () => {
+                                        if (onCancelDelete) {
+                                            onCancelDelete(record.id!);
+                                        }
+                                    },
+                                });
+                            }
+                        },
+                    },
+                ];
+
+                return (
+                    <Dropdown
+                        menu={{ items: menuItems }}
+                        trigger={['click']}
+                        placement="bottomRight"
+                        destroyPopupOnHide
+                        onOpenChange={(open) => {
+                            // Перенаправляем фокус, чтобы не оставался внутри aria-hidden контейнеров
+                            ensureSafeFocus();
+                            if (!open) {
+                                setTimeout(() => setForceUpdate(prev => prev + 1), 50);
                             }
                         }}
-                        okText="Да"
-                        cancelText="Нет"
-                        disabled={deletingIds.includes(record.id || '')}
                     >
                         <Button
-                            type="primary"
-                            danger
-                            icon={<DeleteOutlined />}
-                            loading={deletingIds.includes(record.id || '')}
-                            disabled={deletingIds.includes(record.id || '')}
-                        >
-                            Удалить
-                        </Button>
-                    </Popconfirm>
-                </Space>
-            ),
+                            type="text"
+                            icon={<MoreOutlined />}
+                            size="small"
+                            style={{ 
+                                padding: '4px 8px',
+                                fontSize: '12px',
+                                minWidth: '32px'
+                            }}
+                        />
+                    </Dropdown>
+                );
+            },
         },
         ]),
         ...(isMobile ? [{
@@ -593,14 +585,13 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                                             key: 'edit',
                                             label: 'Редактировать',
                                             icon: <EditOutlined />,
-                                            onClick: () => onEdit(record),
+                                            onClick: () => {
+                                                onEdit(record);
+                                                // Принудительно обновляем компонент для устранения блокировки кнопок
+                                                setForceUpdate(prev => prev + 1);
+                                            },
                                         },
-                                        ...(onViewAddons ? [{
-                                            key: 'addons',
-                                            label: 'Дополнения',
-                                            icon: <PlusOutlined />,
-                                            onClick: () => onViewAddons(record),
-                                        }] : []),
+                                        // Кнопка "Дополнения" удалена как неиспользуемая
                                         {
                                             key: 'delete',
                                             label: 'Удалить',
@@ -618,6 +609,12 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                         }}
                         trigger={['click']}
                         placement="bottomRight"
+                        onOpenChange={(open) => {
+                            ensureSafeFocus();
+                            if (!open) {
+                                setTimeout(() => setForceUpdate(prev => prev + 1), 50);
+                            }
+                        }}
                     >
                         <Button
                             type="text"
@@ -635,7 +632,7 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                 );
             },
         }] : []),
-    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete, deletingIds]);
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
@@ -894,11 +891,37 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                         }
                     }
 
+                    /* Стили для Dropdown меню действий */
+                    .ant-dropdown-menu {
+                        min-width: 140px !important;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                        border-radius: 6px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item {
+                        padding: 8px 12px !important;
+                        font-size: 13px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item .anticon {
+                        margin-right: 8px !important;
+                        font-size: 12px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item-danger {
+                        color: #ff4d4f !important;
+                    }
+                    
+                    .ant-dropdown-menu-item-danger:hover {
+                        background-color: #fff2f0 !important;
+                    }
+
                 `}
             </style>
             
 
             <Table
+                key={forceUpdate}
                 columns={columns}
                 dataSource={inventory}
                 rowKey="id"
@@ -987,6 +1010,9 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
                     okButtonProps={{ danger: true }}
                     width={isMobile ? '90%' : 520}
                     centered={isMobile}
+                    destroyOnClose
+                    maskClosable
+                    keyboard
                     style={isMobile ? { 
                         top: '20px',
                         marginBottom: '20px'
@@ -1014,6 +1040,6 @@ const InventoryList = memo(({ inventory, onEdit, onDelete, onViewAddons, loading
             )}
         </>
     );
-});
+};
 
 export default InventoryList;

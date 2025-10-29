@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Typography, Button } from 'antd';
 import { ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +27,20 @@ const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
 }) => {
     const navigate = useNavigate();
     const { showHeader } = useHeader();
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const handleBackClick = () => {
         showHeader();
@@ -47,14 +61,14 @@ const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{
-                        width: '48px',
-                        height: '48px',
+                        width: isMobile ? '48px' : '52px',
+                        height: isMobile ? '48px' : '52px',
                         borderRadius: '50%',
                         background: 'rgba(255, 255, 255, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '20px',
+                        fontSize: isMobile ? '20px' : '22px',
                         color: 'white',
                         flexShrink: 0
                     }}>
@@ -66,7 +80,7 @@ const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
                             style={{ 
                                 color: 'white', 
                                 margin: 0, 
-                                fontSize: '18px',
+                                fontSize: isMobile ? '18px' : '22px',
                                 fontWeight: 'bold',
                                 textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                                 lineHeight: '1.2',

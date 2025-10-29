@@ -35,6 +35,7 @@ const EmployeeInventory = () => {
     const [deletingIds, setDeletingIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('active');
     const [isMobile, setIsMobile] = useState(false);
+    const [forceUpdate, setForceUpdate] = useState(0);
     const { hideHeader } = useHeader();
 
     const { data: allInventory = [], isLoading } = useGetEmployeeInventoryQuery(employeeId!, {
@@ -95,60 +96,6 @@ const EmployeeInventory = () => {
         };
     }, []);
 
-    // Принудительное обновление компонента после операций с инвентарем
-    const [forceUpdate, setForceUpdate] = useState(0);
-    const triggerForceUpdate = useCallback(() => {
-        setForceUpdate(prev => prev + 1);
-    }, []);
-
-    // Принудительное обновление компонента при изменении forceUpdate
-    useEffect(() => {
-        if (forceUpdate > 0) {
-            // Принудительно обновляем компонент
-            console.log('Force update triggered:', forceUpdate);
-            // Принудительно обновляем все состояния
-            setError("");
-            setEditingItem(null);
-            setIsModalVisible(false);
-            setIsNormsModalVisible(false);
-            setIsOpeningNormsModal(false);
-            // Принудительно обновляем DOM
-            setTimeout(() => {
-                // Принудительно обновляем все кнопки и интерактивные элементы
-                const buttons = document.querySelectorAll('button, .ant-btn');
-                buttons.forEach(button => {
-                    const htmlButton = button as HTMLElement;
-                    htmlButton.style.pointerEvents = 'auto';
-                    htmlButton.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все интерактивные элементы
-                const interactiveElements = document.querySelectorAll('a, input, select, textarea, [role="button"]');
-                interactiveElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                    htmlElement.style.cursor = 'pointer';
-                });
-                // Принудительно обновляем все таблицы и их элементы
-                const tableElements = document.querySelectorAll('table, tr, td, th');
-                tableElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все модальные окна
-                const modalElements = document.querySelectorAll('.ant-modal, .ant-modal-content, .ant-modal-header, .ant-modal-body, .ant-modal-footer');
-                modalElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-                // Принудительно обновляем все карточки и их элементы
-                const cardElements = document.querySelectorAll('.ant-card, .ant-card-body, .ant-card-header');
-                cardElements.forEach(element => {
-                    const htmlElement = element as HTMLElement;
-                    htmlElement.style.pointerEvents = 'auto';
-                });
-            }, 50);
-        }
-    }, [forceUpdate]);
 
     // Прокрутка к началу страницы при загрузке компонента
     useEffect(() => {
@@ -176,13 +123,8 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно очищаем состояние после успешного добавления
-            setTimeout(() => {
-                setIsModalVisible(false);
-                setEditingItem(null);
-                setError("");
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
+            // Принудительно обновляем компонент
+            setForceUpdate(prev => prev + 1);
         } catch (error) {
             console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
@@ -212,13 +154,8 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно очищаем состояние после успешного редактирования
-            setTimeout(() => {
-                setIsModalVisible(false);
-                setEditingItem(null);
-                setError("");
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
+            // Принудительно обновляем компонент
+            setForceUpdate(prev => prev + 1);
         } catch (error: any) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -234,11 +171,9 @@ const EmployeeInventory = () => {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
             setError("");
-            // Принудительно очищаем состояние после успешного удаления
-            setTimeout(() => {
-                setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-                triggerForceUpdate(); // Принудительное обновление компонента
-            }, 100);
+            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
+            // Принудительно обновляем компонент
+            setForceUpdate(prev => prev + 1);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -269,10 +204,8 @@ const EmployeeInventory = () => {
                 }).unwrap();
             }
             setError("");
-            // Принудительное обновление после списания
-            setTimeout(() => {
-                triggerForceUpdate();
-            }, 100);
+            // Принудительно обновляем компонент
+            setForceUpdate(prev => prev + 1);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -293,19 +226,16 @@ const EmployeeInventory = () => {
         setEditingItem(item);
         setIsModalVisible(true);
         setError("");
+        // Принудительно обновляем компонент
+        setForceUpdate(prev => prev + 1);
     };
 
     const closeModal = () => {
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
-        // Принудительно очищаем все состояния
-        setTimeout(() => {
-            setIsModalVisible(false);
-            setEditingItem(null);
-            setError("");
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
+        // Принудительно обновляем компонент
+        setForceUpdate(prev => prev + 1);
     };
 
     const openNormsModal = () => {
@@ -316,18 +246,16 @@ const EmployeeInventory = () => {
         }
         setIsOpeningNormsModal(true);
         setIsNormsModalVisible(true);
+        // Принудительно обновляем компонент
+        setForceUpdate(prev => prev + 1);
     };
 
     const closeNormsModal = () => {
         console.log('closeNormsModal called');
         setIsOpeningNormsModal(false);
         setIsNormsModalVisible(false);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsOpeningNormsModal(false);
-            setIsNormsModalVisible(false);
-            triggerForceUpdate(); // Принудительное обновление компонента
-        }, 100);
+        // Принудительно обновляем компонент
+        setForceUpdate(prev => prev + 1);
     };
 
     const handleViewAddons = (item: InventoryItem) => {
@@ -344,7 +272,7 @@ const EmployeeInventory = () => {
     }), [activeInventory, writtenOffInventory]);
 
     return (
-        <Layout>
+        <Layout key={forceUpdate}>
             {employee && (
                 <EmployeeHeader 
                     employee={{
@@ -359,6 +287,7 @@ const EmployeeInventory = () => {
                 />
             )}
             
+            <div className="inventory-page">
             <Row gutter={[16, 16]}>
                 <Col span={24}>
                     <div style={{ marginBottom: '24px' }}>
@@ -560,12 +489,12 @@ const EmployeeInventory = () => {
                                     `Активный инвентарь (${activeInventory.length})`,
                                 children: (
                                     <InventoryList
+                                        key={`active-${forceUpdate}`}
                                         inventory={activeInventory}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
                                         onViewAddons={handleViewAddons}
                                         loading={isLoading}
-                                        deletingIds={deletingIds}
                                         onCancelDelete={handleCancelDelete}
                                         onWriteOff={handleWriteOff}
                                     />
@@ -578,12 +507,12 @@ const EmployeeInventory = () => {
                                     `Списанный инвентарь (${writtenOffInventory.length})`,
                                 children: (
                                     <InventoryList
+                                        key={`written-off-${forceUpdate}`}
                                         inventory={writtenOffInventory}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
                                         onViewAddons={handleViewAddons}
                                         loading={isLoading}
-                                        deletingIds={deletingIds}
                                         onCancelDelete={handleCancelDelete}
                                         onWriteOff={handleWriteOff}
                                         showWriteOffButton={false}
@@ -602,6 +531,9 @@ const EmployeeInventory = () => {
                 footer={null}
                 width={isMobile ? '95%' : 600}
                 centered={true}
+                destroyOnClose
+                maskClosable
+                keyboard
                 style={{ 
                     top: isMobile ? 20 : undefined,
                     margin: isMobile ? '0 auto' : undefined
@@ -609,7 +541,9 @@ const EmployeeInventory = () => {
                 bodyStyle={{ 
                     padding: isMobile ? '16px' : '24px',
                     maxHeight: isMobile ? '80vh' : '70vh',
-                    overflowY: 'auto'
+                    overflowY: 'auto',
+                    marginTop: 0,
+                    paddingTop: isMobile ? '16px' : '24px'
                 }}
             >
                 <InventoryForm
@@ -630,6 +564,9 @@ const EmployeeInventory = () => {
                 footer={null}
                 width={isMobile ? '95%' : 1000}
                 centered={true}
+                destroyOnClose
+                maskClosable
+                keyboard
                 style={{ 
                     top: isMobile ? 20 : undefined,
                     margin: isMobile ? '0 auto' : undefined
@@ -643,6 +580,7 @@ const EmployeeInventory = () => {
                 <SizNormsTable />
             </Modal>
 
+            </div>
             <style>
                 {`
                     /* Простые адаптивные стили для вкладок */
@@ -670,48 +608,48 @@ const EmployeeInventory = () => {
                         padding: 0 !important;
                     }
 
-                    /* Простые стили для карточки сотрудника */
-                    .ant-card-body {
+                    /* Простые стили для карточки сотрудника (только внутри inventory-page) */
+                    .inventory-page .ant-card-body {
                         padding: 16px !important;
                     }
                     
-                    .ant-typography h2 {
+                    .inventory-page .ant-typography h2 {
                         font-size: 16px !important;
                         line-height: 1.2 !important;
                         word-break: break-word !important;
                     }
                     
-                    .ant-typography {
+                    .inventory-page .ant-typography {
                         font-size: 12px !important;
                         word-break: break-word !important;
                     }
                     
-                    .ant-typography:last-child {
+                    .inventory-page .ant-typography:last-child {
                         font-size: 9px !important;
                     }
 
                     /* Адаптивные стили для статистических карточек */
                     @media (max-width: 768px) {
-                        .ant-statistic-title {
+                        .inventory-page .ant-statistic-title {
                             font-size: 12px !important;
                             margin-bottom: 4px !important;
                             line-height: 1.2 !important;
                             word-break: break-word !important;
                         }
                         
-                        .ant-statistic-content {
+                        .inventory-page .ant-statistic-content {
                             font-size: 18px !important;
                             line-height: 1.2 !important;
                         }
                         
-                        .ant-card {
+                        .inventory-page .ant-card {
                             min-height: 80px !important;
                             display: flex !important;
                             align-items: center !important;
                             justify-content: center !important;
                         }
                         
-                        .ant-card-body {
+                        .inventory-page .ant-card-body {
                             padding: 8px !important;
                             height: 100% !important;
                             display: flex !important;
@@ -722,22 +660,37 @@ const EmployeeInventory = () => {
                     }
 
                     @media (max-width: 480px) {
-                        .ant-statistic-title {
+                        .inventory-page .ant-statistic-title {
                             font-size: 10px !important;
                             margin-bottom: 2px !important;
                         }
                         
-                        .ant-statistic-content {
+                        .inventory-page .ant-statistic-content {
                             font-size: 16px !important;
                         }
                         
-                        .ant-card {
+                        .inventory-page .ant-card {
                             min-height: 70px !important;
                         }
                         
-                        .ant-card-body {
+                        .inventory-page .ant-card-body {
                             padding: 6px !important;
                         }
+                    }
+
+                    /* Стили для модального окна с формой инвентаря */
+                    .ant-modal-body {
+                        margin-top: 0 !important;
+                        padding-top: 24px !important;
+                    }
+                    
+                    .ant-modal-body .ant-form {
+                        margin-top: 0 !important;
+                        padding-top: 0 !important;
+                    }
+                    
+                    .ant-modal-body .ant-form-item:first-child {
+                        margin-top: 0 !important;
                     }
 
                     /* Адаптивные стили для таблицы нормативов СИЗ */
@@ -768,6 +721,10 @@ const EmployeeInventory = () => {
                         
                         .ant-table-tbody > tr > td .ant-btn .anticon {
                             font-size: 10px !important;
+                        }
+                        
+                        .ant-modal-body {
+                            padding-top: 16px !important;
                         }
                     }
 
