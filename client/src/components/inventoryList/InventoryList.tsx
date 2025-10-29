@@ -379,6 +379,11 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         label: 'Редактировать',
                         icon: <EditOutlined />,
                         onClick: () => {
+                            // Очищаем фокус перед действием
+                            const activeElement = document.activeElement as HTMLElement;
+                            if (activeElement && activeElement.blur) {
+                                activeElement.blur();
+                            }
                             onEdit(record);
                             // Принудительно обновляем компонент для устранения блокировки кнопок
                             setForceUpdate(prev => prev + 1);
@@ -419,7 +424,18 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         destroyPopupOnHide
                         onOpenChange={(open) => {
                             if (!open) {
-                                // Принудительно обновляем компонент при закрытии меню
+                                // Очищаем фокус и принудительно обновляем компонент при закрытии меню
+                                const activeElement = document.activeElement as HTMLElement;
+                                if (activeElement && activeElement.blur) {
+                                    activeElement.blur();
+                                }
+                                // Убираем aria-hidden с элементов, которые могут блокировать фокус
+                                const hiddenElements = document.querySelectorAll('[aria-hidden="true"]');
+                                hiddenElements.forEach(el => {
+                                    if (el.contains(activeElement)) {
+                                        el.removeAttribute('aria-hidden');
+                                    }
+                                });
                                 setTimeout(() => setForceUpdate(prev => prev + 1), 50);
                             }
                         }}
