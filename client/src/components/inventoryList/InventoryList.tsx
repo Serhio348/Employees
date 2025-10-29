@@ -22,6 +22,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isVerySmall, setIsVerySmall] = useState(false);
+    const [forceUpdate, setForceUpdate] = useState(0);
 
     // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
     useEffect(() => {
@@ -379,14 +380,8 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         icon: <EditOutlined />,
                         onClick: () => {
                             onEdit(record);
-                            // Принудительно очищаем все dropdown элементы
-                            setTimeout(() => {
-                                const dropdowns = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu, .ant-dropdown-menu-item');
-                                dropdowns.forEach(dropdown => dropdown.remove());
-                                // Также очищаем все overlay элементы
-                                const overlays = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu');
-                                overlays.forEach(overlay => overlay.remove());
-                            }, 50);
+                            // Принудительно обновляем компонент для устранения блокировки кнопок
+                            setForceUpdate(prev => prev + 1);
                         },
                     },
                     // Кнопка "Дополнения" удалена как неиспользуемая
@@ -422,6 +417,12 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         trigger={['click']}
                         placement="bottomRight"
                         destroyPopupOnHide
+                        onOpenChange={(open) => {
+                            if (!open) {
+                                // Принудительно обновляем компонент при закрытии меню
+                                setTimeout(() => setForceUpdate(prev => prev + 1), 50);
+                            }
+                        }}
                     >
                         <Button
                             type="text"
@@ -538,14 +539,8 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                             icon: <EditOutlined />,
                                             onClick: () => {
                                                 onEdit(record);
-                                                // Принудительно очищаем все dropdown элементы
-                                                setTimeout(() => {
-                                                    const dropdowns = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu, .ant-dropdown-menu-item');
-                                                    dropdowns.forEach(dropdown => dropdown.remove());
-                                                    // Также очищаем все overlay элементы
-                                                    const overlays = document.querySelectorAll('.ant-dropdown, .ant-dropdown-menu');
-                                                    overlays.forEach(overlay => overlay.remove());
-                                                }, 50);
+                                                // Принудительно обновляем компонент для устранения блокировки кнопок
+                                                setForceUpdate(prev => prev + 1);
                                             },
                                         },
                                         // Кнопка "Дополнения" удалена как неиспользуемая
@@ -566,6 +561,12 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         }}
                         trigger={['click']}
                         placement="bottomRight"
+                        onOpenChange={(open) => {
+                            if (!open) {
+                                // Принудительно обновляем компонент при закрытии меню
+                                setTimeout(() => setForceUpdate(prev => prev + 1), 50);
+                            }
+                        }}
                     >
                         <Button
                             type="text"
@@ -872,6 +873,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             
 
             <Table
+                key={forceUpdate}
                 columns={columns}
                 dataSource={inventory}
                 rowKey="id"
