@@ -1,4 +1,4 @@
-import { Table, Tag, Button, Space, Popconfirm, Tooltip, Dropdown, Modal } from 'antd';
+import { Table, Tag, Button, Space, Tooltip, Dropdown, Modal } from 'antd';
 import { EditOutlined, DeleteOutlined, ClockCircleOutlined, MoreOutlined } from '@ant-design/icons';
 import React from 'react';
 import { InventoryAddon } from '../../app/services/inventoryAddon';

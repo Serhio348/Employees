@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
@@ -32,7 +32,7 @@ const EmployeeInventory = () => {
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
     const [isOpeningNormsModal, setIsOpeningNormsModal] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
-    const [deletingIds, setDeletingIds] = useState<string[]>([]);
+    const [, setDeletingIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('active');
     const [isMobile, setIsMobile] = useState(false);
     const [forceUpdate, setForceUpdate] = useState(0);
