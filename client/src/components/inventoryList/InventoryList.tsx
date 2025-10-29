@@ -24,6 +24,25 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
     const [isVerySmall, setIsVerySmall] = useState(false);
     const [forceUpdate, setForceUpdate] = useState(0);
 
+    // Безопасное перенаправление фокуса, чтобы избежать предупреждения aria-hidden
+    const ensureSafeFocus = useCallback(() => {
+        try {
+            const activeElement = document.activeElement as HTMLElement | null;
+            if (activeElement && typeof activeElement.blur === 'function') {
+                activeElement.blur();
+            }
+            const body = document.body as HTMLElement;
+            const hadTabIndex = body.hasAttribute('tabindex');
+            if (!hadTabIndex) {
+                body.setAttribute('tabindex', '-1');
+            }
+            (body as any).focus?.({ preventScroll: true });
+            if (!hadTabIndex) {
+                body.removeAttribute('tabindex');
+            }
+        } catch {}
+    }, []);
+
     // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
     useEffect(() => {
         const handleError = (e: ErrorEvent) => {
@@ -379,13 +398,8 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         label: 'Редактировать',
                         icon: <EditOutlined />,
                         onClick: () => {
-                            // Очищаем фокус перед действием
-                            const activeElement = document.activeElement as HTMLElement;
-                            if (activeElement && activeElement.blur) {
-                                activeElement.blur();
-                            }
+                            ensureSafeFocus();
                             onEdit(record);
-                            // Принудительно обновляем компонент для устранения блокировки кнопок
                             setForceUpdate(prev => prev + 1);
                         },
                     },
@@ -423,19 +437,9 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         placement="bottomRight"
                         destroyPopupOnHide
                         onOpenChange={(open) => {
+                            // Перенаправляем фокус, чтобы не оставался внутри aria-hidden контейнеров
+                            ensureSafeFocus();
                             if (!open) {
-                                // Очищаем фокус и принудительно обновляем компонент при закрытии меню
-                                const activeElement = document.activeElement as HTMLElement;
-                                if (activeElement && activeElement.blur) {
-                                    activeElement.blur();
-                                }
-                                // Убираем aria-hidden с элементов, которые могут блокировать фокус
-                                const hiddenElements = document.querySelectorAll('[aria-hidden="true"]');
-                                hiddenElements.forEach(el => {
-                                    if (el.contains(activeElement)) {
-                                        el.removeAttribute('aria-hidden');
-                                    }
-                                });
                                 setTimeout(() => setForceUpdate(prev => prev + 1), 50);
                             }
                         }}
@@ -578,8 +582,8 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         trigger={['click']}
                         placement="bottomRight"
                         onOpenChange={(open) => {
+                            ensureSafeFocus();
                             if (!open) {
-                                // Принудительно обновляем компонент при закрытии меню
                                 setTimeout(() => setForceUpdate(prev => prev + 1), 50);
                             }
                         }}
