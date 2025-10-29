@@ -287,6 +287,7 @@ const EmployeeInventory = () => {
                 />
             )}
             
+            <div className="inventory-page">
             <Row gutter={[16, 16]}>
                 <Col span={24}>
                     <div style={{ marginBottom: '24px' }}>
@@ -579,6 +580,7 @@ const EmployeeInventory = () => {
                 <SizNormsTable />
             </Modal>
 
+            </div>
             <style>
                 {`
                     /* Простые адаптивные стили для вкладок */
@@ -606,48 +608,48 @@ const EmployeeInventory = () => {
                         padding: 0 !important;
                     }
 
-                    /* Простые стили для карточки сотрудника */
-                    .ant-card-body {
+                    /* Простые стили для карточки сотрудника (только внутри inventory-page) */
+                    .inventory-page .ant-card-body {
                         padding: 16px !important;
                     }
                     
-                    .ant-typography h2 {
+                    .inventory-page .ant-typography h2 {
                         font-size: 16px !important;
                         line-height: 1.2 !important;
                         word-break: break-word !important;
                     }
                     
-                    .ant-typography {
+                    .inventory-page .ant-typography {
                         font-size: 12px !important;
                         word-break: break-word !important;
                     }
                     
-                    .ant-typography:last-child {
+                    .inventory-page .ant-typography:last-child {
                         font-size: 9px !important;
                     }
 
                     /* Адаптивные стили для статистических карточек */
                     @media (max-width: 768px) {
-                        .ant-statistic-title {
+                        .inventory-page .ant-statistic-title {
                             font-size: 12px !important;
                             margin-bottom: 4px !important;
                             line-height: 1.2 !important;
                             word-break: break-word !important;
                         }
                         
-                        .ant-statistic-content {
+                        .inventory-page .ant-statistic-content {
                             font-size: 18px !important;
                             line-height: 1.2 !important;
                         }
                         
-                        .ant-card {
+                        .inventory-page .ant-card {
                             min-height: 80px !important;
                             display: flex !important;
                             align-items: center !important;
                             justify-content: center !important;
                         }
                         
-                        .ant-card-body {
+                        .inventory-page .ant-card-body {
                             padding: 8px !important;
                             height: 100% !important;
                             display: flex !important;
@@ -658,20 +660,20 @@ const EmployeeInventory = () => {
                     }
 
                     @media (max-width: 480px) {
-                        .ant-statistic-title {
+                        .inventory-page .ant-statistic-title {
                             font-size: 10px !important;
                             margin-bottom: 2px !important;
                         }
                         
-                        .ant-statistic-content {
+                        .inventory-page .ant-statistic-content {
                             font-size: 16px !important;
                         }
                         
-                        .ant-card {
+                        .inventory-page .ant-card {
                             min-height: 70px !important;
                         }
                         
-                        .ant-card-body {
+                        .inventory-page .ant-card-body {
                             padding: 6px !important;
                         }
                     }
