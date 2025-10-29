@@ -632,7 +632,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                 );
             },
         }] : []),
-    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onViewAddons, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete, ensureSafeFocus]);
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete, ensureSafeFocus]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
