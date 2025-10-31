@@ -133,6 +133,11 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
         const norm = findNormByItemName(item.itemName);
         if (!norm) return 0;
 
+        // Для предметов "до износа" не считаем процент износа
+        if (norm.periodType === 'until_worn') {
+            return -1; // Специальное значение для предметов "до износа"
+        }
+
         let totalDays = 0;
         let endDate = issueDate;
         if (norm.periodType === 'months') {
@@ -140,10 +145,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             const months = parseInt(norm.period);
             endDate = issueDate.add(months, 'month');
             totalDays = endDate.diff(issueDate, 'day');
-        } else if (norm.periodType === 'until_worn') {
-            // Для предметов "до износа" считаем 365 дней (1 год)
-            totalDays = 365;
-            endDate = issueDate.add(365, 'day');
         }
 
         if (totalDays === 0) return 0;
@@ -174,12 +175,15 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
         const norm = findNormByItemName(item.itemName);
         if (!norm) return false;
         
+        // Предметы "до износа" не имеют срока годности
+        if (norm.periodType === 'until_worn') {
+            return false;
+        }
+        
         let endDate = issueDate;
         if (norm.periodType === 'months') {
             const months = parseInt(norm.period);
             endDate = issueDate.add(months, 'month');
-        } else if (norm.periodType === 'until_worn') {
-            endDate = issueDate.add(365, 'day');
         }
         
         return !currentDate.isBefore(endDate.startOf('day'));
@@ -325,6 +329,26 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             key: 'wearPercentage',
             width: 150,
             render: (_: any, record: InventoryItem) => {
+                // Проверяем норматив предмета
+                const norm = findNormByItemName(record.itemName);
+                
+                // Для предметов "до износа" показываем другой текст
+                if (norm && norm.periodType === 'until_worn') {
+                    const issueDate = record.issueDate ? dayjs(record.issueDate) : null;
+                    const daysInUse = issueDate ? dayjs().diff(issueDate, 'day') : 0;
+                    
+                    return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                            <Tag color="blue">До износа</Tag>
+                            {issueDate && (
+                                <div style={{ fontSize: '10px', color: '#666', textAlign: 'center' }}>
+                                    В использовании: {daysInUse} дн.
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
+                
                 const percentage = calculateWearPercentage(record);
                 const color = getProgressColor(percentage);
                 
@@ -562,18 +586,26 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                     label: (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span>Износ:</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Progress
-                                                    percent={percentage}
-                                                    size="small"
-                                                    strokeColor={color}
-                                                    showInfo={false}
-                                                    style={{ width: '60px', height: '6px' }}
-                                                />
-                                                <span style={{ color, fontWeight: 'bold' }}>
-                                                    {percentage}%
-                                                </span>
-                                            </div>
+                                            {(() => {
+                                                const norm = findNormByItemName(record.itemName);
+                                                if (norm && norm.periodType === 'until_worn') {
+                                                    return <Tag color="blue">До износа</Tag>;
+                                                }
+                                                return (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <Progress
+                                                            percent={percentage}
+                                                            size="small"
+                                                            strokeColor={color}
+                                                            showInfo={false}
+                                                            style={{ width: '60px', height: '6px' }}
+                                                        />
+                                                        <span style={{ color, fontWeight: 'bold' }}>
+                                                            {percentage}%
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     ),
                                 },
