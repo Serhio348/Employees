@@ -5,7 +5,8 @@ import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
 import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
-import { Row, Col, Button, Modal, Typography, Statistic, Card, Tabs } from 'antd';
+import { Row, Col, Button, Modal, Typography, Statistic, Card, Tabs, Dropdown } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import { PlusOutlined, BookOutlined } from '@ant-design/icons';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
@@ -33,7 +34,18 @@ const EmployeeInventory = () => {
     const [isOpeningNormsModal, setIsOpeningNormsModal] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [, setDeletingIds] = useState<string[]>([]);
-    const [activeTab, setActiveTab] = useState('active');
+    // Получаем активную вкладку из URL параметров
+    const getTabFromUrl = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        // Поддерживаем старые значения и новые с фильтрами
+        if (tab === 'written-off') return 'written-off';
+        if (tab && ['спецодежда', 'сиз', 'инструмент', 'оборудование'].includes(tab)) {
+            return tab;
+        }
+        return 'active';
+    };
+    const [activeTab, setActiveTab] = useState(getTabFromUrl());
     const [isMobile, setIsMobile] = useState(false);
     const [forceUpdate, setForceUpdate] = useState(0);
     const { hideHeader } = useHeader();
@@ -57,6 +69,143 @@ const EmployeeInventory = () => {
     // Разделяем инвентарь на активный и списанный
     const activeInventory = allInventory.filter(item => item.status !== 'списан');
     const writtenOffInventory = allInventory.filter(item => item.status === 'списан');
+    
+    // Функция для получения названия текущего таба
+    const getTabLabel = (key: string): string => {
+        const tabLabels: { [key: string]: string } = {
+            'active': isMobile ? `Все (${activeInventory.length})` : `Все активные (${activeInventory.length})`,
+            'спецодежда': `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
+            'сиз': `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
+            'инструмент': `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
+            'оборудование': `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
+            'written-off': isMobile ? `Списанный (${writtenOffInventory.length})` : `Списанный инвентарь (${writtenOffInventory.length})`
+        };
+        return tabLabels[key] || key;
+    };
+    
+    // Функция для обработки смены таба
+    const handleTabChange = (key: string) => {
+        setActiveTab(key);
+        // Обновляем URL при смене вкладки
+        const newUrl = `${window.location.pathname}?tab=${key}`;
+        window.history.pushState({}, '', newUrl);
+        // Принудительно обновляем компонент для предотвращения зависания
+        setForceUpdate(prev => prev + 1);
+    };
+    
+    // Функция для получения контента текущего таба
+    const getCurrentTabContent = () => {
+        switch (activeTab) {
+            case 'спецодежда':
+                return (
+                    <InventoryList
+                        key={`спецодежда-${forceUpdate}`}
+                        inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteItem}
+                        onViewAddons={handleViewAddons}
+                        loading={isLoading}
+                        onCancelDelete={handleCancelDelete}
+                        onWriteOff={handleWriteOff}
+                    />
+                );
+            case 'сиз':
+                return (
+                    <InventoryList
+                        key={`сиз-${forceUpdate}`}
+                        inventory={activeInventory.filter(item => item.itemType === 'сиз')}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteItem}
+                        onViewAddons={handleViewAddons}
+                        loading={isLoading}
+                        onCancelDelete={handleCancelDelete}
+                        onWriteOff={handleWriteOff}
+                    />
+                );
+            case 'инструмент':
+                return (
+                    <InventoryList
+                        key={`инструмент-${forceUpdate}`}
+                        inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteItem}
+                        onViewAddons={handleViewAddons}
+                        loading={isLoading}
+                        onCancelDelete={handleCancelDelete}
+                        onWriteOff={handleWriteOff}
+                    />
+                );
+            case 'оборудование':
+                return (
+                    <InventoryList
+                        key={`оборудование-${forceUpdate}`}
+                        inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteItem}
+                        onViewAddons={handleViewAddons}
+                        loading={isLoading}
+                        onCancelDelete={handleCancelDelete}
+                        onWriteOff={handleWriteOff}
+                    />
+                );
+            case 'written-off':
+                return (
+                    <InventoryList
+                        key={`written-off-${forceUpdate}`}
+                        inventory={writtenOffInventory}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteItem}
+                        onViewAddons={handleViewAddons}
+                        loading={isLoading}
+                        onCancelDelete={handleCancelDelete}
+                        onWriteOff={handleWriteOff}
+                        showWriteOffButton={false}
+                    />
+                );
+            default:
+                return (
+                    <InventoryList
+                        key={`active-${forceUpdate}`}
+                        inventory={activeInventory}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteItem}
+                        onViewAddons={handleViewAddons}
+                        loading={isLoading}
+                        onCancelDelete={handleCancelDelete}
+                        onWriteOff={handleWriteOff}
+                    />
+                );
+        }
+    };
+    
+    // Меню для выпадающего списка на мобильных устройствах
+    const tabMenuItems = useMemo(() => [
+        {
+            key: 'active',
+            label: `Все активные (${activeInventory.length})`,
+        },
+        {
+            key: 'спецодежда',
+            label: `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
+        },
+        {
+            key: 'сиз',
+            label: `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
+        },
+        {
+            key: 'инструмент',
+            label: `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
+        },
+        {
+            key: 'оборудование',
+            label: `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
+        },
+        {
+            key: 'written-off',
+            label: `Списанный инвентарь (${writtenOffInventory.length})`,
+        },
+    ], [activeInventory, writtenOffInventory]);
+    
     const [addInventoryItem, { isLoading: isAdding }] = useAddInventoryItemMutation();
     const [updateInventoryItem, { isLoading: isUpdating }] = useUpdateInventoryItemMutation();
     const [deleteInventoryItem] = useDeleteInventoryItemMutation();
@@ -66,6 +215,22 @@ const EmployeeInventory = () => {
             navigate('/login');
         }
     }, [navigate, user]);
+
+    // Отслеживаем изменения URL при навигации
+    useEffect(() => {
+        const handlePopState = () => {
+            setActiveTab(getTabFromUrl());
+            // Принудительно обновляем компонент при навигации назад/вперед
+            setForceUpdate(prev => prev + 1);
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+    
+    // Обновляем компонент при изменении активного таба
+    useEffect(() => {
+        setForceUpdate(prev => prev + 1);
+    }, [activeTab]);
 
     // Отслеживаем размер экрана для адаптивности
     useEffect(() => {
@@ -475,18 +640,47 @@ const EmployeeInventory = () => {
                 </Col>
 
                 <Col span={24}>
-                    <Tabs
-                        activeKey={activeTab}
-                        onChange={setActiveTab}
-                        tabPosition={isMobile ? 'top' : 'top'}
-                        type={isMobile ? 'card' : 'line'}
-                        size={isMobile ? 'small' : 'middle'}
-                        items={[
+                    {isMobile ? (
+                        <>
+                            <Dropdown
+                                menu={{
+                                    items: tabMenuItems,
+                                    onClick: ({ key }) => handleTabChange(key),
+                                    selectedKeys: [activeTab],
+                                }}
+                                trigger={['click']}
+                                placement="bottomLeft"
+                            >
+                                <Button
+                                    style={{
+                                        width: '100%',
+                                        marginBottom: '16px',
+                                        textAlign: 'left',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        height: '40px',
+                                        fontSize: '14px',
+                                        fontWeight: '500'
+                                    }}
+                                >
+                                    <span>{getTabLabel(activeTab)}</span>
+                                    <DownOutlined />
+                                </Button>
+                            </Dropdown>
+                            {getCurrentTabContent()}
+                        </>
+                    ) : (
+                        <Tabs
+                            activeKey={activeTab}
+                            onChange={handleTabChange}
+                            tabPosition="top"
+                            type="line"
+                            size="middle"
+                            items={[
                             {
                                 key: 'active',
-                                label: isMobile ? 
-                                    `Активный (${activeInventory.length})` : 
-                                    `Активный инвентарь (${activeInventory.length})`,
+                                label: `Все активные (${activeInventory.length})`,
                                 children: (
                                     <InventoryList
                                         key={`active-${forceUpdate}`}
@@ -501,10 +695,72 @@ const EmployeeInventory = () => {
                                 ),
                             },
                             {
+                                key: 'спецодежда',
+                                label: `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
+                                children: (
+                                    <InventoryList
+                                        key={`спецодежда-${forceUpdate}`}
+                                        inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
+                                        onEdit={openEditModal}
+                                        onDelete={handleDeleteItem}
+                                        onViewAddons={handleViewAddons}
+                                        loading={isLoading}
+                                        onCancelDelete={handleCancelDelete}
+                                        onWriteOff={handleWriteOff}
+                                    />
+                                ),
+                            },
+                            {
+                                key: 'сиз',
+                                label: `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
+                                children: (
+                                    <InventoryList
+                                        key={`сиз-${forceUpdate}`}
+                                        inventory={activeInventory.filter(item => item.itemType === 'сиз')}
+                                        onEdit={openEditModal}
+                                        onDelete={handleDeleteItem}
+                                        onViewAddons={handleViewAddons}
+                                        loading={isLoading}
+                                        onCancelDelete={handleCancelDelete}
+                                        onWriteOff={handleWriteOff}
+                                    />
+                                ),
+                            },
+                            {
+                                key: 'инструмент',
+                                label: `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
+                                children: (
+                                    <InventoryList
+                                        key={`инструмент-${forceUpdate}`}
+                                        inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
+                                        onEdit={openEditModal}
+                                        onDelete={handleDeleteItem}
+                                        onViewAddons={handleViewAddons}
+                                        loading={isLoading}
+                                        onCancelDelete={handleCancelDelete}
+                                        onWriteOff={handleWriteOff}
+                                    />
+                                ),
+                            },
+                            {
+                                key: 'оборудование',
+                                label: `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
+                                children: (
+                                    <InventoryList
+                                        key={`оборудование-${forceUpdate}`}
+                                        inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
+                                        onEdit={openEditModal}
+                                        onDelete={handleDeleteItem}
+                                        onViewAddons={handleViewAddons}
+                                        loading={isLoading}
+                                        onCancelDelete={handleCancelDelete}
+                                        onWriteOff={handleWriteOff}
+                                    />
+                                ),
+                            },
+                            {
                                 key: 'written-off',
-                                label: isMobile ? 
-                                    `Списанный (${writtenOffInventory.length})` : 
-                                    `Списанный инвентарь (${writtenOffInventory.length})`,
+                                label: `Списанный инвентарь (${writtenOffInventory.length})`,
                                 children: (
                                     <InventoryList
                                         key={`written-off-${forceUpdate}`}
@@ -519,8 +775,9 @@ const EmployeeInventory = () => {
                                     />
                                 ),
                             },
-                        ]}
-                    />
+                            ]}
+                        />
+                    )}
                 </Col>
             </Row>
 

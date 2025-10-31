@@ -307,6 +307,17 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             title: 'Тип',
             dataIndex: 'itemType',
             key: 'itemType',
+            sorter: (a: InventoryItem, b: InventoryItem) => {
+                const typeOrder: { [key: string]: number } = {
+                    'спецодежда': 1,
+                    'сиз': 2,
+                    'инструмент': 3,
+                    'оборудование': 4
+                };
+                const orderA = typeOrder[a.itemType] || 999;
+                const orderB = typeOrder[b.itemType] || 999;
+                return orderA - orderB;
+            },
             render: (type: string) => {
                 const color = type === 'спецодежда' ? 'blue' : 
                              type === 'инструмент' ? 'green' : 
