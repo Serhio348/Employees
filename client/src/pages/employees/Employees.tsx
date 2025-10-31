@@ -11,6 +11,22 @@ import { Paths } from '../../path'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../features/auth/authSlice'
 
+const getAgeText = (age: number): string => {
+    const lastDigit = age % 10;
+    const lastTwoDigits = age % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+        return 'лет';
+    }
+    if (lastDigit === 1) {
+        return 'год';
+    }
+    if (lastDigit >= 2 && lastDigit <= 4) {
+        return 'года';
+    }
+    return 'лет';
+}
+
 const Employees = () => {
     const navigate = useNavigate();
     const user = useSelector(selectUser)
@@ -93,10 +109,10 @@ const Employees = () => {
                     ),
                 },
                 {
-                    title: "Адрес",
-                    dataIndex: "address",
-                    key: "address",
-                    ellipsis: true,
+                    title: "Возраст",
+                    dataIndex: "age",
+                    key: "age",
+                    render: (age) => age ? `${age} ${getAgeText(age)}` : 'Не указан',
                 }
             )
         }
