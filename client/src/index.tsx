@@ -18,6 +18,7 @@ import Employee from "./pages/employee/Employee";
 import EditEmployee from "./pages/editEmployee/EditEmployee";
 import EmployeeInventory from "./pages/employeeInventory/EmployeeInventory";
 import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 
 // Инициализация приложения
 
@@ -91,3 +92,6 @@ root.render(
     </Provider>
   </React.StrictMode>
 );
+
+// Регистрация Service Worker
+serviceWorkerRegistration.register();
