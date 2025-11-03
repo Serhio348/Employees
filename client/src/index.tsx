@@ -21,6 +21,23 @@ import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
 // Инициализация приложения
 
+// Отменяем регистрацию всех Service Workers (они вызывают проблемы с кэшированием)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister().then((success) => {
+        if (success) {
+          console.log('Service Worker успешно отменен');
+        }
+      }).catch((error) => {
+        console.error('Ошибка при отмене Service Worker:', error);
+      });
+    }
+  }).catch((error) => {
+    console.error('Ошибка при получении регистраций Service Worker:', error);
+  });
+}
+
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {
   if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
