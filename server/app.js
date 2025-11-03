@@ -44,25 +44,21 @@ app.use('/api/siz-norms', require("./routes/SizNorms"));
 // Serve static files from React build
 const buildPath = path.join(__dirname, '../client/build');
 
-// Middleware для установки правильных заголовков кэширования
-app.use((req, res, next) => {
-  // Для статических файлов с хешами (JS, CSS) - длительное кэширование
-  if (/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i.test(req.path)) {
-    // Файлы с хешами можно кэшировать долго (они обновляются по хешу)
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-  // Для всех остальных (включая HTML) - не кэшировать
-  else {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-  }
-  next();
-});
-
 app.use(express.static(buildPath, {
   etag: true,
-  lastModified: true
+  lastModified: true,
+  setHeaders: (res, path) => {
+    // Для статических файлов с хешами (JS, CSS, изображения) - длительное кэширование
+    if (/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i.test(path)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+    // Для остальных файлов - не кэшировать
+    else {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
 }));
 
 // Catch all handler: send back React's index.html file (only for non-API routes and non-file requests)
