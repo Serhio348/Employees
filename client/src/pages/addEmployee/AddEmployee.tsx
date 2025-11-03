@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Layout from '../../components/layout/Layout'
-import { Row } from 'antd'
+import { Row, Button } from 'antd'
+import { HomeOutlined } from '@ant-design/icons'
 import EmployeeForm from '../../components/employeeForm/EmployeeForm'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -40,6 +41,16 @@ const AddEmployee = () => {
 
     return (
         <Layout>
+            <div style={{ marginBottom: '16px' }}>
+                <Button
+                    type="default"
+                    icon={<HomeOutlined />}
+                    onClick={() => navigate(Paths.home)}
+                    size="middle"
+                >
+                    Главное меню
+                </Button>
+            </div>
             <Row align='middle' justify='center'>
                 <EmployeeForm
                     title='Добавить сотрудника'

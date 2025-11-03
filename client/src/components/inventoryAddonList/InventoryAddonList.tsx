@@ -1,5 +1,5 @@
-import { Table, Tag, Button, Space, Popconfirm, Tooltip } from 'antd';
-import { EditOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Space, Tooltip, Dropdown, Modal } from 'antd';
+import { EditOutlined, DeleteOutlined, ClockCircleOutlined, MoreOutlined } from '@ant-design/icons';
 import React from 'react';
 import { InventoryAddon } from '../../app/services/inventoryAddon';
 import dayjs from 'dayjs';
@@ -84,56 +84,109 @@ const InventoryAddonList = ({ addons, onEdit, onDelete, loading, onCancelDelete 
         {
             title: 'Действия',
             key: 'actions',
-            render: (_: any, record: InventoryAddon) => (
-                <Space>
-                    <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        onClick={() => onEdit(record)}
-                    >
-                        Редактировать
-                    </Button>
-                    <Popconfirm
-                        title="Удалить дополнение?"
-                        description="Вы уверены, что хотите удалить это дополнение?"
-                        onConfirm={() => record.id && onDelete(record.id)}
-                        onCancel={() => {
-                            if (record.id && onCancelDelete) {
-                                onCancelDelete(record.id);
+            width: 80,
+            align: 'center' as const,
+            render: (_: any, record: InventoryAddon) => {
+                const menuItems = [
+                    {
+                        key: 'edit',
+                        label: 'Редактировать',
+                        icon: <EditOutlined />,
+                        onClick: () => onEdit(record),
+                    },
+                    {
+                        key: 'delete',
+                        label: 'Удалить',
+                        icon: <DeleteOutlined />,
+                        danger: true,
+                        onClick: () => {
+                            if (record.id) {
+                                Modal.confirm({
+                                    title: 'Удалить дополнение?',
+                                    content: 'Вы уверены, что хотите удалить это дополнение?',
+                                    okText: 'Да',
+                                    cancelText: 'Нет',
+                                    onOk: () => onDelete(record.id!),
+                                    onCancel: () => {
+                                        if (onCancelDelete) {
+                                            onCancelDelete(record.id!);
+                                        }
+                                    },
+                                });
                             }
-                        }}
-                        okText="Да"
-                        cancelText="Нет"
+                        },
+                    },
+                ];
+
+                return (
+                    <Dropdown
+                        menu={{ items: menuItems }}
+                        trigger={['click']}
+                        placement="bottomRight"
                     >
                         <Button
-                            type="primary"
-                            danger
-                            icon={<DeleteOutlined />}
-                        >
-                            Удалить
-                        </Button>
-                    </Popconfirm>
-                </Space>
-            ),
+                            type="text"
+                            icon={<MoreOutlined />}
+                            size="small"
+                            style={{ 
+                                padding: '4px 8px',
+                                fontSize: '12px',
+                                minWidth: '32px'
+                            }}
+                        />
+                    </Dropdown>
+                );
+            },
         },
     ];
 
     return (
-        <Table
-            columns={columns}
-            dataSource={addons}
-            rowKey="id"
-            loading={loading}
-            onRow={() => ({
-                style: { cursor: 'default' }
-            })}
-            pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} дополнений`,
-            }}
-        />
+        <>
+            <style>
+                {`
+                    /* Стили для Dropdown меню действий */
+                    .ant-dropdown-menu {
+                        min-width: 140px !important;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                        border-radius: 6px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item {
+                        padding: 8px 12px !important;
+                        font-size: 13px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item .anticon {
+                        margin-right: 8px !important;
+                        font-size: 12px !important;
+                    }
+                    
+                    .ant-dropdown-menu-item-danger {
+                        color: #ff4d4f !important;
+                    }
+                    
+                    .ant-dropdown-menu-item-danger:hover {
+                        background-color: #fff2f0 !important;
+                    }
+                `}
+            </style>
+            
+            <Table
+                columns={columns}
+                dataSource={addons}
+                rowKey="id"
+                loading={loading}
+                onRow={() => ({
+                    style: { cursor: 'default' }
+                })}
+                pagination={{
+                    pageSize: 10,
+                    showSizeChanger: true,
+                    showQuickJumper: true,
+                    showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} дополнений`,
+                }}
+            />
+        </>
     );
 };
 
