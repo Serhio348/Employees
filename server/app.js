@@ -42,11 +42,26 @@ app.use('/api/inventory-addon', require("./routes/InventoryAddon"));
 app.use('/api/siz-norms', require("./routes/SizNorms"));
 
 // Serve static files from React build
-app.use(express.static(path.join(__dirname, '../client/build')));
+const buildPath = path.join(__dirname, '../client/build');
+app.use(express.static(buildPath, {
+  maxAge: '1y',
+  etag: true
+}));
 
-// Catch all handler: send back React's index.html file
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// Catch all handler: send back React's index.html file (only for non-API routes and non-file requests)
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  
+  // Skip requests for files with extensions (they should be handled by express.static)
+  const hasFileExtension = /\.[^/.]+$/.test(req.path);
+  if (hasFileExtension) {
+    return next();
+  }
+  
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Обработка ошибок
