@@ -21,43 +21,6 @@ import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
 // Инициализация приложения
 
-// Отменяем регистрацию всех Service Workers (они вызывают проблемы с кэшированием)
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    for (const registration of registrations) {
-      registration.unregister().then((success) => {
-        if (success) {
-          console.log('Service Worker успешно отменен');
-          // Очищаем кэш после отмены регистрации
-          if ('caches' in window) {
-            caches.keys().then((cacheNames) => {
-              return Promise.all(
-                cacheNames.map((cacheName) => {
-                  console.log('Удаление кэша:', cacheName);
-                  return caches.delete(cacheName);
-                })
-              );
-            }).then(() => {
-              console.log('Все кэши Service Worker очищены');
-            }).catch((error) => {
-              console.error('Ошибка при очистке кэшей:', error);
-            });
-          }
-        }
-      }).catch((error) => {
-        console.error('Ошибка при отмене Service Worker:', error);
-      });
-    }
-  }).catch((error) => {
-    console.error('Ошибка при получении регистраций Service Worker:', error);
-  });
-  
-  // Также отменяем активный контроллер, если есть
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-  }
-}
-
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {
   if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
