@@ -206,8 +206,6 @@ const EmployeeInventory = () => {
     useEffect(() => {
         const handlePopState = () => {
             setActiveTab(getTabFromUrl());
-            // Принудительно обновляем компонент при навигации назад/вперед
-            setForceUpdate(prev => prev + 1);
         };
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);

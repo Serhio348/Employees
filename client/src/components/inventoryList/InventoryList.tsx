@@ -575,8 +575,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                             icon: <EditOutlined />,
                                             onClick: () => {
                                                 onEdit(record);
-                                                // Принудительно обновляем компонент для устранения блокировки кнопок
-                                                setForceUpdate(prev => prev + 1);
                                             },
                                         },
                                         // Кнопка "Дополнения" удалена как неиспользуемая
