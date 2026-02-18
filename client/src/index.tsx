@@ -77,17 +77,15 @@ const container = document.getElementById("root")!;
 const root = createRoot(container);
 
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <ThemeProvider>
-        <HeaderProvider>
-          <ThemeWrapper>
-            <Auth>
-              <RouterProvider router={router} />
-            </Auth>
-          </ThemeWrapper>
-        </HeaderProvider>
-      </ThemeProvider>
-    </Provider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <ThemeProvider>
+      <HeaderProvider>
+        <ThemeWrapper>
+          <Auth>
+            <RouterProvider router={router} />
+          </Auth>
+        </ThemeWrapper>
+      </HeaderProvider>
+    </ThemeProvider>
+  </Provider>
 );

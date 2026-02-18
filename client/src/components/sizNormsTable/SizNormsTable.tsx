@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
-import { Table, Tag, Button, Modal, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined, CloseOutlined } from '@ant-design/icons';
+import * as Dialog from '@radix-ui/react-dialog';
 import { ColumnsType } from 'antd/es/table';
 import { useSizNorms, SizNorm } from '../../hooks/useSizNorms';
 
@@ -289,106 +290,102 @@ const SizNormsTable = () => {
                 />
             </div>
             
-            <Modal
-                title={editingNorm ? "Редактировать норматив" : "Добавить норматив"}
+            <Dialog.Root
                 open={isModalVisible}
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
-                width={isMobile ? '100%' : 600}
-                centered={!isMobile}
-                maskClosable={true}
-                closable={true}
-                destroyOnClose={false}
-                keyboard={true}
-                style={{ 
-                    top: isMobile ? 0 : 100,
-                    left: isMobile ? 0 : undefined,
-                    right: isMobile ? 0 : undefined,
-                    bottom: isMobile ? 0 : undefined,
-                    margin: isMobile ? 0 : undefined,
-                    maxWidth: isMobile ? '100vw' : '600px',
-                    maxHeight: isMobile ? '100vh' : '80vh'
-                }}
-                bodyStyle={{ 
-                    padding: isMobile ? '4px' : '24px',
-                    maxHeight: isMobile ? 'calc(100vh - 120px)' : '60vh',
-                    overflowY: 'auto',
-                    fontSize: isMobile ? '11px' : '14px'
-                }}
+                onOpenChange={(open) => { if (!open) handleModalCancel(); }}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{ periodType: 'months' }}
-                >
-                    <Row gutter={isMobile ? [0, 12] : [16, 16]}>
-                        <Col span={24}>
+                <Dialog.Portal>
+                    <Dialog.Overlay
+                        className="radix-dialog-overlay"
+                        style={{ zIndex: 1100 }}
+                    />
+                    <Dialog.Content
+                        className="radix-dialog-content"
+                        style={{
+                            maxWidth: isMobile ? '95vw' : '600px',
+                            zIndex: 1101,
+                        }}
+                        aria-describedby={undefined}
+                    >
+                        <Dialog.Title className="radix-dialog-title">
+                            {editingNorm ? "Редактировать норматив" : "Добавить норматив"}
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                <CloseOutlined />
+                            </button>
+                        </Dialog.Close>
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            initialValues={{ periodType: 'months' }}
+                            style={{ fontSize: isMobile ? '11px' : '14px' }}
+                        >
                             <Form.Item
                                 name="name"
                                 label="Наименование СИЗ"
                                 rules={[{ required: true, message: 'Введите наименование СИЗ' }]}
+                                style={{ marginBottom: 12 }}
                             >
-                                <Input 
+                                <Input
                                     placeholder="Введите наименование СИЗ"
-                                    size={isMobile ? "small" : "middle"}
                                     style={{ width: '100%' }}
                                 />
                             </Form.Item>
-                        </Col>
-                        
-                        <Col span={24}>
                             <Form.Item
                                 name="classification"
-                                label={isMobile ? "Классификация" : "Классификация (маркировка)"}
+                                label="Классификация (маркировка)"
+                                style={{ marginBottom: 12 }}
                             >
-                                <Select 
-                                    placeholder="Выберите классификацию" 
+                                <Select
+                                    placeholder="Выберите классификацию"
                                     allowClear
-                                    size={isMobile ? "small" : "middle"}
                                     style={{ width: '100%' }}
+                                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
                                 >
                                     <Select.Option value="Тн">Тн (теплозащитные)</Select.Option>
-                                    <Select.Option value="ЗМи">ЗМи (защитные от механических воздействий)</Select.Option>
+                                    <Select.Option value="ЗМи">ЗМи (от механических воздействий)</Select.Option>
                                     <Select.Option value="Ми">Ми (механические воздействия)</Select.Option>
                                     <Select.Option value="В">В (влагозащитные)</Select.Option>
                                     <Select.Option value="Вн">Вн (влагонепроницаемые)</Select.Option>
                                     <Select.Option value="ЗП">ЗП (защитные от пыли)</Select.Option>
                                 </Select>
                             </Form.Item>
-                        </Col>
-                        
-                        <Col span={24}>
                             <Form.Item
                                 name="periodType"
                                 label="Тип срока носки"
                                 rules={[{ required: true, message: 'Выберите тип срока носки' }]}
+                                style={{ marginBottom: 12 }}
                             >
-                                <Select 
-                                    size={isMobile ? "small" : "middle"}
+                                <Select
                                     style={{ width: '100%' }}
+                                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
                                 >
                                     <Select.Option value="months">В месяцах</Select.Option>
                                     <Select.Option value="until_worn">До износа</Select.Option>
                                 </Select>
                             </Form.Item>
-                        </Col>
-                        
-                        <Col span={24}>
                             <Form.Item
                                 name="period"
                                 label="Срок носки"
                                 rules={[{ required: true, message: 'Введите срок носки' }]}
+                                style={{ marginBottom: 0 }}
                             >
-                                <Input 
-                                    placeholder="Введите срок носки"
-                                    size={isMobile ? "small" : "middle"}
+                                <Input
+                                    placeholder="Введите срок носки (число)"
                                     style={{ width: '100%' }}
                                 />
                             </Form.Item>
-                        </Col>
-                    </Row>
-                </Form>
-            </Modal>
+                        </Form>
+                        <div className="radix-dialog-footer">
+                            <Button onClick={handleModalCancel}>Отмена</Button>
+                            <Button type="primary" onClick={handleModalOk}>
+                                {editingNorm ? "Сохранить" : "Добавить"}
+                            </Button>
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
             
             <style>
                 {`

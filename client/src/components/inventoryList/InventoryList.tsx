@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Button, Modal, Checkbox, Progress, Tag, message, Dropdown } from 'antd';
-import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined, FileTextOutlined, MoreOutlined } from '@ant-design/icons';
+import { Table, Button, Checkbox, Progress, Tag, message } from 'antd';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined, FileTextOutlined, CloseOutlined } from '@ant-design/icons';
 import { InventoryItem } from '../../app/services/inventory';
 import { useSizNorms } from '../../hooks/useSizNorms';
 import dayjs from 'dayjs';
+import Swal from 'sweetalert2';
+import * as Dialog from '@radix-ui/react-dialog';
 
 interface Props {
     inventory: InventoryItem[];
@@ -151,15 +153,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
         }
     }, []);
 
-    const handleSelectAll = useCallback((checked: boolean) => {
-        if (checked) {
-            const expiredItems = inventory.filter(item => isExpired(item)).map(item => item.id!);
-            setSelectedItems(expiredItems);
-        } else {
-            setSelectedItems([]);
-        }
-    }, [inventory, isExpired]);
-
     const handleWriteOff = useCallback(() => {
         if (selectedItems.length === 0) {
             message.warning('Выберите предметы для списания');
@@ -185,52 +178,30 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
 
 
     const columns = useMemo(() => [
-        ...(showWriteOffButton ? [{
-            title: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Checkbox
-                        checked={selectedItems.length > 0 && selectedItems.length === inventory.filter(item => isExpired(item)).length}
-                        indeterminate={selectedItems.length > 0 && selectedItems.length < inventory.filter(item => isExpired(item)).length}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                    />
-                    <span style={{ display: isMobile ? 'none' : 'inline' }}>Выбрать</span>
-                </div>
-            ),
-            key: 'select',
-            width: isMobile ? 50 : 80,
-            render: (_: any, record: InventoryItem) => {
-                const expired = isExpired(record);
-                return (
-                    <Checkbox
-                        checked={selectedItems.includes(record.id!)}
-                        onChange={(e) => handleSelectItem(record.id!, e.target.checked)}
-                        disabled={!expired}
-                        style={{ opacity: expired ? 1 : 0.3 }}
-                    />
-                );
-            },
-        }] : []),
         {
             title: 'Название',
             dataIndex: 'itemName',
             key: 'itemName',
+            align: 'left' as const,
             width: isVerySmall ? '100%' : isMobile ? '70%' : undefined,
             ellipsis: true,
             render: (text: string, record: InventoryItem) => (
-                <div style={{ 
+                <div style={{
                     fontSize: isMobile ? '12px' : '14px',
                     fontWeight: '500',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'flex-start',
                     gap: '4px',
                     width: '100%'
                 }}>
-                    <span style={{ 
+                    <span style={{
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         flex: 1,
-                        minWidth: 0
+                        minWidth: 0,
+                        textAlign: 'left',
                     }}>
                         {text}
                     </span>
@@ -246,10 +217,11 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             key: 'quantity',
             align: 'center' as const,
             render: (quantity: number) => (
-                <div style={{ 
+                <div style={{
                     fontSize: '16px',
                     fontWeight: 'bold',
-                    color: '#1890ff'
+                    color: '#1890ff',
+                    textAlign: 'center',
                 }}>
                     {quantity}
                 </div>
@@ -260,6 +232,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             title: 'Тип',
             dataIndex: 'itemType',
             key: 'itemType',
+            align: 'center' as const,
             sorter: (a: InventoryItem, b: InventoryItem) => {
                 const typeOrder: { [key: string]: number } = {
                     'спецодежда': 1,
@@ -283,6 +256,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             title: 'Дата выдачи',
             dataIndex: 'issueDate',
             key: 'issueDate',
+            align: 'center' as const,
             render: (date: string) => {
                 if (!date) return '-';
                 return new Date(date).toLocaleDateString('ru-RU');
@@ -292,6 +266,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             title: 'Процент износа',
             key: 'wearPercentage',
             width: 150,
+            align: 'center' as const,
             render: (_: any, record: InventoryItem) => {
                 // Проверяем норматив предмета
                 const norm = findNormByItemName(record.itemName);
@@ -372,6 +347,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             title: 'Статус',
             dataIndex: 'status',
             key: 'status',
+            align: 'center' as const,
             render: (status: string, record: InventoryItem) => {
                 const expired = isExpired(record);
                 const displayStatus = expired ? 'необходимо заменить' : status;
@@ -405,219 +381,97 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
         {
             title: 'Действия',
             key: 'actions',
-            width: 80,
+            width: 90,
             align: 'center' as const,
-            render: (_: any, record: InventoryItem) => {
-                const menuItems = [
-                    {
-                        key: 'edit',
-                        label: 'Редактировать',
-                        icon: <EditOutlined />,
-                        onClick: () => {
-                            (document.activeElement as HTMLElement)?.blur();
-                            onEdit(record);
-                        },
-                    },
-                    // Кнопка "Дополнения" удалена как неиспользуемая
-                    {
-                        key: 'delete',
-                        label: 'Удалить',
-                        icon: <DeleteOutlined />,
-                        danger: true,
-                        onClick: () => {
+            render: (_: any, record: InventoryItem) => (
+                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                    <Button
+                        type="text"
+                        icon={<EditOutlined />}
+                        size="small"
+                        style={{ color: '#1890ff', padding: '4px 6px', minWidth: '28px' }}
+                        onClick={() => onEdit(record)}
+                    />
+                    <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        danger
+                        style={{ padding: '4px 6px', minWidth: '28px' }}
+                        onClick={() => {
                             if (record.id) {
-                                (document.activeElement as HTMLElement)?.blur();
-                                Modal.confirm({
+                                Swal.fire({
                                     title: 'Удалить предмет?',
-                                    content: 'Вы уверены, что хотите удалить этот предмет из инвентаря?',
-                                    okText: 'Да',
-                                    cancelText: 'Нет',
-                                    maskClosable: true,
-                                    keyboard: true,
-                                    onOk: () => onDelete(record.id!),
-                                    onCancel: () => {
-                                        if (onCancelDelete) {
-                                            onCancelDelete(record.id!);
-                                        }
-                                    },
+                                    text: 'Вы уверены, что хотите удалить этот предмет из инвентаря?',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Да, удалить',
+                                    cancelButtonText: 'Отмена',
+                                    confirmButtonColor: '#ff4d4f',
+                                    reverseButtons: true,
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        onDelete(record.id!);
+                                    } else if (onCancelDelete) {
+                                        onCancelDelete(record.id!);
+                                    }
                                 });
                             }
-                        },
-                    },
-                ];
-
-                return (
-                    <Dropdown
-                        menu={{ items: menuItems }}
-                        trigger={['click']}
-                        placement="bottomRight"
-                        destroyPopupOnHide
-                        onOpenChange={undefined}
-                    >
-                        <Button
-                            type="text"
-                            icon={<MoreOutlined />}
-                            size="small"
-                            style={{ 
-                                padding: '4px 8px',
-                                fontSize: '12px',
-                                minWidth: '32px'
-                            }}
-                        />
-                    </Dropdown>
-                );
-            },
+                        }}
+                    />
+                </div>
+            ),
         },
         ]),
         ...(isMobile ? [{
-            title: isVerySmall ? '' : 'Подробнее',
+            title: '',
             key: 'details',
-            width: isVerySmall ? '60px' : '30%',
+            width: isVerySmall ? 56 : 72,
             align: 'center' as const,
-            render: (_: any, record: InventoryItem) => {
-                const percentage = calculateWearPercentage(record);
-                const color = getProgressColor(percentage);
-                const expired = isExpired(record);
-                
-                return (
-                    <Dropdown
-                        menu={{
-                            items: [
-                                {
-                                    key: 'quantity',
-                                    label: (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>Количество:</span>
-                                            <span style={{ 
-                                                fontSize: '16px',
-                                                fontWeight: 'bold',
-                                                color: '#1890ff'
-                                            }}>
-                                                {record.quantity}
-                                            </span>
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    key: 'type',
-                                    label: (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>Тип:</span>
-                                            <Tag color={
-                                                record.itemType === 'спецодежда' ? 'blue' : 
-                                                record.itemType === 'инструмент' ? 'green' : 
-                                                record.itemType === 'оборудование' ? 'orange' : 
-                                                record.itemType === 'сиз' ? 'purple' : 'default'
-                                            }>
-                                                {record.itemType}
-                                            </Tag>
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    key: 'date',
-                                    label: (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>Дата выдачи:</span>
-                                            <span>{record.issueDate ? new Date(record.issueDate).toLocaleDateString('ru-RU') : '-'}</span>
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    key: 'status',
-                                    label: (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>Статус:</span>
-                                            <Tag color={
-                                                expired ? 'red' :
-                                                record.status === 'выдан' ? 'green' :
-                                                record.status === 'возвращен' ? 'blue' :
-                                                record.status === 'списан' ? 'red' : 'default'
-                                            }>
-                                                {expired ? 'необходимо заменить' : record.status}
-                                            </Tag>
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    key: 'wear',
-                                    label: (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>Износ:</span>
-                                            {(() => {
-                                                const norm = findNormByItemName(record.itemName);
-                                                if (norm && norm.periodType === 'until_worn') {
-                                                    return <Tag color="blue">До износа</Tag>;
-                                                }
-                                                return (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                        <Progress
-                                                            percent={percentage}
-                                                            size="small"
-                                                            strokeColor={color}
-                                                            showInfo={false}
-                                                            style={{ width: '60px', height: '6px' }}
-                                                        />
-                                                        <span style={{ color, fontWeight: 'bold' }}>
-                                                            {percentage}%
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })()}
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    key: 'actions',
-                                    label: 'Действия',
-                                    children: [
-                                        {
-                                            key: 'edit',
-                                            label: 'Редактировать',
-                                            icon: <EditOutlined />,
-                                            onClick: () => {
-                                                (document.activeElement as HTMLElement)?.blur();
-                                                onEdit(record);
-                                            },
-                                        },
-                                        // Кнопка "Дополнения" удалена как неиспользуемая
-                                        {
-                                            key: 'delete',
-                                            label: 'Удалить',
-                                            icon: <DeleteOutlined />,
-                                            danger: true,
-                                            onClick: () => {
-                                                if (record.id) {
-                                                    (document.activeElement as HTMLElement)?.blur();
-                                                    onDelete(record.id);
-                                                }
-                                            },
-                                        },
-                                    ],
-                                },
-                            ],
+            render: (_: any, record: InventoryItem) => (
+                <div style={{ display: 'flex', gap: isVerySmall ? '2px' : '4px', justifyContent: 'center' }}>
+                    <Button
+                        type="text"
+                        icon={<EditOutlined />}
+                        size="small"
+                        style={{
+                            color: '#1890ff',
+                            padding: isVerySmall ? '1px 3px' : '2px 5px',
+                            minWidth: isVerySmall ? '22px' : '26px',
+                            height: isVerySmall ? '22px' : '26px',
                         }}
-                        trigger={['click']}
-                        placement="bottomRight"
-                        onOpenChange={undefined}
-                    >
-                        <Button
-                            type="text"
-                            icon={<MoreOutlined />}
-                            size="small"
-                            style={{ 
-                                padding: isVerySmall ? '1px 2px' : '2px 4px',
-                                fontSize: isVerySmall ? '10px' : '12px',
-                                minWidth: isVerySmall ? '24px' : 'auto'
-                            }}
-                        >
-                            {isVerySmall ? '' : 'Подробнее'}
-                        </Button>
-                    </Dropdown>
-                );
-            },
+                        onClick={() => onEdit(record)}
+                    />
+                    <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        danger
+                        style={{
+                            padding: isVerySmall ? '1px 3px' : '2px 5px',
+                            minWidth: isVerySmall ? '22px' : '26px',
+                            height: isVerySmall ? '22px' : '26px',
+                        }}
+                        onClick={() => {
+                            if (record.id) {
+                                Swal.fire({
+                                    title: 'Удалить предмет?',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Удалить',
+                                    cancelButtonText: 'Отмена',
+                                    confirmButtonColor: '#ff4d4f',
+                                    reverseButtons: true,
+                                }).then((result) => {
+                                    if (result.isConfirmed) onDelete(record.id!);
+                                });
+                            }
+                        }}
+                    />
+                </div>
+            ),
         }] : []),
-    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete]);
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onEdit, onDelete, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
@@ -876,6 +730,13 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         }
                     }
 
+                    /* Исправление: мгновенное закрытие дропдауна без анимации
+                       предотвращает застревание overlay при одновременном открытии модалки */
+                    .action-menu-overlay {
+                        animation-duration: 0ms !important;
+                        transition-duration: 0ms !important;
+                    }
+
                     /* Стили для Dropdown меню действий */
                     .ant-dropdown-menu {
                         min-width: 140px !important;
@@ -981,46 +842,59 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             )}
 
             {showWriteOffButton && (
-                <Modal
-                    title="Списание просроченных предметов"
+                <Dialog.Root
                     open={isWriteOffModalVisible}
-                    onOk={handleWriteOff}
-                    onCancel={() => {
-                        setIsWriteOffModalVisible(false);
-                        setSelectedItems([]);
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setIsWriteOffModalVisible(false);
+                            setSelectedItems([]);
+                        }
                     }}
-                    okText="Списать"
-                    cancelText="Отмена"
-                    okButtonProps={{ danger: true }}
-                    width={isMobile ? '90%' : 520}
-                    centered={isMobile}
-                    destroyOnClose
-                    maskClosable
-                    keyboard
-                    style={isMobile ? { 
-                        top: '20px',
-                        marginBottom: '20px'
-                    } : undefined}
                 >
-                    <div style={{ marginBottom: 16 }}>
-                        <p>Выберите предметы для списания:</p>
-                        <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #d9d9d9', padding: '8px', borderRadius: '4px' }}>
-                            {expiredItems.map(item => (
-                                <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
-                                    <Checkbox
-                                        checked={selectedItems.includes(item.id!)}
-                                        onChange={(e) => handleSelectItem(item.id!, e.target.checked)}
-                                    />
-                                    <span style={{ flex: 1 }}>{item.itemName}</span>
-                                    <Tag color="red">Просрочен</Tag>
+                    <Dialog.Portal>
+                        <Dialog.Overlay className="radix-dialog-overlay" />
+                        <Dialog.Content
+                            className="radix-dialog-content"
+                            style={{ maxWidth: isMobile ? '90vw' : '520px' }}
+                            aria-describedby={undefined}
+                        >
+                            <Dialog.Title className="radix-dialog-title">
+                                Списание просроченных предметов
+                            </Dialog.Title>
+                            <Dialog.Close asChild>
+                                <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                    <CloseOutlined />
+                                </button>
+                            </Dialog.Close>
+                            <div style={{ marginBottom: 16 }}>
+                                <p>Выберите предметы для списания:</p>
+                                <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px', marginTop: '8px' }}>
+                                    {expiredItems.map(item => (
+                                        <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
+                                            <Checkbox
+                                                checked={selectedItems.includes(item.id!)}
+                                                onChange={(e) => handleSelectItem(item.id!, e.target.checked)}
+                                            />
+                                            <span style={{ flex: 1 }}>{item.itemName}</span>
+                                            <Tag color="red">Просрочен</Tag>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div style={{ color: '#666', fontSize: '12px' }}>
-                        Будет списано: {selectedItems.length} из {expiredItems.length} предметов
-                    </div>
-                </Modal>
+                            </div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+                                Будет списано: {selectedItems.length} из {expiredItems.length} предметов
+                            </div>
+                            <div className="radix-dialog-footer">
+                                <Button onClick={() => { setIsWriteOffModalVisible(false); setSelectedItems([]); }}>
+                                    Отмена
+                                </Button>
+                                <Button type="primary" danger onClick={handleWriteOff}>
+                                    Списать
+                                </Button>
+                            </div>
+                        </Dialog.Content>
+                    </Dialog.Portal>
+                </Dialog.Root>
             )}
         </>
     );

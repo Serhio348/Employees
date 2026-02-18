@@ -5,9 +5,10 @@ import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
 import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
-import { Row, Col, Button, Modal, Typography, Statistic, Card, Tabs, Dropdown } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { Row, Col, Button, Typography, Statistic, Card, Tabs, Dropdown } from 'antd';
+import { DownOutlined, CloseOutlined } from '@ant-design/icons';
 import { PlusOutlined, BookOutlined } from '@ant-design/icons';
+import * as Dialog from '@radix-ui/react-dialog';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
 import SizNormsTable from '../../components/sizNormsTable/SizNormsTable';
@@ -340,12 +341,18 @@ const EmployeeInventory = () => {
     };
 
     const openAddModal = () => {
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         setEditingItem(null);
         setIsModalVisible(true);
         setError("");
     };
 
     const openEditModal = (item: InventoryItem) => {
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         setEditingItem(item);
         setIsModalVisible(true);
         setError("");
@@ -358,6 +365,9 @@ const EmployeeInventory = () => {
     };
 
     const openNormsModal = () => {
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         setIsNormsModalVisible(true);
     };
 
@@ -705,61 +715,66 @@ const EmployeeInventory = () => {
                 </Col>
             </Row>
 
-            <Modal
-                title={editingItem ? "Редактировать предмет" : "Добавить предмет"}
-                open={isModalVisible}
-                onCancel={closeModal}
-                footer={null}
-                width={isMobile ? '95%' : 600}
-                centered={true}
-                destroyOnClose
-                maskClosable
-                keyboard
-                style={{ 
-                    top: isMobile ? 20 : undefined,
-                    margin: isMobile ? '0 auto' : undefined
-                }}
-                bodyStyle={{ 
-                    padding: isMobile ? '16px' : '24px',
-                    maxHeight: isMobile ? '80vh' : '70vh',
-                    overflowY: 'auto',
-                    marginTop: 0,
-                    paddingTop: isMobile ? '16px' : '24px'
-                }}
-            >
-                <InventoryForm
-                    title=""
-                    btnText={editingItem ? "Обновить" : "Добавить"}
-                    onFinish={editingItem ? handleEditItem : handleAddItem}
-                    error={error}
-                    item={editingItem || undefined}
-                    employeeId={employeeId}
-                    loading={isUpdating || isAdding}
-                />
-            </Modal>
+            <Dialog.Root open={isModalVisible} onOpenChange={(open) => { if (!open) closeModal(); }}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="radix-dialog-overlay" />
+                    <Dialog.Content
+                        className="radix-dialog-content"
+                        style={{ maxWidth: isMobile ? '95vw' : '600px' }}
+                        aria-describedby={undefined}
+                    >
+                        <Dialog.Title className="radix-dialog-title">
+                            {editingItem ? "Редактировать предмет" : "Добавить предмет"}
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                <CloseOutlined />
+                            </button>
+                        </Dialog.Close>
+                        <div style={{
+                            maxHeight: isMobile ? '70vh' : '65vh',
+                            overflowY: 'auto',
+                            padding: isMobile ? '4px 0' : '8px 0',
+                        }}>
+                            <InventoryForm
+                                title=""
+                                btnText={editingItem ? "Обновить" : "Добавить"}
+                                onFinish={editingItem ? handleEditItem : handleAddItem}
+                                error={error}
+                                item={editingItem || undefined}
+                                employeeId={employeeId}
+                                loading={isUpdating || isAdding}
+                            />
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
 
-            <Modal
-                title="Нормативы СИЗ"
-                open={isNormsModalVisible}
-                onCancel={closeNormsModal}
-                footer={null}
-                width={isMobile ? '95%' : 1000}
-                centered={true}
-                destroyOnClose
-                maskClosable
-                keyboard
-                style={{ 
-                    top: isMobile ? 20 : undefined,
-                    margin: isMobile ? '0 auto' : undefined
-                }}
-                bodyStyle={{ 
-                    padding: isMobile ? '16px' : '24px',
-                    maxHeight: isMobile ? '80vh' : '70vh',
-                    overflowY: 'auto'
-                }}
-            >
-                <SizNormsTable />
-            </Modal>
+            <Dialog.Root open={isNormsModalVisible} onOpenChange={(open) => { if (!open) closeNormsModal(); }}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="radix-dialog-overlay" />
+                    <Dialog.Content
+                        className="radix-dialog-content"
+                        style={{ maxWidth: isMobile ? '95vw' : '1000px', width: '90vw' }}
+                        aria-describedby={undefined}
+                    >
+                        <Dialog.Title className="radix-dialog-title">
+                            Нормативы СИЗ
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                <CloseOutlined />
+                            </button>
+                        </Dialog.Close>
+                        <div style={{
+                            maxHeight: isMobile ? '70vh' : '65vh',
+                            overflowY: 'auto',
+                        }}>
+                            <SizNormsTable />
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
 
             </div>
             <style>

@@ -117,11 +117,11 @@ const InventoryForm = ({
                     rules={[{ required: true, message: 'Выберите наименование предмета' }]}
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
-                    <Select 
-                        placeholder="Выберите наименование предмета" 
+                    <Select
+                        placeholder="Выберите наименование предмета"
                         showSearch
                         size={isMobile ? 'small' : 'middle'}
-                        style={{ 
+                        style={{
                             fontSize: isMobile ? '12px' : '14px',
                             width: '100%',
                             margin: 0
@@ -129,6 +129,7 @@ const InventoryForm = ({
                         filterOption={(input, option) =>
                             (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
                         }
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     >
                         {sizNorms.map(norm => (
                             <Select.Option key={norm.id} value={norm.name}>
@@ -151,14 +152,15 @@ const InventoryForm = ({
                     rules={[{ required: true, message: 'Выберите тип предмета' }]}
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
-                    <Select 
+                    <Select
                         placeholder="Тип предмета"
                         size={isMobile ? 'small' : 'middle'}
-                        style={{ 
+                        style={{
                             fontSize: isMobile ? '12px' : '14px',
                             width: '100%',
                             margin: 0
                         }}
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     >
                         <Select.Option value="спецодежда">Спецодежда</Select.Option>
                         <Select.Option value="инструмент">Инструмент</Select.Option>
@@ -181,7 +183,7 @@ const InventoryForm = ({
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
                     <DatePicker
-                        style={{ 
+                        style={{
                             width: '100%',
                             fontSize: isMobile ? '12px' : '14px',
                             margin: 0
@@ -189,6 +191,7 @@ const InventoryForm = ({
                         size={isMobile ? 'small' : 'middle'}
                         format="DD.MM.YYYY"
                         placeholder="Выберите дату выдачи"
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     />
                 </Form.Item>
                 
@@ -230,14 +233,15 @@ const InventoryForm = ({
                     rules={[{ required: true, message: 'Выберите статус' }]}
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
-                    <Select 
+                    <Select
                         placeholder="Статус"
                         size={isMobile ? 'small' : 'middle'}
-                        style={{ 
+                        style={{
                             fontSize: isMobile ? '12px' : '14px',
                             width: '100%',
                             margin: 0
                         }}
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     >
                         <Select.Option value="выдан">Выдан</Select.Option>
                         <Select.Option value="возвращен">Возвращен</Select.Option>

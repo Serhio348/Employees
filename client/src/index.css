@@ -3,10 +3,10 @@
 :root {
   /* Light theme variables */
   --bg-primary: #f1f5f9;
-  --bg-secondary: #e2e8f0;
+  --bg-secondary: #97999b;
   --bg-tertiary: #cbd5e1;
   --bg-hover: #e2e8f0;
-  --text-primary: #1e293b;
+  --text-primary: #0f0f10;
   --text-secondary: #64748b;
   --text-accent: #3b82f6;
   --border-color: #94a3b8;
@@ -27,13 +27,13 @@
 [data-theme="dark"] {
   /* Dark theme variables */
   --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
+  --bg-secondary: #144697;
   --bg-tertiary: #334155;
   --bg-hover: #334155;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-accent: #60a5fa;
-  --border-color: #475569;
+  --border-color: #1455b0;
   --border-accent: #60a5fa;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
@@ -83,9 +83,22 @@ h4 { font-size: 1.5rem; }
 h5 { font-size: 1.25rem; }
 h6 { font-size: 1rem; }
 
-/* Плавные анимации */
+/* Плавные анимации — только для безопасных свойств, исключаем таблицы */
 * {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Отключаем transition на строках и ячейках таблицы — иначе браузер зависает при hover */
+.ant-table-tbody > tr,
+.ant-table-tbody > tr > td,
+.ant-table-thead > tr > th,
+.ant-table-thead > tr > td {
+  transition: background-color 0.15s ease !important;
 }
 
 /* Улучшенные скроллбары */
@@ -255,18 +268,110 @@ a {
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Улучшенные hover эффекты для таблиц */
-.ant-table-tbody > tr:hover > td {
-  background: var(--bg-hover) !important;
-  transition: background-color 0.2s ease;
+/* Заголовки таблицы — контрастный цвет текста */
+.ant-table-thead > tr > th,
+.ant-table-thead > tr > td {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
 }
 
-.ant-table-tbody > tr:hover {
-  background: var(--bg-hover) !important;
+/* Hover для всех строк таблицы, включая первую */
+.ant-table-tbody > tr:hover > td,
+.ant-table-tbody > tr:first-child:hover > td,
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background-color: var(--bg-hover) !important;
 }
 
-/* Улучшенные hover эффекты для строк */
-tr:hover {
-  background: var(--bg-hover) !important;
-  transition: background-color 0.2s ease;
+/* ===== Radix UI Dialog ===== */
+.radix-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: radix-fade-in 0.15s ease;
+}
+
+.radix-dialog-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 24px;
+  width: 90vw;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: var(--text-primary);
+  animation: radix-content-show 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.radix-dialog-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+  padding-right: 36px;
+  line-height: 1.4;
+}
+
+.radix-dialog-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.radix-dialog-close-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.radix-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+@keyframes radix-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes radix-content-show {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .radix-dialog-content {
+    padding: 16px;
+    width: 95vw;
+  }
 }
