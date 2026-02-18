@@ -532,41 +532,23 @@ const EmployeeInventory = () => {
                                 {isMobile ? 'Добавить' : 'Добавить предмет'}
                         </Button>
                         <Button
-                                type="default"
+                            type="default"
                             icon={<BookOutlined />}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('Button clicked, calling openNormsModal');
-                                openNormsModal();
+                            onClick={openNormsModal}
+                            size={isMobile ? "small" : "middle"}
+                            style={{
+                                fontSize: isMobile ? '12px' : '14px',
+                                height: isMobile ? '32px' : '36px',
+                                padding: isMobile ? '0 12px' : '0 16px',
+                                fontWeight: '500',
+                                borderRadius: '6px',
+                                borderColor: '#1890ff',
+                                color: '#1890ff',
+                                backgroundColor: '#f0f9ff',
+                                width: isMobile ? '100%' : 'auto',
                             }}
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                                onTouchStart={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                                size={isMobile ? "small" : "middle"}
-                                style={{
-                                    fontSize: isMobile ? '12px' : '14px',
-                                    height: isMobile ? '32px' : '36px',
-                                    padding: isMobile ? '0 12px' : '0 16px',
-                                    fontWeight: '500',
-                                    borderRadius: '6px',
-                                    borderColor: '#1890ff',
-                                    color: '#1890ff',
-                                    backgroundColor: '#f0f9ff',
-                                    width: isMobile ? '100%' : 'auto',
-                                    touchAction: 'manipulation',
-                                    userSelect: 'none',
-                                    WebkitUserSelect: 'none',
-                                    MozUserSelect: 'none',
-                                    msUserSelect: 'none'
-                                }}
-                            >
-                                {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
+                        >
+                            {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
                         </Button>
                         {employee && (
                                 <div style={{ 

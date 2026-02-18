@@ -56,18 +56,12 @@ const InventoryForm = ({
     }, []);
 
     const handleFinish = (values: any) => {
-        console.log('InventoryForm - received values:', values);
         const processedValues = {
             ...values,
             issueDate: values.issueDate ? dayjs(values.issueDate).format('YYYY-MM-DD') : undefined,
             employeeId: employeeId
         };
-        console.log('InventoryForm - processed values:', processedValues);
         onFinish(processedValues);
-        // Принудительно очищаем форму после отправки
-        setTimeout(() => {
-            // Форма будет очищена автоматически при закрытии модального окна
-        }, 100);
     };
 
     const initialValues = item ? {
