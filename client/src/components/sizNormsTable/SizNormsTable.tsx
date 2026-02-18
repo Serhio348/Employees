@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { Table, Tag, Button, Modal, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
@@ -8,8 +8,6 @@ const SizNormsTable = () => {
     const { sizNorms, isLoading, addNorm, updateNorm, deleteNorm, initDefaults } = useSizNorms();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [modalOpenedByUser, setModalOpenedByUser] = useState(false);
-    const [isOpeningModal, setIsOpeningModal] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
     const [isMobile, setIsMobile] = useState(false);
@@ -24,34 +22,13 @@ const SizNormsTable = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Защита от автоматического открытия модального окна
-    useEffect(() => {
-        if (isModalVisible && !modalOpenedByUser) {
-            console.log('Modal opened automatically, closing it');
-            setIsModalVisible(false);
-        }
-    }, [isModalVisible, modalOpenedByUser]);
-
     const handleAdd = () => {
-        console.log('handleAdd called');
-        if (isOpeningModal) {
-            console.log('Already opening modal, ignoring');
-            return;
-        }
-        setIsOpeningModal(true);
-        setModalOpenedByUser(true);
         setEditingNorm(null);
         form.resetFields();
         setIsModalVisible(true);
     };
 
     const handleEdit = (norm: SizNorm) => {
-        if (isOpeningModal) {
-            console.log('Already opening modal, ignoring');
-            return;
-        }
-        setIsOpeningModal(true);
-        setModalOpenedByUser(true);
         setEditingNorm(norm);
         form.setFieldsValue(norm);
         setIsModalVisible(true);
@@ -81,12 +58,6 @@ const SizNormsTable = () => {
             setIsModalVisible(false);
             setEditingNorm(null);
             form.resetFields();
-            // Принудительно очищаем состояние
-            setTimeout(() => {
-                setIsModalVisible(false);
-                setEditingNorm(null);
-                form.resetFields();
-            }, 100);
         } catch (error) {
             message.error('Ошибка при сохранении нормы СИЗ');
         }
@@ -101,52 +72,11 @@ const SizNormsTable = () => {
         }
     };
 
-    const handleModalCancel = useCallback(() => {
-        console.log('Modal cancel clicked');
-        setIsOpeningModal(false);
-        setModalOpenedByUser(false);
+    const handleModalCancel = () => {
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsOpeningModal(false);
-            setModalOpenedByUser(false);
-            setIsModalVisible(false);
-            form.resetFields();
-            setEditingNorm(null);
-        }, 100);
-    }, [form]);
-
-    // Дополнительная обработка закрытия модального окна
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isModalVisible) {
-                setIsOpeningModal(false);
-                setModalOpenedByUser(false);
-                handleModalCancel();
-            }
-        };
-
-        const handleMaskClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.classList.contains('ant-modal-mask') && isModalVisible) {
-                setIsOpeningModal(false);
-                setModalOpenedByUser(false);
-                handleModalCancel();
-            }
-        };
-
-        if (isModalVisible) {
-            document.addEventListener('keydown', handleEscape);
-            document.addEventListener('click', handleMaskClick);
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.removeEventListener('click', handleMaskClick);
-        };
-    }, [isModalVisible, handleModalCancel]);
+    };
 
     const columns: ColumnsType<SizNorm> = [
         {

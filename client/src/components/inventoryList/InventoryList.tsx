@@ -22,37 +22,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isVerySmall, setIsVerySmall] = useState(false);
-    const [forceUpdate, setForceUpdate] = useState(0);
-
-    // Агрессивная очистка скрытых элементов AntD для предотвращения aria-hidden ошибок
-    const ensureSafeFocus = useCallback(() => {
-        try {
-            // Сначала убираем фокус с активного элемента
-            const activeElement = document.activeElement as HTMLElement | null;
-            if (activeElement && typeof activeElement.blur === 'function') {
-                activeElement.blur();
-            }
-            
-            // Удаляем все скрытые элементы AntD с aria-hidden
-            const hiddenElements = document.querySelectorAll('[aria-hidden="true"]');
-            hiddenElements.forEach(el => {
-                // Проверяем, что это скрытый элемент AntD (обычно с tabindex="0")
-                if (el.hasAttribute('tabindex') && el.getAttribute('tabindex') === '0') {
-                    el.remove();
-                }
-            });
-            
-            // Дополнительно очищаем все элементы с нулевыми размерами и aria-hidden
-            const zeroSizeElements = document.querySelectorAll('[style*="width: 0px"][style*="height: 0px"][aria-hidden="true"]');
-            zeroSizeElements.forEach(el => el.remove());
-            
-            // Перенаправляем фокус на body
-            const body = document.body as HTMLElement;
-            body.focus?.({ preventScroll: true });
-        } catch (error) {
-            console.warn('Error in ensureSafeFocus:', error);
-        }
-    }, []);
 
     // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
     useEffect(() => {
@@ -77,22 +46,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
         };
     }, []);
 
-    // Очищаем скрытые элементы AntD при каждом обновлении компонента
-    useEffect(() => {
-        const cleanup = () => {
-            ensureSafeFocus();
-        };
-        
-        // Очищаем сразу
-        cleanup();
-        
-        // И через небольшую задержку для надежности
-        const timeoutId = setTimeout(cleanup, 100);
-        
-        return () => {
-            clearTimeout(timeoutId);
-        };
-    }, [forceUpdate, ensureSafeFocus]);
 
     // Нормализация названий для гибкого сопоставления (игнор регистра/ё/пунктуации/двойных пробелов)
     const normalizeName = useCallback((value: string = '') => {
@@ -461,9 +414,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         label: 'Редактировать',
                         icon: <EditOutlined />,
                         onClick: () => {
-                            ensureSafeFocus();
                             onEdit(record);
-                            setForceUpdate(prev => prev + 1);
                         },
                     },
                     // Кнопка "Дополнения" удалена как неиспользуемая
@@ -499,13 +450,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         trigger={['click']}
                         placement="bottomRight"
                         destroyPopupOnHide
-                        onOpenChange={(open) => {
-                            // Перенаправляем фокус, чтобы не оставался внутри aria-hidden контейнеров
-                            ensureSafeFocus();
-                            if (!open) {
-                                setTimeout(() => setForceUpdate(prev => prev + 1), 50);
-                            }
-                        }}
+                        onOpenChange={undefined}
                     >
                         <Button
                             type="text"
@@ -652,12 +597,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         }}
                         trigger={['click']}
                         placement="bottomRight"
-                        onOpenChange={(open) => {
-                            ensureSafeFocus();
-                            if (!open) {
-                                setTimeout(() => setForceUpdate(prev => prev + 1), 50);
-                            }
-                        }}
+                        onOpenChange={undefined}
                     >
                         <Button
                             type="text"
@@ -675,7 +615,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                 );
             },
         }] : []),
-    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete, ensureSafeFocus]);
+    ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onEdit, onDelete, handleSelectAll, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);
 
@@ -964,7 +904,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
             
 
             <Table
-                key={forceUpdate}
                 columns={columns}
                 dataSource={inventory}
                 rowKey="id"

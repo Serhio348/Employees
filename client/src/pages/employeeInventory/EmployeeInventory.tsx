@@ -31,7 +31,6 @@ const EmployeeInventory = () => {
     const [error, setError] = useState("");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
-    const [isOpeningNormsModal, setIsOpeningNormsModal] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [, setDeletingIds] = useState<string[]>([]);
     // Получаем активную вкладку из URL параметров
@@ -47,7 +46,6 @@ const EmployeeInventory = () => {
     };
     const [activeTab, setActiveTab] = useState(getTabFromUrl());
     const [isMobile, setIsMobile] = useState(false);
-    const [forceUpdate, setForceUpdate] = useState(0);
     const { hideHeader } = useHeader();
 
     const { data: allInventory = [], isLoading } = useGetEmployeeInventoryQuery(employeeId!, {
@@ -55,15 +53,6 @@ const EmployeeInventory = () => {
     });
     const { data: employee } = useGetEmployeeQuery(employeeId!, {
         skip: !employeeId
-    });
-
-    // Отладочная информация
-    console.log('EmployeeInventory Debug:', {
-        employeeId,
-        user: user ? 'authenticated' : 'not authenticated',
-        employee: employee ? 'loaded' : 'not loaded',
-        allInventory: allInventory.length,
-        isLoading
     });
 
     // Разделяем инвентарь на активный и списанный
@@ -86,11 +75,8 @@ const EmployeeInventory = () => {
     // Функция для обработки смены таба
     const handleTabChange = (key: string) => {
         setActiveTab(key);
-        // Обновляем URL при смене вкладки
         const newUrl = `${window.location.pathname}?tab=${key}`;
         window.history.pushState({}, '', newUrl);
-        // Принудительно обновляем компонент для предотвращения зависания
-        setForceUpdate(prev => prev + 1);
     };
     
     // Функция для получения контента текущего таба
@@ -99,7 +85,7 @@ const EmployeeInventory = () => {
             case 'спецодежда':
                 return (
                     <InventoryList
-                        key={`спецодежда-${forceUpdate}`}
+                        key="спецодежда"
                         inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
                         onEdit={openEditModal}
                         onDelete={handleDeleteItem}
@@ -112,7 +98,7 @@ const EmployeeInventory = () => {
             case 'сиз':
                 return (
                     <InventoryList
-                        key={`сиз-${forceUpdate}`}
+                        key="сиз"
                         inventory={activeInventory.filter(item => item.itemType === 'сиз')}
                         onEdit={openEditModal}
                         onDelete={handleDeleteItem}
@@ -125,7 +111,7 @@ const EmployeeInventory = () => {
             case 'инструмент':
                 return (
                     <InventoryList
-                        key={`инструмент-${forceUpdate}`}
+                        key="инструмент"
                         inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
                         onEdit={openEditModal}
                         onDelete={handleDeleteItem}
@@ -138,7 +124,7 @@ const EmployeeInventory = () => {
             case 'оборудование':
                 return (
                     <InventoryList
-                        key={`оборудование-${forceUpdate}`}
+                        key="оборудование"
                         inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
                         onEdit={openEditModal}
                         onDelete={handleDeleteItem}
@@ -151,7 +137,7 @@ const EmployeeInventory = () => {
             case 'written-off':
                 return (
                     <InventoryList
-                        key={`written-off-${forceUpdate}`}
+                        key="written-off"
                         inventory={writtenOffInventory}
                         onEdit={openEditModal}
                         onDelete={handleDeleteItem}
@@ -165,7 +151,7 @@ const EmployeeInventory = () => {
             default:
                 return (
                     <InventoryList
-                        key={`active-${forceUpdate}`}
+                        key="active"
                         inventory={activeInventory}
                         onEdit={openEditModal}
                         onDelete={handleDeleteItem}
@@ -227,11 +213,6 @@ const EmployeeInventory = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
     
-    // Обновляем компонент при изменении активного таба
-    useEffect(() => {
-        setForceUpdate(prev => prev + 1);
-    }, [activeTab]);
-
     // Отслеживаем размер экрана для адаптивности
     useEffect(() => {
         const handleResize = () => {
@@ -276,22 +257,16 @@ const EmployeeInventory = () => {
 
     const handleAddItem = async (values: InventoryItem) => {
         try {
-            console.log('EmployeeInventory - handleAddItem called with values:', values);
             if (!employeeId) {
                 setError("ID сотрудника не найден");
                 return;
             }
-
             const itemData = { ...values, employeeId: employeeId };
-            console.log('EmployeeInventory - sending itemData:', itemData);
             await addInventoryItem(itemData).unwrap();
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error) {
-            console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
                 setError(error.data.message);
@@ -319,8 +294,6 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error: any) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -336,9 +309,6 @@ const EmployeeInventory = () => {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
             setError("");
-            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -353,24 +323,14 @@ const EmployeeInventory = () => {
 
     const handleCancelDelete = (id: string) => {
         setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-        }, 100);
     };
 
     const handleWriteOff = async (ids: string[]) => {
         try {
-            // Обновляем статус выбранных предметов на "списан"
             for (const id of ids) {
-                await updateInventoryItem({ 
-                    id, 
-                    data: { status: 'списан' } 
-                }).unwrap();
+                await updateInventoryItem({ id, data: { status: 'списан' } }).unwrap();
             }
             setError("");
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -391,36 +351,20 @@ const EmployeeInventory = () => {
         setEditingItem(item);
         setIsModalVisible(true);
         setError("");
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const closeModal = () => {
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const openNormsModal = () => {
-        console.log('openNormsModal called');
-        if (isOpeningNormsModal) {
-            console.log('Already opening norms modal, ignoring');
-            return;
-        }
-        setIsOpeningNormsModal(true);
         setIsNormsModalVisible(true);
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const closeNormsModal = () => {
-        console.log('closeNormsModal called');
-        setIsOpeningNormsModal(false);
         setIsNormsModalVisible(false);
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const handleViewAddons = (item: InventoryItem) => {
@@ -437,7 +381,7 @@ const EmployeeInventory = () => {
     }), [activeInventory, writtenOffInventory]);
 
     return (
-        <Layout key={forceUpdate}>
+        <Layout>
             {employee && (
                 <EmployeeHeader 
                     employee={{
@@ -683,7 +627,7 @@ const EmployeeInventory = () => {
                                 label: `Все активные (${activeInventory.length})`,
                                 children: (
                                     <InventoryList
-                                        key={`active-${forceUpdate}`}
+                                        key="active"
                                         inventory={activeInventory}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
@@ -699,7 +643,7 @@ const EmployeeInventory = () => {
                                 label: `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
                                 children: (
                                     <InventoryList
-                                        key={`спецодежда-${forceUpdate}`}
+                                        key="спецодежда"
                                         inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
@@ -715,7 +659,7 @@ const EmployeeInventory = () => {
                                 label: `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
                                 children: (
                                     <InventoryList
-                                        key={`сиз-${forceUpdate}`}
+                                        key="сиз"
                                         inventory={activeInventory.filter(item => item.itemType === 'сиз')}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
@@ -731,7 +675,7 @@ const EmployeeInventory = () => {
                                 label: `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
                                 children: (
                                     <InventoryList
-                                        key={`инструмент-${forceUpdate}`}
+                                        key="инструмент"
                                         inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
@@ -747,7 +691,7 @@ const EmployeeInventory = () => {
                                 label: `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
                                 children: (
                                     <InventoryList
-                                        key={`оборудование-${forceUpdate}`}
+                                        key="оборудование"
                                         inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
@@ -763,7 +707,7 @@ const EmployeeInventory = () => {
                                 label: `Списанный инвентарь (${writtenOffInventory.length})`,
                                 children: (
                                     <InventoryList
-                                        key={`written-off-${forceUpdate}`}
+                                        key="written-off"
                                         inventory={writtenOffInventory}
                                         onEdit={openEditModal}
                                         onDelete={handleDeleteItem}
