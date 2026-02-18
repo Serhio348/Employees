@@ -414,6 +414,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         label: 'Редактировать',
                         icon: <EditOutlined />,
                         onClick: () => {
+                            (document.activeElement as HTMLElement)?.blur();
                             onEdit(record);
                         },
                     },
@@ -425,6 +426,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                         danger: true,
                         onClick: () => {
                             if (record.id) {
+                                (document.activeElement as HTMLElement)?.blur();
                                 Modal.confirm({
                                     title: 'Удалить предмет?',
                                     content: 'Вы уверены, что хотите удалить этот предмет из инвентаря?',
@@ -574,6 +576,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                             label: 'Редактировать',
                                             icon: <EditOutlined />,
                                             onClick: () => {
+                                                (document.activeElement as HTMLElement)?.blur();
                                                 onEdit(record);
                                             },
                                         },
@@ -585,6 +588,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                             danger: true,
                                             onClick: () => {
                                                 if (record.id) {
+                                                    (document.activeElement as HTMLElement)?.blur();
                                                     onDelete(record.id);
                                                 }
                                             },
