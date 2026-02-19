@@ -1,270 +1,441 @@
-import React, { useState } from 'react';
-import { Button, Modal, Space, message } from 'antd';
-import { FilePdfOutlined, FileExcelOutlined, DownloadOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Button, message } from 'antd';
+import { FilePdfOutlined } from '@ant-design/icons';
 import { Employee } from '@prisma/client';
 import { InventoryItem } from '../../app/services/inventory';
-import * as XLSX from 'xlsx';
+import { SizNorm } from '../../app/services/sizNorms';
 
 interface Props {
     employee: Employee;
     inventory: InventoryItem[];
+    sizNorms: SizNorm[];
 }
 
-const ExportCard = ({ employee, inventory }: Props) => {
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [exportFormat, setExportFormat] = useState<'pdf' | 'excel'>('pdf');
+const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
 
-    const handleExport = () => {
-        if (exportFormat === 'pdf') {
-            exportToPDF();
-        } else {
-            exportToExcel();
-        }
-        setIsModalVisible(false);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsModalVisible(false);
-        }, 100);
+    // Расчёт % износа по нормам СИЗ
+    const calculateWearPercentage = (item: InventoryItem): number => {
+        if (!item.issueDate) return 0;
+
+        const norm = sizNorms.find(n => {
+            const normName = n.name.toLowerCase().trim();
+            const itemName = item.itemName.toLowerCase().trim();
+            return normName === itemName
+                || itemName.includes(normName)
+                || normName.includes(itemName);
+        });
+
+        if (!norm || norm.periodType === 'until_worn') return 0;
+
+        const periodMonths = parseFloat(norm.period);
+        if (isNaN(periodMonths) || periodMonths <= 0) return 0;
+
+        const issueDate = new Date(item.issueDate);
+        const now = new Date();
+        const monthsElapsed =
+            (now.getFullYear() - issueDate.getFullYear()) * 12 +
+            (now.getMonth() - issueDate.getMonth()) +
+            (now.getDate() - issueDate.getDate()) / 30;
+
+        return Math.min(Math.round((monthsElapsed / periodMonths) * 100), 100);
+    };
+
+    const formatDate = (dateStr?: string) => {
+        if (!dateStr) return '';
+        const part = dateStr.split('T')[0];
+        const [y, m, d] = part.split('-');
+        return `${d}.${m}.${y}`;
+    };
+
+    const normPeriodLabel = (norm: SizNorm) => {
+        if (norm.periodType === 'until_worn') return 'до износа';
+        const months = parseFloat(norm.period);
+        if (months === 12) return '1 год';
+        if (months === 24) return '2 года';
+        if (months === 36) return '3 года';
+        return `${months} мес.`;
     };
 
     const exportToPDF = () => {
         try {
-            // Создаем HTML контент для PDF
             const htmlContent = generateHTMLContent();
-            
-            // Создаем новый window для печати
             const printWindow = window.open('', '_blank');
             if (printWindow) {
                 printWindow.document.write(htmlContent);
                 printWindow.document.close();
                 printWindow.focus();
-                printWindow.print();
+                setTimeout(() => {
+                    printWindow.document.title = ' ';
+                    printWindow.print();
+                }, 500);
             }
-            message.success('PDF экспорт запущен');
+            message.success('PDF открыт для печати');
         } catch (error) {
             message.error('Ошибка при экспорте в PDF');
             console.error('PDF export error:', error);
         }
     };
 
-    const exportToExcel = () => {
-        try {
-            // Создаем рабочую книгу Excel
-            const workbook = XLSX.utils.book_new();
-            
-            // Лист с информацией о сотруднике
-            const employeeData = [
-                ['ЛИЧНАЯ КАРТОЧКА № учета средств индивидуальной защиты'],
-                [''],
-                ['Информация о работнике'],
-                ['Фамилия', employee.lastName],
-                ['Имя', employee.firstName],
-                ['Отчество', employee.surName || ''],
-                ['Возраст', employee.age],
-                ['Дата рождения', employee.birthDate ? new Date(employee.birthDate).toLocaleDateString('ru-RU') : ''],
-                ['Профессия', employee.profession],
-                ['Адрес', employee.address],
-                ['Табельный номер', employee.employeeNumber || ''],
-                ['Рост', employee.height ? employee.height + ' см' : ''],
-                ['Размер одежды', employee.clothingSize || ''],
-                ['Размер обуви', employee.shoeSize || ''],
-                [''],
-                ['Выданный инвентарь'],
-                ['№', 'Наименование СИЗ', 'Тип', 'Дата выдачи', 'Количество', 'Статус']
-            ];
-            
-            // Добавляем данные инвентаря
-            inventory.forEach((item, index) => {
-                employeeData.push([
-                    index + 1,
-                    item.itemName,
-                    item.itemType,
-                    item.issueDate ? new Date(item.issueDate).toLocaleDateString('ru-RU') : '',
-                    item.quantity,
-                    item.status
-                ]);
-            });
-            
-            // Создаем лист
-            const worksheet = XLSX.utils.aoa_to_sheet(employeeData);
-            
-            // Настраиваем ширину колонок
-            const colWidths = [
-                { wch: 5 },   // №
-                { wch: 30 }, // Наименование СИЗ
-                { wch: 15 }, // Тип
-                { wch: 12 }, // Дата выдачи
-                { wch: 10 }, // Количество
-                { wch: 15 }  // Статус
-            ];
-            worksheet['!cols'] = colWidths;
-            
-            // Добавляем лист в книгу
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Личная карточка');
-            
-            // Создаем и скачиваем файл
-            const fileName = `Карточка_${employee.lastName}_${employee.firstName}.xlsx`;
-            XLSX.writeFile(workbook, fileName);
-            
-            message.success('Excel файл скачан');
-        } catch (error) {
-            message.error('Ошибка при экспорте в Excel');
-            console.error('Excel export error:', error);
-        }
-    };
-
     const generateHTMLContent = () => {
-        const currentDate = new Date().toLocaleDateString('ru-RU');
-        
-        return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>Личная карточка работника</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    .header { text-align: center; margin-bottom: 30px; }
-                    .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-                    .subtitle { font-size: 14px; color: #666; }
-                    .section { margin-bottom: 20px; }
-                    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ccc; }
-                    .employee-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-                    .info-block { flex: 1; margin-right: 20px; }
-                    .info-label { font-weight: bold; }
-                    .inventory-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    .inventory-table th, .inventory-table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-                    .inventory-table th { background-color: #f5f5f5; font-weight: bold; }
-                    .signature-section { margin-top: 30px; display: flex; justify-content: space-between; }
-                    .signature-block { text-align: center; }
-                    .signature-line { border-bottom: 1px solid #000; width: 200px; margin: 0 auto 5px; }
-                    @media print { body { margin: 0; } }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="title">ЛИЧНАЯ КАРТОЧКА № учета средств индивидуальной защиты</div>
-                    <div class="subtitle">Дата составления: ${currentDate}</div>
-                </div>
+        const activeItems = inventory.filter(i => i.status !== 'списан');
 
-                <div class="section">
-                    <div class="section-title">Информация о работнике</div>
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">
-                            ${employee.lastName} ${employee.firstName} ${employee.surName || ''}
-                        </div>
-                        <div style="font-size: 16px; opacity: 0.9;">
-                            ${employee.profession}
-                        </div>
-                    </div>
-                    <div class="employee-info">
-                        <div class="info-block">
-                            <div><span class="info-label">Фамилия:</span> ${employee.lastName}</div>
-                            <div><span class="info-label">Имя:</span> ${employee.firstName}</div>
-                            <div><span class="info-label">Отчество:</span> ${employee.surName || '-'}</div>
-                        </div>
-                        <div class="info-block">
-                            <div><span class="info-label">Возраст:</span> ${employee.age} лет</div>
-                            <div><span class="info-label">Дата рождения:</span> ${employee.birthDate ? new Date(employee.birthDate).toLocaleDateString('ru-RU') : '-'}</div>
-                            <div><span class="info-label">Профессия:</span> ${employee.profession}</div>
-                        </div>
-                        <div class="info-block">
-                            <div><span class="info-label">Адрес:</span> ${employee.address}</div>
-                            <div><span class="info-label">Табельный номер:</span> ${employee.employeeNumber || '-'}</div>
-                            <div><span class="info-label">Рост:</span> ${employee.height ? employee.height + ' см' : '-'}</div>
-                        </div>
-                    </div>
-                </div>
+        const normsRows = sizNorms.map(norm => `
+            <tr>
+                <td>${norm.name}</td>
+                <td style="text-align:center">${norm.classification || ''}</td>
+                <td style="text-align:center">${norm.quantity ?? 1}</td>
+                <td style="text-align:center">${normPeriodLabel(norm)}</td>
+            </tr>`).join('');
 
-                <div class="section">
-                    <div class="section-title">Выданный инвентарь</div>
-                    <table class="inventory-table">
-                        <thead>
-                            <tr>
-                                <th>№</th>
-                                <th>Наименование СИЗ</th>
-                                <th>Тип</th>
-                                <th>Дата выдачи</th>
-                                <th>Количество</th>
-                                <th>Статус</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${inventory.map((item, index) => `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${item.itemName}</td>
-                                    <td>${item.itemType}</td>
-                                    <td>${item.issueDate ? new Date(item.issueDate).toLocaleDateString('ru-RU') : '-'}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>${item.status}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+        const inventoryRows = activeItems.map(item => {
+            const wear = calculateWearPercentage(item);
+            return `
+            <tr>
+                <td>${item.itemName}</td>
+                <td style="text-align:center">${formatDate(item.issueDate)}</td>
+                <td style="text-align:center">${item.quantity}</td>
+                <td style="text-align:center">${wear > 0 ? wear + '%' : ''}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>`;
+        }).join('');
 
-                <div class="signature-section">
-                    <div class="signature-block">
-                        <div class="signature-line"></div>
-                        <div>Подпись работника</div>
-                    </div>
-                    <div class="signature-block">
-                        <div class="signature-line"></div>
-                        <div>Подпись ответственного лица</div>
-                    </div>
-                </div>
-            </body>
-            </html>
-        `;
+        const fullName = `${employee.lastName} ${employee.firstName} ${employee.surName || ''}`.trim();
+        const today = new Date();
+        const exportDate = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
+
+        return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Личная карточка СИЗ</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+    color: #000;
+    line-height: 1.3;
+    padding: 15mm 12mm 12mm 20mm;
+  }
+
+  /* ── Шапка ── */
+  .org-name {
+    text-align: left;
+    font-size: 10pt;
+    margin-bottom: 10pt;
+    line-height: 1.4;
+  }
+  .card-title {
+    text-align: center;
+    font-size: 12pt;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-bottom: 2pt;
+  }
+  .card-subtitle {
+    text-align: center;
+    font-size: 10pt;
+    margin-bottom: 14pt;
+  }
+
+  /* ── Блок сотрудника ── */
+  .employee-grid {
+    display: table;
+    width: 100%;
+    margin-bottom: 10pt;
+  }
+  .emp-col {
+    display: table-cell;
+    vertical-align: top;
+    padding-right: 12pt;
+  }
+  .emp-col:last-child { padding-right: 0; }
+
+  .field-row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 4pt;
+    gap: 3px;
+  }
+  .field-label {
+    white-space: nowrap;
+    font-size: 9pt;
+  }
+  .field-value {
+    border-bottom: 1px solid #000;
+    flex: 1;
+    font-weight: bold;
+    font-size: 9pt;
+    padding: 0 2px;
+    min-width: 40px;
+  }
+
+  /* ── Таблицы ── */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 8.5pt;
+  }
+  th, td {
+    border: 1px solid #000;
+    padding: 3px 4px;
+    vertical-align: middle;
+  }
+  th {
+    font-weight: bold;
+    text-align: center;
+    font-style: italic;
+    background: #fff;
+  }
+  .col-num {
+    text-align: center;
+    font-weight: normal;
+    font-style: normal;
+    padding: 2px;
+  }
+
+  /* ── Нормы ── */
+  .norms-title {
+    font-size: 9pt;
+    margin-bottom: 4pt;
+  }
+  .norms-section { margin-bottom: 10pt; }
+
+  /* ── Подписи ── */
+  .signatures {
+    margin-top: 10pt;
+    margin-bottom: 14pt;
+    font-size: 8.5pt;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .sig-label {
+    width: 62%;
+    padding: 3pt 0;
+    vertical-align: bottom;
+    border: none;
+  }
+  .sig-cell {
+    width: 38%;
+    padding: 3pt 0 3pt 10pt;
+    vertical-align: bottom;
+    border: none;
+  }
+  .sig-line {
+    border-bottom: 1px solid #000;
+    display: block;
+    width: 140px;
+  }
+  /* ── Компактная таблица норм (−30% высоты) ── */
+  .norms-section table th,
+  .norms-section table td {
+    padding: 1px 3px;
+    font-size: 7.5pt;
+    line-height: 1.2;
+  }
+
+  /* ── Таблица выдачи ── */
+  .inventory-section {
+    page-break-before: always;
+    padding-top: 15mm;
+  }
+  .issued-title {
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+    margin-top: 4pt;
+  }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Шапка первой страницы -->
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6pt;">
+  <div class="org-name" style="margin-bottom:0;">ОАО &ldquo;Брестский ликёро-водочный завод &ldquo;Белалко&rdquo;</div>
+  <div style="font-size:9pt; white-space:nowrap; padding-left:12pt;">${exportDate}</div>
+</div>
+
+<!-- Заголовок -->
+<div class="card-title">ЛИЧНАЯ КАРТОЧКА №&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<div class="card-subtitle">учета средств индивидуальной защиты</div>
+
+<!-- Данные сотрудника -->
+<div class="employee-grid">
+  <div class="emp-col" style="width:58%">
+    <div class="field-row">
+      <span class="field-label">Фамилия</span>
+      <span class="field-value">${employee.lastName}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Собственное имя</span>
+      <span class="field-value">${employee.firstName}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Отчество</span>
+      <span class="field-value">${employee.surName || ''}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Табельный номер</span>
+      <span class="field-value">${employee.employeeNumber || ''}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Профессия (должность)</span>
+      <span class="field-value">${employee.profession}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Дата приема на работу</span>
+      <span class="field-value"></span>
+    </div>
+  </div>
+  <div class="emp-col" style="width:42%">
+    <div class="field-row">
+      <span class="field-label">Рост</span>
+      <span class="field-value">${employee.height ?? ''}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Размер одежды</span>
+      <span class="field-value">${employee.clothingSize ?? ''}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Размер обуви</span>
+      <span class="field-value">${employee.shoeSize ?? ''}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">головного убора</span>
+      <span class="field-value"></span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">рукавиц</span>
+      <span class="field-value"></span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">перчаток</span>
+      <span class="field-value"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Нормы СИЗ -->
+${sizNorms.length > 0 ? `
+<div class="norms-section">
+  <div class="norms-title">Предусмотрено по установленным нормам:</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:42%">Наименование средства индивидуальной защиты (СИЗ)</th>
+        <th style="width:40%">Классификация (маркировка) средства индивидуальной защиты<br>по защитным свойствам или конструктивным особенностям</th>
+        <th style="width:9%">Норма выдачи (кол-во)</th>
+        <th style="width:9%">Срок</th>
+      </tr>
+      <tr>
+        <td class="col-num">1</td>
+        <td class="col-num">2</td>
+        <td class="col-num">3</td>
+        <td class="col-num">4</td>
+      </tr>
+    </thead>
+    <tbody>
+      ${normsRows}
+    </tbody>
+  </table>
+</div>` : ''}
+
+<!-- Подписи -->
+<table class="signatures">
+  <tr>
+    <td class="sig-label">Главный бухгалтер (бухгалтер)</td>
+    <td class="sig-cell"><span class="sig-line"></span></td>
+  </tr>
+  <tr>
+    <td class="sig-label" colspan="2">Согласовано:</td>
+  </tr>
+  <tr>
+    <td class="sig-label">специалист отдела кадров</td>
+    <td class="sig-cell"><span class="sig-line"></span></td>
+  </tr>
+  <tr>
+    <td class="sig-label">руководитель структурного подразделения</td>
+    <td class="sig-cell"><span class="sig-line"></span></td>
+  </tr>
+  <tr>
+    <td class="sig-label">специалист по охране труда</td>
+    <td class="sig-cell"><span class="sig-line"></span></td>
+  </tr>
+  <tr>
+    <td class="sig-label">лицо, ответственное за выдачу средств индивидуальной защиты</td>
+    <td class="sig-cell"><span class="sig-line"></span></td>
+  </tr>
+  <tr>
+    <td class="sig-label">Ознакомлен: работник</td>
+    <td class="sig-cell"><span class="sig-line"></span></td>
+  </tr>
+</table>
+
+<!-- Таблица выдачи/возврата -->
+<div class="inventory-section">
+<div class="issued-title">Выданный инвентарь:</div>
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2" style="width:19%">Наименование средств<br>индивидуальной защиты</th>
+      <th colspan="5" style="font-style:normal">Выдано</th>
+      <th colspan="5" style="font-style:normal">Возвращено</th>
+    </tr>
+    <tr>
+      <th style="width:8%">Дата<br>выдачи</th>
+      <th style="width:5%">коли&shy;чество</th>
+      <th style="width:7%">% износа<br>на дату<br>выдачи</th>
+      <th style="width:8%">стои&shy;мость,<br>руб.</th>
+      <th style="width:12%">Номер и дата<br>документа БУ<br>о получении СИЗ</th>
+      <th style="width:8%">Дата<br>возврата</th>
+      <th style="width:5%">коли&shy;чество</th>
+      <th style="width:7%">% износа</th>
+      <th style="width:8%">стои&shy;мость,<br>руб.</th>
+      <th style="width:13%">Номер и дата<br>документа БУ<br>о сдаче СИЗ</th>
+    </tr>
+    <tr>
+      <td class="col-num">1</td>
+      <td class="col-num">2</td>
+      <td class="col-num">3</td>
+      <td class="col-num">4</td>
+      <td class="col-num">5</td>
+      <td class="col-num">6</td>
+      <td class="col-num">7</td>
+      <td class="col-num">8</td>
+      <td class="col-num">9</td>
+      <td class="col-num">10</td>
+      <td class="col-num">11</td>
+    </tr>
+  </thead>
+  <tbody>
+    ${inventoryRows}
+  </tbody>
+</table>
+</div>
+
+</body>
+</html>`;
     };
-
 
     return (
-        <>
-            <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                onClick={() => setIsModalVisible(true)}
-            >
-                Экспорт карточки
-            </Button>
-
-            <Modal
-                title="Экспорт личной карточки"
-                open={isModalVisible}
-                onOk={handleExport}
-                onCancel={() => setIsModalVisible(false)}
-                okText="Экспортировать"
-                cancelText="Отмена"
-            >
-                <div style={{ marginBottom: 16 }}>
-                    <p>Выберите формат экспорта:</p>
-                    <Space>
-                        <Button
-                            type={exportFormat === 'pdf' ? 'primary' : 'default'}
-                            icon={<FilePdfOutlined />}
-                            onClick={() => setExportFormat('pdf')}
-                        >
-                            PDF
-                        </Button>
-                        <Button
-                            type={exportFormat === 'excel' ? 'primary' : 'default'}
-                            icon={<FileExcelOutlined />}
-                            onClick={() => setExportFormat('excel')}
-                        >
-                            Excel
-                        </Button>
-                    </Space>
-                </div>
-                <div style={{ color: '#666', fontSize: '12px' }}>
-                    {exportFormat === 'pdf' 
-                        ? 'PDF файл будет открыт в новом окне для печати'
-                        : 'Excel файл (.xlsx) будет автоматически скачан'
-                    }
-                </div>
-            </Modal>
-        </>
+        <Button
+            type="primary"
+            icon={<FilePdfOutlined />}
+            onClick={exportToPDF}
+        >
+            Экспорт карточки
+        </Button>
     );
 };
 
