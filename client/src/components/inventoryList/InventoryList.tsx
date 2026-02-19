@@ -3,9 +3,11 @@ import { Table, Button, Checkbox, Progress, Tag, message } from 'antd';
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined, FileTextOutlined, CloseOutlined } from '@ant-design/icons';
 import { InventoryItem } from '../../app/services/inventory';
 import { useSizNorms } from '../../hooks/useSizNorms';
+import { useResponsive } from '../../hooks/useResponsive';
 import dayjs from 'dayjs';
 import Swal from 'sweetalert2';
 import * as Dialog from '@radix-ui/react-dialog';
+import './InventoryList.css';
 
 interface Props {
     inventory: InventoryItem[];
@@ -20,32 +22,19 @@ interface Props {
 
 const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onCancelDelete, onWriteOff, showWriteOffButton = true }: Props) => {
     const { sizNorms } = useSizNorms();
+    const { isMobile, isVerySmall } = useResponsive();
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isWriteOffModalVisible, setIsWriteOffModalVisible] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [isVerySmall, setIsVerySmall] = useState(false);
 
-    // Подавляем ошибку ResizeObserver и отслеживаем размер экрана
+    // Подавляем ошибку ResizeObserver
     useEffect(() => {
         const handleError = (e: ErrorEvent) => {
             if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
                 e.stopImmediatePropagation();
             }
         };
-        
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-            setIsVerySmall(window.innerWidth < 420);
-        };
-        
         window.addEventListener('error', handleError);
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Вызываем сразу для установки начального состояния
-        
-        return () => {
-            window.removeEventListener('error', handleError);
-            window.removeEventListener('resize', handleResize);
-        };
+        return () => window.removeEventListener('error', handleError);
     }, []);
 
 
@@ -477,294 +466,6 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
 
     return (
         <>
-            <style>
-                {`
-                    @keyframes pulse {
-                        0% {
-                            transform: scale(1);
-                            opacity: 1;
-                        }
-                        50% {
-                            transform: scale(1.05);
-                            opacity: 0.8;
-                        }
-                        100% {
-                            transform: scale(1);
-                            opacity: 1;
-                        }
-                    }
-
-                    @keyframes blink {
-                        0%, 50% {
-                            opacity: 1;
-                        }
-                        51%, 100% {
-                            opacity: 0.3;
-                        }
-                    }
-
-                    /* Добавляем курсор-указатель для всех интерактивных элементов */
-                    .ant-btn {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-btn:hover {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-btn:focus {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-btn:active {
-                        cursor: pointer !important;
-                    }
-
-                    /* Курсор-указатель для всех интерактивных элементов в таблице */
-                    .ant-table-tbody .ant-btn,
-                    .ant-table-tbody .ant-checkbox,
-                    .ant-table-tbody .ant-checkbox-wrapper {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-table-tbody .ant-btn:hover,
-                    .ant-table-tbody .ant-checkbox:hover,
-                    .ant-table-tbody .ant-checkbox-wrapper:hover {
-                        cursor: pointer !important;
-                    }
-
-                    /* Обычный курсор для строк таблицы */
-                    .ant-table-tbody > tr {
-                        cursor: default !important;
-                    }
-
-                    .ant-table-tbody > tr:hover {
-                        cursor: default !important;
-                    }
-
-                    .ant-table-tbody > tr > td {
-                        cursor: default !important;
-                    }
-
-                    .ant-table-tbody > tr:hover > td {
-                        cursor: default !important;
-                    }
-
-                    /* Добавляем курсор-указатель для всех интерактивных элементов */
-                    .ant-btn {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-btn:hover {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-btn:focus {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-btn:active {
-                        cursor: pointer !important;
-                    }
-
-                    /* Курсор-указатель для всех интерактивных элементов в таблице */
-                    .ant-table-tbody .ant-btn,
-                    .ant-table-tbody .ant-checkbox,
-                    .ant-table-tbody .ant-checkbox-wrapper {
-                        cursor: pointer !important;
-                    }
-
-                    .ant-table-tbody .ant-btn:hover,
-                    .ant-table-tbody .ant-checkbox:hover,
-                    .ant-table-tbody .ant-checkbox-wrapper:hover {
-                        cursor: pointer !important;
-                    }
-
-                    /* Обычный курсор для строк таблицы */
-                    .ant-table-tbody > tr {
-                        cursor: default !important;
-                    }
-
-                    .ant-table-tbody > tr:hover {
-                        cursor: default !important;
-                    }
-
-                    .ant-table-tbody > tr > td {
-                        cursor: default !important;
-                    }
-
-                    .ant-table-tbody > tr:hover > td {
-                        cursor: default !important;
-                    }
-
-                    /* Адаптивные стили для мобильных устройств */
-                    @media (max-width: 768px) {
-                        .ant-table-thead > tr > th {
-                            padding: 6px 2px !important;
-                            font-size: 11px !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td {
-                            padding: 6px 2px !important;
-                            font-size: 11px !important;
-                        }
-                        
-                        .ant-btn-sm {
-                            padding: 2px 4px !important;
-                            font-size: 10px !important;
-                            height: 24px !important;
-                        }
-                        
-                        .ant-tag {
-                            font-size: 10px !important;
-                            padding: 1px 4px !important;
-                        }
-                        
-                        .ant-pagination {
-                            font-size: 11px !important;
-                        }
-                        
-                        .ant-pagination-item,
-                        .ant-pagination-prev,
-                        .ant-pagination-next {
-                            min-width: 24px !important;
-                            height: 24px !important;
-                            line-height: 22px !important;
-                        }
-                        
-                        /* Адаптивная ширина колонки названия */
-                        .ant-table-tbody > tr > td:first-child,
-                        .ant-table-thead > tr > th:first-child {
-                            max-width: 0 !important;
-                            width: auto !important;
-                        }
-                        
-                        /* Убираем горизонтальный скролл на мобильных */
-                        .ant-table-container {
-                            overflow-x: hidden !important;
-                        }
-                    }
-
-                    /* Стили для очень маленьких экранов (меньше 420px) */
-                    @media (max-width: 420px) {
-                        .ant-table-thead > tr > th {
-                            padding: 4px 1px !important;
-                            font-size: 10px !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td {
-                            padding: 4px 1px !important;
-                            font-size: 10px !important;
-                        }
-                        
-                        .ant-btn-sm {
-                            padding: 1px 2px !important;
-                            font-size: 8px !important;
-                            height: 20px !important;
-                            min-width: 20px !important;
-                        }
-                        
-                        .ant-tag {
-                            font-size: 8px !important;
-                            padding: 0px 2px !important;
-                        }
-                        
-                        .ant-pagination {
-                            font-size: 9px !important;
-                        }
-                        
-                        .ant-pagination-item,
-                        .ant-pagination-prev,
-                        .ant-pagination-next {
-                            min-width: 20px !important;
-                            height: 20px !important;
-                            line-height: 18px !important;
-                        }
-                        
-                        /* Максимальная компактность для очень маленьких экранов */
-                        .ant-table-tbody > tr > td:first-child,
-                        .ant-table-thead > tr > th:first-child {
-                            max-width: none !important;
-                            width: 100% !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td:last-child,
-                        .ant-table-thead > tr > th:last-child {
-                            width: 60px !important;
-                            min-width: 60px !important;
-                        }
-                    }
-
-                    /* Стили для модальных окон на мобильных устройствах */
-                    @media (max-width: 768px) {
-                        .ant-modal {
-                            margin: 0 !important;
-                            top: 20px !important;
-                            max-width: 90% !important;
-                        }
-                        
-                        .ant-modal-content {
-                            border-radius: 8px !important;
-                        }
-                        
-                        .ant-modal-header {
-                            padding: 12px 16px !important;
-                        }
-                        
-                        .ant-modal-title {
-                            font-size: 14px !important;
-                        }
-                        
-                        .ant-modal-body {
-                            padding: 12px 16px !important;
-                        }
-                        
-                        .ant-modal-footer {
-                            padding: 8px 16px !important;
-                        }
-                        
-                        .ant-btn {
-                            font-size: 12px !important;
-                            height: 32px !important;
-                            padding: 0 12px !important;
-                        }
-                    }
-
-                    /* Исправление: мгновенное закрытие дропдауна без анимации
-                       предотвращает застревание overlay при одновременном открытии модалки */
-                    .action-menu-overlay {
-                        animation-duration: 0ms !important;
-                        transition-duration: 0ms !important;
-                    }
-
-                    /* Стили для Dropdown меню действий */
-                    .ant-dropdown-menu {
-                        min-width: 140px !important;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-                        border-radius: 6px !important;
-                    }
-                    
-                    .ant-dropdown-menu-item {
-                        padding: 8px 12px !important;
-                        font-size: 13px !important;
-                    }
-                    
-                    .ant-dropdown-menu-item .anticon {
-                        margin-right: 8px !important;
-                        font-size: 12px !important;
-                    }
-                    
-                    .ant-dropdown-menu-item-danger {
-                        color: #ff4d4f !important;
-                    }
-                    
-                    .ant-dropdown-menu-item-danger:hover {
-                        background-color: #fff2f0 !important;
-                    }
-
-                `}
-            </style>
-            
 
             <Table
                 columns={columns}
@@ -868,7 +569,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                             </Dialog.Close>
                             <div style={{ marginBottom: 16 }}>
                                 <p>Выберите предметы для списания:</p>
-                                <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px', marginTop: '8px' }}>
+                                <div className="radix-dialog-scroll" style={{ maxHeight: '300px', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px', marginTop: '8px' }}>
                                     {expiredItems.map(item => (
                                         <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
                                             <Checkbox

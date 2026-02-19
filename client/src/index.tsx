@@ -21,6 +21,7 @@ import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
 // Инициализация приложения
 
+
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {
   if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {

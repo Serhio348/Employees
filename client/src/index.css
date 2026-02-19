@@ -63,7 +63,11 @@ body {
   font-size: 14px;
   line-height: 1.6;
   font-weight: 400;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition только на нужные свойства для смены темы.
+     НЕ используем "transition: all" — иначе padding-right, который Radix Dialog
+     добавляет для компенсации скроллбара, будет анимироваться и страница будет дёргаться. */
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -159,10 +163,6 @@ button:active {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
-}
-
-a {
-  text-decoration: none;
 }
 
 /* Подавляем ошибку ResizeObserver */
@@ -305,9 +305,18 @@ a {
   width: 90vw;
   max-width: 520px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow-y: hidden;
   color: var(--text-primary);
   animation: radix-content-show 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Контейнер со скроллируемым контентом внутри диалога.
+   scrollbar-gutter: stable резервирует место под скроллбар,
+   чтобы ширина не менялась при его появлении — это предотвращает
+   скачок высоты ant-select-selection-item и других элементов формы. */
+.radix-dialog-scroll {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .radix-dialog-title {
@@ -359,14 +368,8 @@ a {
 }
 
 @keyframes radix-content-show {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @media (max-width: 768px) {
