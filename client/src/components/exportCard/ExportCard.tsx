@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Button, Modal, Space, message } from 'antd';
-import { FilePdfOutlined, FileExcelOutlined, DownloadOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Button, message } from 'antd';
+import { FilePdfOutlined } from '@ant-design/icons';
 import { Employee } from '@prisma/client';
 import { InventoryItem } from '../../app/services/inventory';
 import { SizNorm } from '../../app/services/sizNorms';
-import * as XLSX from 'xlsx';
 
 interface Props {
     employee: Employee;
@@ -13,8 +12,6 @@ interface Props {
 }
 
 const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [exportFormat, setExportFormat] = useState<'pdf' | 'excel'>('pdf');
 
     // Расчёт % износа по нормам СИЗ
     const calculateWearPercentage = (item: InventoryItem): number => {
@@ -59,15 +56,6 @@ const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
         return `${months} мес.`;
     };
 
-    const handleExport = () => {
-        if (exportFormat === 'pdf') {
-            exportToPDF();
-        } else {
-            exportToExcel();
-        }
-        setIsModalVisible(false);
-    };
-
     const exportToPDF = () => {
         try {
             const htmlContent = generateHTMLContent();
@@ -85,78 +73,6 @@ const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
         } catch (error) {
             message.error('Ошибка при экспорте в PDF');
             console.error('PDF export error:', error);
-        }
-    };
-
-    const exportToExcel = () => {
-        try {
-            const wb = XLSX.utils.book_new();
-
-            // ─── Лист 1: Личная карточка ──────────────────────────────────
-            const cardData: any[][] = [
-                ['ЛИЧНАЯ КАРТОЧКА №', '', '', 'учета средств индивидуальной защиты'],
-                [],
-                ['Фамилия', employee.lastName, '', 'Рост', employee.height ? `${employee.height} см` : ''],
-                ['Собственное имя', employee.firstName, '', 'Размер одежды', employee.clothingSize || ''],
-                ['Отчество', employee.surName || '', '', 'Размер обуви', employee.shoeSize || ''],
-                ['Табельный номер', employee.employeeNumber || ''],
-                ['Профессия (должность)', employee.profession],
-                [],
-            ];
-
-            // Нормы СИЗ
-            if (sizNorms.length > 0) {
-                cardData.push(['Предусмотрено по установленным нормам:']);
-                cardData.push([
-                    'Наименование средства индивидуальной защиты (СИЗ)',
-                    'Классификация (маркировка)',
-                    'Норма выдачи',
-                ]);
-                sizNorms.forEach(norm => {
-                    cardData.push([
-                        norm.name,
-                        norm.classification || '',
-                        `${norm.quantity ?? 1} / ${normPeriodLabel(norm)}`,
-                    ]);
-                });
-                cardData.push([]);
-            }
-
-            const ws1 = XLSX.utils.aoa_to_sheet(cardData);
-            ws1['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 4 }, { wch: 16 }, { wch: 18 }];
-            XLSX.utils.book_append_sheet(wb, ws1, 'Карточка');
-
-            // ─── Лист 2: Выданный инвентарь ───────────────────────────────
-            const inventoryData: any[][] = [
-                [
-                    'Наименование СИЗ',
-                    'Дата выдачи',
-                    'Количество',
-                    '% износа',
-                    'Статус',
-                ],
-            ];
-            inventory.forEach(item => {
-                inventoryData.push([
-                    item.itemName,
-                    formatDate(item.issueDate),
-                    item.quantity,
-                    item.status !== 'списан' ? `${calculateWearPercentage(item)}%` : '—',
-                    item.status,
-                ]);
-            });
-
-            const ws2 = XLSX.utils.aoa_to_sheet(inventoryData);
-            ws2['!cols'] = [
-                { wch: 30 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 14 },
-            ];
-            XLSX.utils.book_append_sheet(wb, ws2, 'Инвентарь');
-
-            XLSX.writeFile(wb, `Карточка_${employee.lastName}_${employee.firstName}.xlsx`);
-            message.success('Excel файл скачан');
-        } catch (error) {
-            message.error('Ошибка при экспорте в Excel');
-            console.error('Excel export error:', error);
         }
     };
 
@@ -513,49 +429,13 @@ ${sizNorms.length > 0 ? `
     };
 
     return (
-        <>
-            <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                onClick={() => setIsModalVisible(true)}
-            >
-                Экспорт карточки
-            </Button>
-
-            <Modal
-                title="Экспорт личной карточки СИЗ"
-                open={isModalVisible}
-                onOk={handleExport}
-                onCancel={() => setIsModalVisible(false)}
-                okText="Экспортировать"
-                cancelText="Отмена"
-            >
-                <div style={{ marginBottom: 16 }}>
-                    <p style={{ marginBottom: 10 }}>Выберите формат:</p>
-                    <Space>
-                        <Button
-                            type={exportFormat === 'pdf' ? 'primary' : 'default'}
-                            icon={<FilePdfOutlined />}
-                            onClick={() => setExportFormat('pdf')}
-                        >
-                            PDF
-                        </Button>
-                        <Button
-                            type={exportFormat === 'excel' ? 'primary' : 'default'}
-                            icon={<FileExcelOutlined />}
-                            onClick={() => setExportFormat('excel')}
-                        >
-                            Excel
-                        </Button>
-                    </Space>
-                </div>
-                <div style={{ color: '#666', fontSize: '12px' }}>
-                    {exportFormat === 'pdf'
-                        ? 'Карточка откроется в новом окне — используйте Ctrl+P для сохранения в PDF'
-                        : 'Excel-файл (.xlsx) будет скачан автоматически'}
-                </div>
-            </Modal>
-        </>
+        <Button
+            type="primary"
+            icon={<FilePdfOutlined />}
+            onClick={exportToPDF}
+        >
+            Экспорт карточки
+        </Button>
     );
 };
 
