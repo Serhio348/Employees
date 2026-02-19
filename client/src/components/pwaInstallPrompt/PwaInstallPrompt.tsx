@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from 'antd';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -15,6 +14,47 @@ const isIOS = () =>
 const isInStandaloneMode = () =>
     (window.navigator as any).standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
+
+const btnStyle: React.CSSProperties = {
+    background: '#fff',
+    color: '#1d4ed8',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '4px 14px',
+    fontWeight: 600,
+    fontSize: '13px',
+    cursor: 'pointer',
+    flexShrink: 0,
+};
+
+const closeStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    color: 'rgba(255,255,255,0.6)',
+    cursor: 'pointer',
+    fontSize: '16px',
+    lineHeight: 1,
+    padding: '0 2px',
+    flexShrink: 0,
+};
+
+const bannerStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: '16px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'linear-gradient(135deg, #0c1b4a 0%, #1d4ed8 100%)',
+    color: '#fff',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    zIndex: 9999,
+    maxWidth: '90vw',
+    fontSize: '14px',
+};
 
 const PwaInstallPrompt: React.FC = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -36,12 +76,10 @@ const PwaInstallPrompt: React.FC = () => {
             setShowBanner(true);
         };
         window.addEventListener('beforeinstallprompt', handler);
-
         window.addEventListener('appinstalled', () => {
             setShowBanner(false);
             setDeferredPrompt(null);
         });
-
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
@@ -61,58 +99,22 @@ const PwaInstallPrompt: React.FC = () => {
         localStorage.setItem(DISMISSED_KEY, '1');
     };
 
-    const bannerStyle: React.CSSProperties = {
-        position: 'fixed',
-        bottom: '16px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: 'linear-gradient(135deg, #0c1b4a 0%, #1d4ed8 100%)',
-        color: '#fff',
-        padding: '12px 16px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        zIndex: 9999,
-        maxWidth: '90vw',
-        fontSize: '14px',
-        whiteSpace: 'nowrap',
-    };
-
-    const closeBtn: React.CSSProperties = {
-        background: 'none',
-        border: 'none',
-        color: 'rgba(255,255,255,0.6)',
-        cursor: 'pointer',
-        fontSize: '16px',
-        lineHeight: 1,
-        padding: '0 2px',
-        flexShrink: 0,
-    };
-
     if (showBanner) {
         return (
             <div style={bannerStyle}>
                 <span>Установить приложение</span>
-                <Button
-                    size="small"
-                    onClick={handleInstall}
-                    style={{ background: '#fff', color: '#1d4ed8', border: 'none', fontWeight: 600 }}
-                >
-                    Установить
-                </Button>
-                <button style={closeBtn} onClick={handleDismiss} aria-label="Закрыть">✕</button>
+                <button style={btnStyle} onClick={handleInstall}>Установить</button>
+                <button style={closeStyle} onClick={handleDismiss} aria-label="Закрыть">✕</button>
             </div>
         );
     }
 
     if (showIOS) {
         return (
-            <div style={{ ...bannerStyle, whiteSpace: 'normal', maxWidth: '80vw', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+            <div style={{ ...bannerStyle, flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                     <span style={{ fontWeight: 600 }}>Установить приложение</span>
-                    <button style={closeBtn} onClick={handleDismiss} aria-label="Закрыть">✕</button>
+                    <button style={closeStyle} onClick={handleDismiss} aria-label="Закрыть">✕</button>
                 </div>
                 <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
                     Нажмите <strong>«Поделиться»</strong> → <strong>«На экран «Домой»»</strong>

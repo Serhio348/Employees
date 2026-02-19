@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from 'antd';
 
 const SwUpdateNotification: React.FC = () => {
     const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
@@ -41,13 +40,12 @@ const SwUpdateNotification: React.FC = () => {
     return (
         <div style={style}>
             <span>Доступна новая версия</span>
-            <Button
-                size="small"
+            <button
                 onClick={handleUpdate}
-                style={{ background: '#1d4ed8', color: '#fff', border: 'none', fontWeight: 600 }}
+                style={{ background: '#fff', color: '#1d4ed8', border: 'none', borderRadius: '6px', padding: '4px 14px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', flexShrink: 0 }}
             >
                 Обновить
-            </Button>
+            </button>
         </div>
     );
 };
