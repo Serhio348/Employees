@@ -23,6 +23,7 @@ import {
     InventoryItem
 } from '../../app/services/inventory';
 import { useGetEmployeeQuery } from '../../app/services/employees';
+import { useGetAllSizNormsQuery } from '../../app/services/sizNorms';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 
 const { Title, Text } = Typography;
@@ -57,6 +58,7 @@ const EmployeeInventory = () => {
     const { data: employee } = useGetEmployeeQuery(employeeId!, {
         skip: !employeeId
     });
+    const { data: sizNorms = [] } = useGetAllSizNormsQuery();
 
     // Разделяем инвентарь на активный и списанный
     const activeInventory = allInventory.filter(item => item.status !== 'списан');
@@ -532,9 +534,10 @@ const EmployeeInventory = () => {
                                     marginLeft: isMobile ? '0' : 'auto',
                                     width: isMobile ? '100%' : 'auto'
                                 }}>
-                            <ExportCard 
-                                employee={employee} 
-                                inventory={allInventory} 
+                            <ExportCard
+                                employee={employee}
+                                inventory={allInventory}
+                                sizNorms={sizNorms}
                             />
                                 </div>
                         )}
