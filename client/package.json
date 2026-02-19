@@ -2,6 +2,15 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "devDependencies": {
+    "sharp": "^0.33.5",
+    "workbox-background-sync": "^6.6.0",
+    "workbox-core": "^6.6.0",
+    "workbox-expiration": "^6.6.0",
+    "workbox-precaching": "^6.6.0",
+    "workbox-routing": "^6.6.0",
+    "workbox-strategies": "^6.6.0"
+  },
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -30,7 +39,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "generate-icons": "node scripts/generate-pwa-icons.js"
   },
   "eslintConfig": {
     "rules": {},

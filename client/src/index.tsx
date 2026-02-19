@@ -6,6 +6,10 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { HeaderProvider } from "./contexts/HeaderContext";
 import ThemeWrapper from "./components/theme/ThemeWrapper";
 import { store } from "./app/store";
+import PwaInstallPrompt from "./components/pwaInstallPrompt/PwaInstallPrompt";
+import OfflineIndicator from "./components/offlineIndicator/OfflineIndicator";
+import SwUpdateNotification from "./components/swUpdateNotification/SwUpdateNotification";
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
 import "./index.css";
@@ -85,8 +89,17 @@ root.render(
           <Auth>
             <RouterProvider router={router} />
           </Auth>
+          <PwaInstallPrompt />
+          <OfflineIndicator />
+          <SwUpdateNotification />
         </ThemeWrapper>
       </HeaderProvider>
     </ThemeProvider>
   </Provider>
 );
+
+serviceWorkerRegistration.register({
+  onUpdate: (registration) => {
+    window.dispatchEvent(new CustomEvent('sw-update', { detail: registration }));
+  },
+});
