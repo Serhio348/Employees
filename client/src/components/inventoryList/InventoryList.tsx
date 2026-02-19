@@ -460,6 +460,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                 </div>
             ),
         }] : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     ], [showWriteOffButton, selectedItems, inventory, isExpired, isMobile, isVerySmall, onEdit, onDelete, handleSelectItem, calculateWearPercentage, getProgressColor, findNormByItemName, onCancelDelete]);
 
     const expiredItems = useMemo(() => inventory.filter(item => isExpired(item)), [inventory, isExpired]);

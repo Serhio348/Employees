@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
@@ -179,7 +179,7 @@ const EmployeeInventory = () => {
         }
     };
 
-    const handleDeleteItem = async (id: string) => {
+    const handleDeleteItem = useCallback(async (id: string) => {
         try {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
@@ -194,13 +194,13 @@ const EmployeeInventory = () => {
         } finally {
             setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
         }
-    };
+    }, [deleteInventoryItem]);
 
-    const handleCancelDelete = (id: string) => {
+    const handleCancelDelete = useCallback((id: string) => {
         setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-    };
+    }, []);
 
-    const handleWriteOff = async (ids: string[]) => {
+    const handleWriteOff = useCallback(async (ids: string[]) => {
         try {
             for (const id of ids) {
                 await updateInventoryItem({ id, data: { status: 'списан' } }).unwrap();
@@ -214,7 +214,7 @@ const EmployeeInventory = () => {
                 setError('Неизвестная ошибка при списании предметов');
             }
         }
-    };
+    }, [updateInventoryItem]);
 
     const openAddModal = () => {
         setEditingItem(null);
@@ -222,11 +222,11 @@ const EmployeeInventory = () => {
         setError("");
     };
 
-    const openEditModal = (item: InventoryItem) => {
+    const openEditModal = useCallback((item: InventoryItem) => {
         setEditingItem(item);
         setIsModalVisible(true);
         setError("");
-    };
+    }, []);
 
     const closeModal = () => {
         setIsModalVisible(false);
@@ -242,9 +242,9 @@ const EmployeeInventory = () => {
         setIsNormsModalVisible(false);
     };
 
-    const handleViewAddons = (item: InventoryItem) => {
+    const handleViewAddons = useCallback((item: InventoryItem) => {
         navigate(`/inventory/${item.id}/addons`);
-    };
+    }, [navigate]);
 
     // Единый источник данных для табов (используется и в desktop Tabs, и в mobile Dropdown)
     const tabItems = useMemo(() => [
