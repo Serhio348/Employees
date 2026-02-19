@@ -1,9 +1,4 @@
 require('dotenv').config();
-// Устанавливаем JWT_SECRET напрямую, если он не загрузился из .env
-if (!process.env.JWT_SECRET) {
-    process.env.JWT_SECRET = 'your-super-secret-jwt-key-here-12345';
-    console.log('JWT_SECRET set manually');
-}
 const { prisma } = require("../../prisma/prisma-client");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -54,7 +49,7 @@ const login = async (req, res) => {
                 email: user.email,
                 name: user.name,
                 lastName: user.lastName,
-                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1d" }),
+                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1h" }),
             });
         } else {
             console.log('Login failed - conditions not met:');
@@ -130,7 +125,7 @@ const register = async (req, res) => {
                 email: user.email,
                 name,
                 lastName,
-                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1d" }),
+                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1h" }),
             });
         } else {
             return res
