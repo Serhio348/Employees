@@ -105,7 +105,6 @@ const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
             </tr>`;
         }).join('');
 
-        const fullName = `${employee.lastName} ${employee.firstName} ${employee.surName || ''}`.trim();
         const today = new Date();
         const exportDate = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
 
