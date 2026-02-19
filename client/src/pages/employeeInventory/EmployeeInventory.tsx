@@ -5,9 +5,12 @@ import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
 import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
-import { Row, Col, Button, Modal, Typography, Statistic, Card, Tabs, Dropdown } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { useResponsive } from '../../hooks/useResponsive';
+import './EmployeeInventory.css';
+import { Row, Col, Button, Typography, Statistic, Card, Tabs, Dropdown } from 'antd';
+import { DownOutlined, CloseOutlined } from '@ant-design/icons';
 import { PlusOutlined, BookOutlined } from '@ant-design/icons';
+import * as Dialog from '@radix-ui/react-dialog';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
 import SizNormsTable from '../../components/sizNormsTable/SizNormsTable';
@@ -31,7 +34,6 @@ const EmployeeInventory = () => {
     const [error, setError] = useState("");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
-    const [isOpeningNormsModal, setIsOpeningNormsModal] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [, setDeletingIds] = useState<string[]>([]);
     // Получаем активную вкладку из URL параметров
@@ -46,8 +48,7 @@ const EmployeeInventory = () => {
         return 'active';
     };
     const [activeTab, setActiveTab] = useState(getTabFromUrl());
-    const [isMobile, setIsMobile] = useState(false);
-    const [forceUpdate, setForceUpdate] = useState(0);
+    const { isMobile } = useResponsive();
     const { hideHeader } = useHeader();
 
     const { data: allInventory = [], isLoading } = useGetEmployeeInventoryQuery(employeeId!, {
@@ -55,15 +56,6 @@ const EmployeeInventory = () => {
     });
     const { data: employee } = useGetEmployeeQuery(employeeId!, {
         skip: !employeeId
-    });
-
-    // Отладочная информация
-    console.log('EmployeeInventory Debug:', {
-        employeeId,
-        user: user ? 'authenticated' : 'not authenticated',
-        employee: employee ? 'loaded' : 'not loaded',
-        allInventory: allInventory.length,
-        isLoading
     });
 
     // Разделяем инвентарь на активный и списанный
@@ -86,125 +78,9 @@ const EmployeeInventory = () => {
     // Функция для обработки смены таба
     const handleTabChange = (key: string) => {
         setActiveTab(key);
-        // Обновляем URL при смене вкладки
         const newUrl = `${window.location.pathname}?tab=${key}`;
         window.history.pushState({}, '', newUrl);
-        // Принудительно обновляем компонент для предотвращения зависания
-        setForceUpdate(prev => prev + 1);
     };
-    
-    // Функция для получения контента текущего таба
-    const getCurrentTabContent = () => {
-        switch (activeTab) {
-            case 'спецодежда':
-                return (
-                    <InventoryList
-                        key={`спецодежда-${forceUpdate}`}
-                        inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteItem}
-                        onViewAddons={handleViewAddons}
-                        loading={isLoading}
-                        onCancelDelete={handleCancelDelete}
-                        onWriteOff={handleWriteOff}
-                    />
-                );
-            case 'сиз':
-                return (
-                    <InventoryList
-                        key={`сиз-${forceUpdate}`}
-                        inventory={activeInventory.filter(item => item.itemType === 'сиз')}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteItem}
-                        onViewAddons={handleViewAddons}
-                        loading={isLoading}
-                        onCancelDelete={handleCancelDelete}
-                        onWriteOff={handleWriteOff}
-                    />
-                );
-            case 'инструмент':
-                return (
-                    <InventoryList
-                        key={`инструмент-${forceUpdate}`}
-                        inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteItem}
-                        onViewAddons={handleViewAddons}
-                        loading={isLoading}
-                        onCancelDelete={handleCancelDelete}
-                        onWriteOff={handleWriteOff}
-                    />
-                );
-            case 'оборудование':
-                return (
-                    <InventoryList
-                        key={`оборудование-${forceUpdate}`}
-                        inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteItem}
-                        onViewAddons={handleViewAddons}
-                        loading={isLoading}
-                        onCancelDelete={handleCancelDelete}
-                        onWriteOff={handleWriteOff}
-                    />
-                );
-            case 'written-off':
-                return (
-                    <InventoryList
-                        key={`written-off-${forceUpdate}`}
-                        inventory={writtenOffInventory}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteItem}
-                        onViewAddons={handleViewAddons}
-                        loading={isLoading}
-                        onCancelDelete={handleCancelDelete}
-                        onWriteOff={handleWriteOff}
-                        showWriteOffButton={false}
-                    />
-                );
-            default:
-                return (
-                    <InventoryList
-                        key={`active-${forceUpdate}`}
-                        inventory={activeInventory}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteItem}
-                        onViewAddons={handleViewAddons}
-                        loading={isLoading}
-                        onCancelDelete={handleCancelDelete}
-                        onWriteOff={handleWriteOff}
-                    />
-                );
-        }
-    };
-    
-    // Меню для выпадающего списка на мобильных устройствах
-    const tabMenuItems = useMemo(() => [
-        {
-            key: 'active',
-            label: `Все активные (${activeInventory.length})`,
-        },
-        {
-            key: 'спецодежда',
-            label: `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
-        },
-        {
-            key: 'сиз',
-            label: `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
-        },
-        {
-            key: 'инструмент',
-            label: `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
-        },
-        {
-            key: 'оборудование',
-            label: `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
-        },
-        {
-            key: 'written-off',
-            label: `Списанный инвентарь (${writtenOffInventory.length})`,
-        },
-    ], [activeInventory, writtenOffInventory]);
     
     const [addInventoryItem, { isLoading: isAdding }] = useAddInventoryItemMutation();
     const [updateInventoryItem, { isLoading: isUpdating }] = useUpdateInventoryItemMutation();
@@ -220,31 +96,11 @@ const EmployeeInventory = () => {
     useEffect(() => {
         const handlePopState = () => {
             setActiveTab(getTabFromUrl());
-            // Принудительно обновляем компонент при навигации назад/вперед
-            setForceUpdate(prev => prev + 1);
         };
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
     
-    // Обновляем компонент при изменении активного таба
-    useEffect(() => {
-        setForceUpdate(prev => prev + 1);
-    }, [activeTab]);
-
-    // Отслеживаем размер экрана для адаптивности
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-        
-        handleResize(); // Вызываем сразу для установки начального состояния
-        window.addEventListener('resize', handleResize);
-        
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
 
     // Подавляем ошибку ResizeObserver
     useEffect(() => {
@@ -276,22 +132,16 @@ const EmployeeInventory = () => {
 
     const handleAddItem = async (values: InventoryItem) => {
         try {
-            console.log('EmployeeInventory - handleAddItem called with values:', values);
             if (!employeeId) {
                 setError("ID сотрудника не найден");
                 return;
             }
-
             const itemData = { ...values, employeeId: employeeId };
-            console.log('EmployeeInventory - sending itemData:', itemData);
             await addInventoryItem(itemData).unwrap();
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error) {
-            console.error('EmployeeInventory - add item error:', error);
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
                 setError(error.data.message);
@@ -319,8 +169,6 @@ const EmployeeInventory = () => {
             setIsModalVisible(false);
             setEditingItem(null);
             setError("");
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error: any) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -336,9 +184,6 @@ const EmployeeInventory = () => {
             setDeletingIds(prev => [...prev, id]);
             await deleteInventoryItem(id).unwrap();
             setError("");
-            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -353,24 +198,14 @@ const EmployeeInventory = () => {
 
     const handleCancelDelete = (id: string) => {
         setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setDeletingIds(prev => prev.filter(deletingId => deletingId !== id));
-        }, 100);
     };
 
     const handleWriteOff = async (ids: string[]) => {
         try {
-            // Обновляем статус выбранных предметов на "списан"
             for (const id of ids) {
-                await updateInventoryItem({ 
-                    id, 
-                    data: { status: 'списан' } 
-                }).unwrap();
+                await updateInventoryItem({ id, data: { status: 'списан' } }).unwrap();
             }
             setError("");
-            // Принудительно обновляем компонент
-            setForceUpdate(prev => prev + 1);
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -391,42 +226,128 @@ const EmployeeInventory = () => {
         setEditingItem(item);
         setIsModalVisible(true);
         setError("");
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const closeModal = () => {
         setIsModalVisible(false);
         setEditingItem(null);
         setError("");
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const openNormsModal = () => {
-        console.log('openNormsModal called');
-        if (isOpeningNormsModal) {
-            console.log('Already opening norms modal, ignoring');
-            return;
-        }
-        setIsOpeningNormsModal(true);
         setIsNormsModalVisible(true);
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const closeNormsModal = () => {
-        console.log('closeNormsModal called');
-        setIsOpeningNormsModal(false);
         setIsNormsModalVisible(false);
-        // Принудительно обновляем компонент
-        setForceUpdate(prev => prev + 1);
     };
 
     const handleViewAddons = (item: InventoryItem) => {
         navigate(`/inventory/${item.id}/addons`);
     };
 
+    // Единый источник данных для табов (используется и в desktop Tabs, и в mobile Dropdown)
+    const tabItems = useMemo(() => [
+        {
+            key: 'active',
+            label: `Все активные (${activeInventory.length})`,
+            children: (
+                <InventoryList
+                    key="active"
+                    inventory={activeInventory}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
+                    onViewAddons={handleViewAddons}
+                    loading={isLoading}
+                    onCancelDelete={handleCancelDelete}
+                    onWriteOff={handleWriteOff}
+                />
+            ),
+        },
+        {
+            key: 'спецодежда',
+            label: `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
+            children: (
+                <InventoryList
+                    key="спецодежда"
+                    inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
+                    onViewAddons={handleViewAddons}
+                    loading={isLoading}
+                    onCancelDelete={handleCancelDelete}
+                    onWriteOff={handleWriteOff}
+                />
+            ),
+        },
+        {
+            key: 'сиз',
+            label: `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
+            children: (
+                <InventoryList
+                    key="сиз"
+                    inventory={activeInventory.filter(item => item.itemType === 'сиз')}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
+                    onViewAddons={handleViewAddons}
+                    loading={isLoading}
+                    onCancelDelete={handleCancelDelete}
+                    onWriteOff={handleWriteOff}
+                />
+            ),
+        },
+        {
+            key: 'инструмент',
+            label: `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
+            children: (
+                <InventoryList
+                    key="инструмент"
+                    inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
+                    onViewAddons={handleViewAddons}
+                    loading={isLoading}
+                    onCancelDelete={handleCancelDelete}
+                    onWriteOff={handleWriteOff}
+                />
+            ),
+        },
+        {
+            key: 'оборудование',
+            label: `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
+            children: (
+                <InventoryList
+                    key="оборудование"
+                    inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
+                    onViewAddons={handleViewAddons}
+                    loading={isLoading}
+                    onCancelDelete={handleCancelDelete}
+                    onWriteOff={handleWriteOff}
+                />
+            ),
+        },
+        {
+            key: 'written-off',
+            label: `Списанный инвентарь (${writtenOffInventory.length})`,
+            children: (
+                <InventoryList
+                    key="written-off"
+                    inventory={writtenOffInventory}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteItem}
+                    onViewAddons={handleViewAddons}
+                    loading={isLoading}
+                    onCancelDelete={handleCancelDelete}
+                    onWriteOff={handleWriteOff}
+                    showWriteOffButton={false}
+                />
+            ),
+        },
+    ], [activeInventory, writtenOffInventory, openEditModal, handleDeleteItem, handleViewAddons, isLoading, handleCancelDelete, handleWriteOff]);
+
+    const tabMenuItems = tabItems.map(({ key, label }) => ({ key, label }));
 
     // Статистика для активного инвентаря
     const statistics = useMemo(() => ({
@@ -437,7 +358,7 @@ const EmployeeInventory = () => {
     }), [activeInventory, writtenOffInventory]);
 
     return (
-        <Layout key={forceUpdate}>
+        <Layout>
             {employee && (
                 <EmployeeHeader 
                     employee={{
@@ -588,41 +509,23 @@ const EmployeeInventory = () => {
                                 {isMobile ? 'Добавить' : 'Добавить предмет'}
                         </Button>
                         <Button
-                                type="default"
+                            type="default"
                             icon={<BookOutlined />}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('Button clicked, calling openNormsModal');
-                                openNormsModal();
+                            onClick={openNormsModal}
+                            size={isMobile ? "small" : "middle"}
+                            style={{
+                                fontSize: isMobile ? '12px' : '14px',
+                                height: isMobile ? '32px' : '36px',
+                                padding: isMobile ? '0 12px' : '0 16px',
+                                fontWeight: '500',
+                                borderRadius: '6px',
+                                borderColor: '#1890ff',
+                                color: '#1890ff',
+                                backgroundColor: '#f0f9ff',
+                                width: isMobile ? '100%' : 'auto',
                             }}
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                                onTouchStart={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                                size={isMobile ? "small" : "middle"}
-                                style={{
-                                    fontSize: isMobile ? '12px' : '14px',
-                                    height: isMobile ? '32px' : '36px',
-                                    padding: isMobile ? '0 12px' : '0 16px',
-                                    fontWeight: '500',
-                                    borderRadius: '6px',
-                                    borderColor: '#1890ff',
-                                    color: '#1890ff',
-                                    backgroundColor: '#f0f9ff',
-                                    width: isMobile ? '100%' : 'auto',
-                                    touchAction: 'manipulation',
-                                    userSelect: 'none',
-                                    WebkitUserSelect: 'none',
-                                    MozUserSelect: 'none',
-                                    msUserSelect: 'none'
-                                }}
-                            >
-                                {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
+                        >
+                            {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
                         </Button>
                         {employee && (
                                 <div style={{ 
@@ -668,7 +571,7 @@ const EmployeeInventory = () => {
                                     <DownOutlined />
                                 </Button>
                             </Dropdown>
-                            {getCurrentTabContent()}
+                            {tabItems.find(t => t.key === activeTab)?.children ?? tabItems[0].children}
                         </>
                     ) : (
                         <Tabs
@@ -677,316 +580,76 @@ const EmployeeInventory = () => {
                             tabPosition="top"
                             type="line"
                             size="middle"
-                            items={[
-                            {
-                                key: 'active',
-                                label: `Все активные (${activeInventory.length})`,
-                                children: (
-                                    <InventoryList
-                                        key={`active-${forceUpdate}`}
-                                        inventory={activeInventory}
-                                        onEdit={openEditModal}
-                                        onDelete={handleDeleteItem}
-                                        onViewAddons={handleViewAddons}
-                                        loading={isLoading}
-                                        onCancelDelete={handleCancelDelete}
-                                        onWriteOff={handleWriteOff}
-                                    />
-                                ),
-                            },
-                            {
-                                key: 'спецодежда',
-                                label: `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
-                                children: (
-                                    <InventoryList
-                                        key={`спецодежда-${forceUpdate}`}
-                                        inventory={activeInventory.filter(item => item.itemType === 'спецодежда')}
-                                        onEdit={openEditModal}
-                                        onDelete={handleDeleteItem}
-                                        onViewAddons={handleViewAddons}
-                                        loading={isLoading}
-                                        onCancelDelete={handleCancelDelete}
-                                        onWriteOff={handleWriteOff}
-                                    />
-                                ),
-                            },
-                            {
-                                key: 'сиз',
-                                label: `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
-                                children: (
-                                    <InventoryList
-                                        key={`сиз-${forceUpdate}`}
-                                        inventory={activeInventory.filter(item => item.itemType === 'сиз')}
-                                        onEdit={openEditModal}
-                                        onDelete={handleDeleteItem}
-                                        onViewAddons={handleViewAddons}
-                                        loading={isLoading}
-                                        onCancelDelete={handleCancelDelete}
-                                        onWriteOff={handleWriteOff}
-                                    />
-                                ),
-                            },
-                            {
-                                key: 'инструмент',
-                                label: `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
-                                children: (
-                                    <InventoryList
-                                        key={`инструмент-${forceUpdate}`}
-                                        inventory={activeInventory.filter(item => item.itemType === 'инструмент')}
-                                        onEdit={openEditModal}
-                                        onDelete={handleDeleteItem}
-                                        onViewAddons={handleViewAddons}
-                                        loading={isLoading}
-                                        onCancelDelete={handleCancelDelete}
-                                        onWriteOff={handleWriteOff}
-                                    />
-                                ),
-                            },
-                            {
-                                key: 'оборудование',
-                                label: `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
-                                children: (
-                                    <InventoryList
-                                        key={`оборудование-${forceUpdate}`}
-                                        inventory={activeInventory.filter(item => item.itemType === 'оборудование')}
-                                        onEdit={openEditModal}
-                                        onDelete={handleDeleteItem}
-                                        onViewAddons={handleViewAddons}
-                                        loading={isLoading}
-                                        onCancelDelete={handleCancelDelete}
-                                        onWriteOff={handleWriteOff}
-                                    />
-                                ),
-                            },
-                            {
-                                key: 'written-off',
-                                label: `Списанный инвентарь (${writtenOffInventory.length})`,
-                                children: (
-                                    <InventoryList
-                                        key={`written-off-${forceUpdate}`}
-                                        inventory={writtenOffInventory}
-                                        onEdit={openEditModal}
-                                        onDelete={handleDeleteItem}
-                                        onViewAddons={handleViewAddons}
-                                        loading={isLoading}
-                                        onCancelDelete={handleCancelDelete}
-                                        onWriteOff={handleWriteOff}
-                                        showWriteOffButton={false}
-                                    />
-                                ),
-                            },
-                            ]}
+                            items={tabItems}
                         />
                     )}
                 </Col>
             </Row>
 
-            <Modal
-                title={editingItem ? "Редактировать предмет" : "Добавить предмет"}
-                open={isModalVisible}
-                onCancel={closeModal}
-                footer={null}
-                width={isMobile ? '95%' : 600}
-                centered={true}
-                destroyOnClose
-                maskClosable
-                keyboard
-                style={{ 
-                    top: isMobile ? 20 : undefined,
-                    margin: isMobile ? '0 auto' : undefined
-                }}
-                bodyStyle={{ 
-                    padding: isMobile ? '16px' : '24px',
-                    maxHeight: isMobile ? '80vh' : '70vh',
-                    overflowY: 'auto',
-                    marginTop: 0,
-                    paddingTop: isMobile ? '16px' : '24px'
-                }}
-            >
-                <InventoryForm
-                    title=""
-                    btnText={editingItem ? "Обновить" : "Добавить"}
-                    onFinish={editingItem ? handleEditItem : handleAddItem}
-                    error={error}
-                    item={editingItem || undefined}
-                    employeeId={employeeId}
-                    loading={isUpdating || isAdding}
-                />
-            </Modal>
+            <Dialog.Root open={isModalVisible} onOpenChange={(open) => { if (!open) closeModal(); }}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="radix-dialog-overlay" />
+                    <Dialog.Content
+                        className="radix-dialog-content"
+                        style={{ maxWidth: isMobile ? '95vw' : '600px' }}
+                        aria-describedby={undefined}
+                    >
+                        <Dialog.Title className="radix-dialog-title">
+                            {editingItem ? "Редактировать предмет" : "Добавить предмет"}
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                <CloseOutlined />
+                            </button>
+                        </Dialog.Close>
+                        <div
+                            className="radix-dialog-scroll"
+                            style={{
+                                maxHeight: isMobile ? '70vh' : '65vh',
+                                padding: isMobile ? '4px 0' : '8px 0',
+                            }}
+                        >
+                            <InventoryForm
+                                title=""
+                                btnText={editingItem ? "Обновить" : "Добавить"}
+                                onFinish={editingItem ? handleEditItem : handleAddItem}
+                                error={error}
+                                item={editingItem || undefined}
+                                employeeId={employeeId}
+                                loading={isUpdating || isAdding}
+                            />
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
 
-            <Modal
-                title="Нормативы СИЗ"
-                open={isNormsModalVisible}
-                onCancel={closeNormsModal}
-                footer={null}
-                width={isMobile ? '95%' : 1000}
-                centered={true}
-                destroyOnClose
-                maskClosable
-                keyboard
-                style={{ 
-                    top: isMobile ? 20 : undefined,
-                    margin: isMobile ? '0 auto' : undefined
-                }}
-                bodyStyle={{ 
-                    padding: isMobile ? '16px' : '24px',
-                    maxHeight: isMobile ? '80vh' : '70vh',
-                    overflowY: 'auto'
-                }}
-            >
-                <SizNormsTable />
-            </Modal>
+            <Dialog.Root open={isNormsModalVisible} onOpenChange={(open) => { if (!open) closeNormsModal(); }}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="radix-dialog-overlay" />
+                    <Dialog.Content
+                        className="radix-dialog-content"
+                        style={{ maxWidth: isMobile ? '95vw' : '1000px', width: '90vw' }}
+                        aria-describedby={undefined}
+                    >
+                        <Dialog.Title className="radix-dialog-title">
+                            Нормативы СИЗ
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                <CloseOutlined />
+                            </button>
+                        </Dialog.Close>
+                        <div
+                            className="radix-dialog-scroll"
+                            style={{ maxHeight: isMobile ? '70vh' : '65vh' }}
+                        >
+                            <SizNormsTable />
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
 
             </div>
-            <style>
-                {`
-                    /* Простые адаптивные стили для вкладок */
-                    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
-                        padding: 8px 12px !important;
-                        font-size: 12px !important;
-                        min-width: 80px !important;
-                    }
-                    
-                    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
-                        background-color: #1890ff !important;
-                        color: white !important;
-                    }
-                    
-                    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab:hover {
-                        background-color: #40a9ff !important;
-                        color: white !important;
-                    }
-                    
-                    .ant-tabs-content-holder {
-                        padding: 8px 0 !important;
-                    }
-                    
-                    .ant-tabs-tabpane {
-                        padding: 0 !important;
-                    }
-
-                    /* Простые стили для карточки сотрудника (только внутри inventory-page) */
-                    .inventory-page .ant-card-body {
-                        padding: 16px !important;
-                    }
-                    
-                    .inventory-page .ant-typography h2 {
-                        font-size: 16px !important;
-                        line-height: 1.2 !important;
-                        word-break: break-word !important;
-                    }
-                    
-                    .inventory-page .ant-typography {
-                        font-size: 12px !important;
-                        word-break: break-word !important;
-                    }
-                    
-                    .inventory-page .ant-typography:last-child {
-                        font-size: 9px !important;
-                    }
-
-                    /* Адаптивные стили для статистических карточек */
-                    @media (max-width: 768px) {
-                        .inventory-page .ant-statistic-title {
-                            font-size: 12px !important;
-                            margin-bottom: 4px !important;
-                            line-height: 1.2 !important;
-                            word-break: break-word !important;
-                        }
-                        
-                        .inventory-page .ant-statistic-content {
-                            font-size: 18px !important;
-                            line-height: 1.2 !important;
-                        }
-                        
-                        .inventory-page .ant-card {
-                            min-height: 80px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
-                        }
-                        
-                        .inventory-page .ant-card-body {
-                            padding: 8px !important;
-                            height: 100% !important;
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
-                            flex-direction: column !important;
-                        }
-                    }
-
-                    @media (max-width: 480px) {
-                        .inventory-page .ant-statistic-title {
-                            font-size: 10px !important;
-                            margin-bottom: 2px !important;
-                        }
-                        
-                        .inventory-page .ant-statistic-content {
-                            font-size: 16px !important;
-                        }
-                        
-                        .inventory-page .ant-card {
-                            min-height: 70px !important;
-                        }
-                        
-                        .inventory-page .ant-card-body {
-                            padding: 6px !important;
-                        }
-                    }
-
-                    /* Стили для модального окна с формой инвентаря */
-                    .ant-modal-body {
-                        margin-top: 0 !important;
-                        padding-top: 24px !important;
-                    }
-                    
-                    .ant-modal-body .ant-form {
-                        margin-top: 0 !important;
-                        padding-top: 0 !important;
-                    }
-                    
-                    .ant-modal-body .ant-form-item:first-child {
-                        margin-top: 0 !important;
-                    }
-
-                    /* Адаптивные стили для таблицы нормативов СИЗ */
-                    @media (max-width: 768px) {
-                        .ant-table-thead > tr > th {
-                            padding: 8px 4px !important;
-                            font-size: 11px !important;
-                            line-height: 1.2 !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td {
-                            padding: 8px 4px !important;
-                            font-size: 11px !important;
-                            line-height: 1.2 !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td .ant-tag {
-                            font-size: 10px !important;
-                            padding: 2px 6px !important;
-                            margin: 1px !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td .ant-btn {
-                            font-size: 10px !important;
-                            padding: 2px 6px !important;
-                            height: 24px !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td .ant-btn .anticon {
-                            font-size: 10px !important;
-                        }
-                        
-                        .ant-modal-body {
-                            padding-top: 16px !important;
-                        }
-                    }
-
-                `}
-            </style>
         </Layout>
     );
 };

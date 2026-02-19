@@ -1,6 +1,9 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
-import { Table, Tag, Button, Modal, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined } from '@ant-design/icons';
+import React, { memo, useState } from 'react';
+import { Table, Tag, Button, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined, CloseOutlined } from '@ant-design/icons';
+import * as Dialog from '@radix-ui/react-dialog';
+import { useResponsive } from '../../hooks/useResponsive';
+import './SizNormsTable.css';
 import { ColumnsType } from 'antd/es/table';
 import { useSizNorms, SizNorm } from '../../hooks/useSizNorms';
 
@@ -8,50 +11,17 @@ const SizNormsTable = () => {
     const { sizNorms, isLoading, addNorm, updateNorm, deleteNorm, initDefaults } = useSizNorms();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [modalOpenedByUser, setModalOpenedByUser] = useState(false);
-    const [isOpeningModal, setIsOpeningModal] = useState(false);
     const [editingNorm, setEditingNorm] = useState<SizNorm | null>(null);
     const [form] = Form.useForm();
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    // Защита от автоматического открытия модального окна
-    useEffect(() => {
-        if (isModalVisible && !modalOpenedByUser) {
-            console.log('Modal opened automatically, closing it');
-            setIsModalVisible(false);
-        }
-    }, [isModalVisible, modalOpenedByUser]);
+    const { isMobile } = useResponsive();
 
     const handleAdd = () => {
-        console.log('handleAdd called');
-        if (isOpeningModal) {
-            console.log('Already opening modal, ignoring');
-            return;
-        }
-        setIsOpeningModal(true);
-        setModalOpenedByUser(true);
         setEditingNorm(null);
         form.resetFields();
         setIsModalVisible(true);
     };
 
     const handleEdit = (norm: SizNorm) => {
-        if (isOpeningModal) {
-            console.log('Already opening modal, ignoring');
-            return;
-        }
-        setIsOpeningModal(true);
-        setModalOpenedByUser(true);
         setEditingNorm(norm);
         form.setFieldsValue(norm);
         setIsModalVisible(true);
@@ -81,12 +51,6 @@ const SizNormsTable = () => {
             setIsModalVisible(false);
             setEditingNorm(null);
             form.resetFields();
-            // Принудительно очищаем состояние
-            setTimeout(() => {
-                setIsModalVisible(false);
-                setEditingNorm(null);
-                form.resetFields();
-            }, 100);
         } catch (error) {
             message.error('Ошибка при сохранении нормы СИЗ');
         }
@@ -101,52 +65,11 @@ const SizNormsTable = () => {
         }
     };
 
-    const handleModalCancel = useCallback(() => {
-        console.log('Modal cancel clicked');
-        setIsOpeningModal(false);
-        setModalOpenedByUser(false);
+    const handleModalCancel = () => {
         setIsModalVisible(false);
         form.resetFields();
         setEditingNorm(null);
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsOpeningModal(false);
-            setModalOpenedByUser(false);
-            setIsModalVisible(false);
-            form.resetFields();
-            setEditingNorm(null);
-        }, 100);
-    }, [form]);
-
-    // Дополнительная обработка закрытия модального окна
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isModalVisible) {
-                setIsOpeningModal(false);
-                setModalOpenedByUser(false);
-                handleModalCancel();
-            }
-        };
-
-        const handleMaskClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.classList.contains('ant-modal-mask') && isModalVisible) {
-                setIsOpeningModal(false);
-                setModalOpenedByUser(false);
-                handleModalCancel();
-            }
-        };
-
-        if (isModalVisible) {
-            document.addEventListener('keydown', handleEscape);
-            document.addEventListener('click', handleMaskClick);
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.removeEventListener('click', handleMaskClick);
-        };
-    }, [isModalVisible, handleModalCancel]);
+    };
 
     const columns: ColumnsType<SizNorm> = [
         {
@@ -359,402 +282,103 @@ const SizNormsTable = () => {
                 />
             </div>
             
-            <Modal
-                title={editingNorm ? "Редактировать норматив" : "Добавить норматив"}
+            <Dialog.Root
                 open={isModalVisible}
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
-                width={isMobile ? '100%' : 600}
-                centered={!isMobile}
-                maskClosable={true}
-                closable={true}
-                destroyOnClose={false}
-                keyboard={true}
-                style={{ 
-                    top: isMobile ? 0 : 100,
-                    left: isMobile ? 0 : undefined,
-                    right: isMobile ? 0 : undefined,
-                    bottom: isMobile ? 0 : undefined,
-                    margin: isMobile ? 0 : undefined,
-                    maxWidth: isMobile ? '100vw' : '600px',
-                    maxHeight: isMobile ? '100vh' : '80vh'
-                }}
-                bodyStyle={{ 
-                    padding: isMobile ? '4px' : '24px',
-                    maxHeight: isMobile ? 'calc(100vh - 120px)' : '60vh',
-                    overflowY: 'auto',
-                    fontSize: isMobile ? '11px' : '14px'
-                }}
+                onOpenChange={(open) => { if (!open) handleModalCancel(); }}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{ periodType: 'months' }}
-                >
-                    <Row gutter={isMobile ? [0, 12] : [16, 16]}>
-                        <Col span={24}>
+                <Dialog.Portal>
+                    <Dialog.Overlay
+                        className="radix-dialog-overlay"
+                        style={{ zIndex: 1100 }}
+                    />
+                    <Dialog.Content
+                        className="radix-dialog-content"
+                        style={{
+                            maxWidth: isMobile ? '95vw' : '600px',
+                            zIndex: 1101,
+                        }}
+                        aria-describedby={undefined}
+                    >
+                        <Dialog.Title className="radix-dialog-title">
+                            {editingNorm ? "Редактировать норматив" : "Добавить норматив"}
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
+                                <CloseOutlined />
+                            </button>
+                        </Dialog.Close>
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            initialValues={{ periodType: 'months' }}
+                            style={{ fontSize: isMobile ? '11px' : '14px' }}
+                        >
                             <Form.Item
                                 name="name"
                                 label="Наименование СИЗ"
                                 rules={[{ required: true, message: 'Введите наименование СИЗ' }]}
+                                style={{ marginBottom: 12 }}
                             >
-                                <Input 
+                                <Input
                                     placeholder="Введите наименование СИЗ"
-                                    size={isMobile ? "small" : "middle"}
                                     style={{ width: '100%' }}
                                 />
                             </Form.Item>
-                        </Col>
-                        
-                        <Col span={24}>
                             <Form.Item
                                 name="classification"
-                                label={isMobile ? "Классификация" : "Классификация (маркировка)"}
+                                label="Классификация (маркировка)"
+                                style={{ marginBottom: 12 }}
                             >
-                                <Select 
-                                    placeholder="Выберите классификацию" 
+                                <Select
+                                    placeholder="Выберите классификацию"
                                     allowClear
-                                    size={isMobile ? "small" : "middle"}
                                     style={{ width: '100%' }}
+                                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
                                 >
                                     <Select.Option value="Тн">Тн (теплозащитные)</Select.Option>
-                                    <Select.Option value="ЗМи">ЗМи (защитные от механических воздействий)</Select.Option>
+                                    <Select.Option value="ЗМи">ЗМи (от механических воздействий)</Select.Option>
                                     <Select.Option value="Ми">Ми (механические воздействия)</Select.Option>
                                     <Select.Option value="В">В (влагозащитные)</Select.Option>
                                     <Select.Option value="Вн">Вн (влагонепроницаемые)</Select.Option>
                                     <Select.Option value="ЗП">ЗП (защитные от пыли)</Select.Option>
                                 </Select>
                             </Form.Item>
-                        </Col>
-                        
-                        <Col span={24}>
                             <Form.Item
                                 name="periodType"
                                 label="Тип срока носки"
                                 rules={[{ required: true, message: 'Выберите тип срока носки' }]}
+                                style={{ marginBottom: 12 }}
                             >
-                                <Select 
-                                    size={isMobile ? "small" : "middle"}
+                                <Select
                                     style={{ width: '100%' }}
+                                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
                                 >
                                     <Select.Option value="months">В месяцах</Select.Option>
                                     <Select.Option value="until_worn">До износа</Select.Option>
                                 </Select>
                             </Form.Item>
-                        </Col>
-                        
-                        <Col span={24}>
                             <Form.Item
                                 name="period"
                                 label="Срок носки"
                                 rules={[{ required: true, message: 'Введите срок носки' }]}
+                                style={{ marginBottom: 0 }}
                             >
-                                <Input 
-                                    placeholder="Введите срок носки"
-                                    size={isMobile ? "small" : "middle"}
+                                <Input
+                                    placeholder="Введите срок носки (число)"
                                     style={{ width: '100%' }}
                                 />
                             </Form.Item>
-                        </Col>
-                    </Row>
-                </Form>
-            </Modal>
+                        </Form>
+                        <div className="radix-dialog-footer">
+                            <Button onClick={handleModalCancel}>Отмена</Button>
+                            <Button type="primary" onClick={handleModalOk}>
+                                {editingNorm ? "Сохранить" : "Добавить"}
+                            </Button>
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
             
-            <style>
-                {`
-                    /* Стили для центрирования выпадающих меню на мобильных */
-                    @media (max-width: 768px) {
-                        .ant-dropdown {
-                            position: fixed !important;
-                            left: 50% !important;
-                            transform: translateX(-50%) !important;
-                            z-index: 1050 !important;
-                        }
-                        
-                        .ant-dropdown-menu {
-                            min-width: 120px !important;
-                            text-align: center !important;
-                        }
-                        
-                        .ant-dropdown-menu-item {
-                            text-align: center !important;
-                            padding: 8px 16px !important;
-                        }
-                    }
-
-                    /* Адаптивные стили для модального окна нормативов СИЗ */
-                    @media (max-width: 768px) {
-                        .ant-modal {
-                            margin: 0 !important;
-                            padding: 0 !important;
-                        }
-                        
-                        .ant-modal-content {
-                            border-radius: 8px !important;
-                        }
-                        
-                        .ant-modal-header {
-                            padding: 12px 16px !important;
-                            border-bottom: 1px solid #f0f0f0 !important;
-                        }
-                        
-                        .ant-modal-title {
-                            font-size: 16px !important;
-                            font-weight: 600 !important;
-                        }
-                        
-                        .ant-modal-body {
-                            padding: 12px !important;
-                        }
-                        
-                        .ant-form-item-label > label {
-                            font-size: 14px !important;
-                            font-weight: 500 !important;
-                        }
-                        
-                        .ant-input,
-                        .ant-select-selector {
-                            font-size: 14px !important;
-                            height: 36px !important;
-                        }
-                        
-                        .ant-select-dropdown {
-                            font-size: 14px !important;
-                        }
-                        
-                        .ant-modal-footer {
-                            padding: 12px 16px !important;
-                            border-top: 1px solid #f0f0f0 !important;
-                        }
-                        
-                        .ant-btn {
-                            height: 36px !important;
-                            font-size: 14px !important;
-                        }
-                    }
-                `}
-            </style>
-            
-            <style>
-                {`
-                    /* Адаптивные стили для таблицы нормативов СИЗ */
-                    @media (max-width: 768px) {
-                        .ant-table {
-                            font-size: 12px !important;
-                            table-layout: auto !important;
-                        }
-                        
-                        .ant-table-thead > tr > th {
-                            padding: 8px 4px !important;
-                            font-size: 11px !important;
-                            font-weight: 600 !important;
-                            white-space: nowrap !important;
-                            overflow: hidden !important;
-                            text-overflow: ellipsis !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td {
-                            padding: 8px 4px !important;
-                            font-size: 11px !important;
-                            word-wrap: break-word !important;
-                            word-break: break-word !important;
-                            white-space: normal !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td .ant-btn {
-                            padding: 2px 6px !important;
-                            font-size: 10px !important;
-                            height: 24px !important;
-                        }
-                        
-                        .ant-table-tbody > tr > td .ant-tag {
-                            font-size: 10px !important;
-                            padding: 1px 6px !important;
-                            margin: 1px !important;
-                        }
-                        
-                        .ant-table-container {
-                            overflow-x: hidden !important;
-                            width: 100% !important;
-                        }
-                        
-                        .ant-table-content {
-                            overflow-x: hidden !important;
-                            width: 100% !important;
-                        }
-                        
-                        .ant-table-wrapper {
-                            overflow-x: hidden !important;
-                            width: 100% !important;
-                        }
-                        
-                        .ant-table-scroll {
-                            overflow-x: hidden !important;
-                        }
-                        
-                        /* Специальные стили для модального окна на мобильных */
-                        .ant-modal-close {
-                            z-index: 1002 !important;
-                            background: #ff4d4f !important;
-                            border-radius: 4px !important;
-                            width: 32px !important;
-                            height: 32px !important;
-                            cursor: pointer !important;
-                            border: none !important;
-                            position: fixed !important;
-                            top: 10px !important;
-                            right: 10px !important;
-                        }
-                        
-                        .ant-modal-close:hover {
-                            background: #ff7875 !important;
-                        }
-                        
-                        .ant-modal-close .anticon {
-                            color: #fff !important;
-                            font-size: 16px !important;
-                        }
-                        
-                        /* Стили для кнопки закрытия в заголовке */
-                        .ant-modal-header .ant-btn {
-                            background: #ff4d4f !important;
-                            border: none !important;
-                            color: #fff !important;
-                            font-weight: bold !important;
-                        }
-                        
-                        .ant-modal-header .ant-btn:hover {
-                            background: #ff7875 !important;
-                        }
-                        
-                        .ant-modal-mask {
-                            z-index: 1000 !important;
-                        }
-                        
-                        .ant-modal-wrap {
-                            z-index: 1000 !important;
-                        }
-                        
-                        /* Полная адаптивность модального окна для мобильных */
-                        .ant-modal {
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            top: 0 !important;
-                            left: 0 !important;
-                            right: 0 !important;
-                            bottom: 0 !important;
-                            max-width: 100vw !important;
-                            max-height: 100vh !important;
-                            width: 100vw !important;
-                            height: 100vh !important;
-                        }
-                        
-                        .ant-modal-wrap {
-                            top: 0 !important;
-                            left: 0 !important;
-                            right: 0 !important;
-                            bottom: 0 !important;
-                            width: 100vw !important;
-                            height: 100vh !important;
-                        }
-                        
-                        .ant-modal-content {
-                            border-radius: 0 !important;
-                            height: 100vh !important;
-                            display: flex !important;
-                            flex-direction: column !important;
-                        }
-                        
-                        .ant-modal-header {
-                            padding: 8px 12px !important;
-                            border-bottom: 1px solid #f0f0f0 !important;
-                            flex-shrink: 0 !important;
-                        }
-                        
-                        .ant-modal-title {
-                            font-size: 14px !important;
-                            font-weight: 600 !important;
-                            margin: 0 !important;
-                        }
-                        
-                        .ant-modal-body {
-                            padding: 4px 8px !important;
-                            flex: 1 !important;
-                            overflow-y: auto !important;
-                        }
-                        
-                        .ant-form-item {
-                            margin-bottom: 8px !important;
-                        }
-                        
-                        .ant-form-item-label > label {
-                            font-size: 11px !important;
-                            height: auto !important;
-                            line-height: 1.2 !important;
-                            margin-bottom: 2px !important;
-                        }
-                        
-                        .ant-input,
-                        .ant-select-selector {
-                            font-size: 11px !important;
-                            height: 28px !important;
-                            padding: 2px 6px !important;
-                        }
-                        
-                        .ant-select-dropdown {
-                            font-size: 11px !important;
-                        }
-                        
-                        .ant-modal-footer {
-                            padding: 6px 12px !important;
-                            border-top: 1px solid #f0f0f0 !important;
-                            flex-shrink: 0 !important;
-                        }
-                        
-                        .ant-btn {
-                            font-size: 11px !important;
-                            height: 28px !important;
-                            padding: 2px 8px !important;
-                            margin: 0 2px !important;
-                        }
-                        
-                        /* Дополнительные стили для принудительной адаптивности */
-                        @media (max-width: 768px) {
-                            .ant-modal {
-                                position: fixed !important;
-                                top: 0 !important;
-                                left: 0 !important;
-                                right: 0 !important;
-                                bottom: 0 !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
-                                width: 100vw !important;
-                                height: 100vh !important;
-                                max-width: 100vw !important;
-                                max-height: 100vh !important;
-                            }
-                            
-                            .ant-modal-wrap {
-                                position: fixed !important;
-                                top: 0 !important;
-                                left: 0 !important;
-                                right: 0 !important;
-                                bottom: 0 !important;
-                                width: 100vw !important;
-                                height: 100vh !important;
-                            }
-                            
-                            .ant-modal-content {
-                                width: 100vw !important;
-                                height: 100vh !important;
-                                max-width: 100vw !important;
-                                max-height: 100vh !important;
-                                border-radius: 0 !important;
-                            }
-                        }
-                    }
-                `}
-            </style>
         </>
     );
 };

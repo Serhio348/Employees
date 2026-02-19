@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, Typography, Button } from 'antd';
 import { ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useHeader } from '../../contexts/HeaderContext';
+import { useResponsive } from '../../hooks/useResponsive';
 import { Paths } from '../../path';
 
 const { Title, Text } = Typography;
@@ -20,27 +21,14 @@ interface EmployeeHeaderProps {
     backPath?: string;
 }
 
-const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({ 
-    employee, 
-    showBackButton = true, 
-    backPath = Paths.home 
+const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
+    employee,
+    showBackButton = true,
+    backPath = Paths.home
 }) => {
     const navigate = useNavigate();
     const { showHeader } = useHeader();
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-        
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    const { isMobile } = useResponsive();
 
     const handleBackClick = () => {
         showHeader();
@@ -49,80 +37,104 @@ const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
 
     return (
         <>
-            <Card 
-                style={{ 
+            <Card
+                style={{
                     marginBottom: 16,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #0c1b4a 0%, #1d4ed8 100%)',
                     border: 'none',
                     borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                    boxShadow: '0 4px 24px rgba(29, 78, 216, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25)',
+                    position: 'relative',
+                    overflow: 'hidden',
                 }}
-                bodyStyle={{ padding: '16px 20px' }}
+                bodyStyle={{ padding: isMobile ? '12px 16px' : '16px 20px' }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {/* Верхняя световая линия — как в основной шапке */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0,
+                    height: '1px',
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%)',
+                    pointerEvents: 'none',
+                }} />
+                {/* Внутренний оверлей глубины */}
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 55%)',
+                    pointerEvents: 'none',
+                }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
+                    {/* Аватар */}
                     <div style={{
-                        width: isMobile ? '48px' : '52px',
-                        height: isMobile ? '48px' : '52px',
+                        width: isMobile ? '46px' : '52px',
+                        height: isMobile ? '46px' : '52px',
                         borderRadius: '50%',
-                        background: 'rgba(255, 255, 255, 0.2)',
+                        background: 'rgba(255, 255, 255, 0.12)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: isMobile ? '20px' : '22px',
-                        color: 'white',
-                        flexShrink: 0
+                        color: '#93c5fd',
+                        flexShrink: 0,
+                        filter: 'drop-shadow(0 0 6px rgba(147, 197, 253, 0.4))',
                     }}>
                         <UserOutlined />
                     </div>
+
+                    {/* Информация о сотруднике */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <Title 
-                            level={3} 
-                            style={{ 
-                                color: 'white', 
-                                margin: 0, 
-                                fontSize: isMobile ? '18px' : '22px',
-                                fontWeight: 'bold',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                lineHeight: '1.2',
-                                wordBreak: 'break-word'
+                        <Title
+                            level={3}
+                            style={{
+                                color: 'white',
+                                margin: 0,
+                                fontSize: isMobile ? '17px' : '21px',
+                                fontWeight: 700,
+                                textShadow: '0 1px 4px rgba(0,0,0,0.35)',
+                                lineHeight: 1.2,
+                                wordBreak: 'break-word',
+                                letterSpacing: '-0.2px',
                             }}
                         >
                             {`${employee.lastName} ${employee.firstName} ${employee.surName || ''}`.trim()}
                         </Title>
-                        <Text 
-                            style={{ 
-                                color: 'rgba(255, 255, 255, 0.9)', 
-                                fontSize: '14px',
+                        <Text
+                            style={{
+                                color: 'rgba(255, 255, 255, 0.85)',
+                                fontSize: isMobile ? '13px' : '14px',
                                 display: 'block',
-                                marginTop: '2px',
-                                wordBreak: 'break-word'
+                                marginTop: '3px',
+                                wordBreak: 'break-word',
                             }}
                         >
                             {employee.profession}
                         </Text>
                         {employee.employeeNumber && (
-                            <Text 
-                                style={{ 
-                                    color: 'rgba(255, 255, 255, 0.8)', 
-                                    fontSize: '12px',
+                            <Text
+                                style={{
+                                    color: 'rgba(255, 255, 255, 0.85)',
+                                    fontSize: isMobile ? '13px' : '14px',
                                     display: 'block',
-                                    marginTop: '2px',
-                                    wordBreak: 'break-word'
+                                    marginTop: '3px',
+                                    wordBreak: 'break-word',
                                 }}
                             >
-                                Табельный номер: {employee.employeeNumber}
+                                № {employee.employeeNumber}
                             </Text>
                         )}
                     </div>
                 </div>
             </Card>
-            
-            {/* Кнопки навигации под карточкой */}
-            <div style={{ 
-                display: 'flex', 
-                gap: '12px', 
+
+            {/* Кнопки навигации */}
+            <div style={{
+                display: 'flex',
+                gap: '10px',
                 marginBottom: '16px',
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
             }}>
                 {showBackButton && (
                     <Button

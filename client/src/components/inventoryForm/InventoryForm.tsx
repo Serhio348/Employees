@@ -5,6 +5,7 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import CustomButton from '../customButton/CustomButton';
 import { useSizNorms } from '../../hooks/useSizNorms';
 import dayjs from 'dayjs';
+import './InventoryForm.css';
 
 interface InventoryItem {
     id?: string;
@@ -56,18 +57,12 @@ const InventoryForm = ({
     }, []);
 
     const handleFinish = (values: any) => {
-        console.log('InventoryForm - received values:', values);
         const processedValues = {
             ...values,
             issueDate: values.issueDate ? dayjs(values.issueDate).format('YYYY-MM-DD') : undefined,
             employeeId: employeeId
         };
-        console.log('InventoryForm - processed values:', processedValues);
         onFinish(processedValues);
-        // Принудительно очищаем форму после отправки
-        setTimeout(() => {
-            // Форма будет очищена автоматически при закрытии модального окна
-        }, 100);
     };
 
     const initialValues = item ? {
@@ -123,11 +118,11 @@ const InventoryForm = ({
                     rules={[{ required: true, message: 'Выберите наименование предмета' }]}
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
-                    <Select 
-                        placeholder="Выберите наименование предмета" 
+                    <Select
+                        placeholder="Выберите наименование предмета"
                         showSearch
                         size={isMobile ? 'small' : 'middle'}
-                        style={{ 
+                        style={{
                             fontSize: isMobile ? '12px' : '14px',
                             width: '100%',
                             margin: 0
@@ -135,6 +130,7 @@ const InventoryForm = ({
                         filterOption={(input, option) =>
                             (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
                         }
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     >
                         {sizNorms.map(norm => (
                             <Select.Option key={norm.id} value={norm.name}>
@@ -157,14 +153,15 @@ const InventoryForm = ({
                     rules={[{ required: true, message: 'Выберите тип предмета' }]}
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
-                    <Select 
+                    <Select
                         placeholder="Тип предмета"
                         size={isMobile ? 'small' : 'middle'}
-                        style={{ 
+                        style={{
                             fontSize: isMobile ? '12px' : '14px',
                             width: '100%',
                             margin: 0
                         }}
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     >
                         <Select.Option value="спецодежда">Спецодежда</Select.Option>
                         <Select.Option value="инструмент">Инструмент</Select.Option>
@@ -187,7 +184,7 @@ const InventoryForm = ({
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
                     <DatePicker
-                        style={{ 
+                        style={{
                             width: '100%',
                             fontSize: isMobile ? '12px' : '14px',
                             margin: 0
@@ -195,6 +192,7 @@ const InventoryForm = ({
                         size={isMobile ? 'small' : 'middle'}
                         format="DD.MM.YYYY"
                         placeholder="Выберите дату выдачи"
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     />
                 </Form.Item>
                 
@@ -236,14 +234,15 @@ const InventoryForm = ({
                     rules={[{ required: true, message: 'Выберите статус' }]}
                     style={{ marginBottom: isMobile ? '12px' : '16px', marginLeft: 0, marginRight: 0 }}
                 >
-                    <Select 
+                    <Select
                         placeholder="Статус"
                         size={isMobile ? 'small' : 'middle'}
-                        style={{ 
+                        style={{
                             fontSize: isMobile ? '12px' : '14px',
                             width: '100%',
                             margin: 0
                         }}
+                        getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     >
                         <Select.Option value="выдан">Выдан</Select.Option>
                         <Select.Option value="возвращен">Возвращен</Select.Option>
@@ -282,291 +281,6 @@ const InventoryForm = ({
                     </CustomButton>
                 </div>
             </Form>
-
-            <style>
-                {`
-                    /* Стили для формы в модальном окне */
-                    .ant-form {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        margin-top: 0 !important;
-                    }
-                    
-                    .ant-form-item {
-                        margin: 0 0 16px 0 !important;
-                        padding: 0 !important;
-                        margin-top: 0 !important;
-                    }
-                    
-                    .ant-form-item:first-child {
-                        margin-top: 0 !important;
-                    }
-                    
-                    .ant-form-item-label {
-                        margin: 0 !important;
-                        padding: 0 0 4px 0 !important;
-                    }
-                    
-                    .ant-form-item-control {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    
-                    .ant-form-item-control-input {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    
-                    .ant-select, .ant-picker, .ant-input {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    
-                    .ant-select-selector, .ant-picker-input {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    
-                    /* Отступы и размер текста для placeholder */
-                    .ant-select-selector {
-                        padding-left: 8px !important;
-                        padding-right: 8px !important;
-                        padding-top: 4px !important;
-                        padding-bottom: 4px !important;
-                        height: 40px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-                    
-                    .ant-select-selection-placeholder {
-                        padding-left: 0 !important;
-                        padding-right: 0 !important;
-                        padding-top: 0 !important;
-                        padding-bottom: 0 !important;
-                        font-size: 14px !important;
-                        color: #bfbfbf !important;
-                        line-height: 1.4 !important;
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-                    
-                    .ant-picker-input {
-                        padding-left: 8px !important;
-                        padding-right: 8px !important;
-                        padding-top: 4px !important;
-                        padding-bottom: 4px !important;
-                        height: 40px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-                    
-                    .ant-picker-input input {
-                        padding-left: 0 !important;
-                        padding-right: 0 !important;
-                        padding-top: 0 !important;
-                        padding-bottom: 0 !important;
-                        font-size: 14px !important;
-                        line-height: 1.4 !important;
-                        height: auto !important;
-                        border: none !important;
-                        background: transparent !important;
-                    }
-                    
-                    .ant-picker-input input::placeholder {
-                        font-size: 14px !important;
-                        color: #bfbfbf !important;
-                        line-height: 1.4 !important;
-                    }
-                    
-                    .ant-input {
-                        padding-left: 8px !important;
-                        padding-right: 8px !important;
-                        padding-top: 4px !important;
-                        padding-bottom: 4px !important;
-                        font-size: 14px !important;
-                        line-height: 1.4 !important;
-                        height: 40px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-                    
-                    .ant-input::placeholder {
-                        font-size: 14px !important;
-                        color: #bfbfbf !important;
-                        line-height: 1.4 !important;
-                    }
-                    
-                    /* Дополнительные стили для выравнивания текста */
-                    .ant-select-selection-item {
-                        display: flex !important;
-                        align-items: center !important;
-                        line-height: 1.4 !important;
-                    }
-                    
-                    .ant-select-selection-search {
-                        display: flex !important;
-                        align-items: center !important;
-                    }
-                    
-                    .ant-select-selection-search-input {
-                        height: auto !important;
-                        line-height: 1.4 !important;
-                    }
-                    
-                    /* Адаптивные стили для формы в модальном окне */
-                    @media (max-width: 768px) {
-                        .ant-form-item-label > label { 
-                            font-size: 12px !important; 
-                            font-weight: 500 !important; 
-                        }
-                        .ant-select-selector, .ant-picker, .ant-input { 
-                            font-size: 12px !important; 
-                            height: 32px !important;
-                        }
-                        
-                        /* Отступы и размер текста для мобильных устройств */
-                        .ant-select-selector {
-                            padding-left: 6px !important;
-                            padding-right: 6px !important;
-                            padding-top: 4px !important;
-                            padding-bottom: 4px !important;
-                            height: 32px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                        }
-                        
-                        .ant-select-selection-placeholder {
-                            padding-top: 0 !important;
-                            padding-bottom: 0 !important;
-                            font-size: 12px !important;
-                            color: #bfbfbf !important;
-                            line-height: 1.4 !important;
-                        }
-                        
-                        .ant-picker-input {
-                            padding-left: 6px !important;
-                            padding-right: 6px !important;
-                            padding-top: 4px !important;
-                            padding-bottom: 4px !important;
-                            height: 32px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                        }
-                        
-                        .ant-picker-input input {
-                            padding-top: 0 !important;
-                            padding-bottom: 0 !important;
-                            font-size: 12px !important;
-                            line-height: 1.4 !important;
-                        }
-                        
-                        .ant-picker-input input::placeholder {
-                            font-size: 12px !important;
-                            color: #bfbfbf !important;
-                            line-height: 1.4 !important;
-                        }
-                        
-                        .ant-input {
-                            padding-left: 6px !important;
-                            padding-right: 6px !important;
-                            padding-top: 4px !important;
-                            padding-bottom: 4px !important;
-                            font-size: 12px !important;
-                            line-height: 1.4 !important;
-                            height: 32px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                        }
-                        
-                        .ant-input::placeholder {
-                            font-size: 12px !important;
-                            color: #bfbfbf !important;
-                            line-height: 1.4 !important;
-                        }
-                        .ant-btn { 
-                            font-size: 12px !important; 
-                            height: 32px !important; 
-                        }
-                        .ant-form-item { 
-                            margin-bottom: 12px !important; 
-                        }
-                    }
-                    @media (min-width: 769px) and (max-width: 1024px) {
-                        .ant-form-item-label > label { 
-                            font-size: 14px !important; 
-                        }
-                        .ant-select-selector, .ant-picker, .ant-input { 
-                            font-size: 14px !important; 
-                        }
-                        
-                        /* Отступы и размер текста для планшетов */
-                        .ant-select-selector {
-                            padding-left: 8px !important;
-                            padding-right: 8px !important;
-                            padding-top: 4px !important;
-                            padding-bottom: 4px !important;
-                            height: 40px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                        }
-                        
-                        .ant-select-selection-placeholder {
-                            padding-top: 0 !important;
-                            padding-bottom: 0 !important;
-                            font-size: 14px !important;
-                            color: #bfbfbf !important;
-                            line-height: 1.4 !important;
-                        }
-                        
-                        .ant-picker-input {
-                            padding-left: 8px !important;
-                            padding-right: 8px !important;
-                            padding-top: 4px !important;
-                            padding-bottom: 4px !important;
-                            height: 40px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                        }
-                        
-                        .ant-picker-input input {
-                            padding-top: 0 !important;
-                            padding-bottom: 0 !important;
-                            font-size: 14px !important;
-                            line-height: 1.4 !important;
-                        }
-                        
-                        .ant-picker-input input::placeholder {
-                            font-size: 14px !important;
-                            color: #bfbfbf !important;
-                            line-height: 1.4 !important;
-                        }
-                        
-                        .ant-input {
-                            padding-left: 8px !important;
-                            padding-right: 8px !important;
-                            padding-top: 4px !important;
-                            padding-bottom: 4px !important;
-                            font-size: 14px !important;
-                            line-height: 1.4 !important;
-                            height: 40px !important;
-                            display: flex !important;
-                            align-items: center !important;
-                        }
-                        
-                        .ant-input::placeholder {
-                            font-size: 14px !important;
-                            color: #bfbfbf !important;
-                            line-height: 1.4 !important;
-                        }
-                        .ant-btn { 
-                            font-size: 14px !important; 
-                        }
-                        .ant-form-item { 
-                            margin-bottom: 16px !important; 
-                        }
-                    }
-                `}
-            </style>
         </div>
     );
 };

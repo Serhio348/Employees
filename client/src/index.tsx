@@ -21,6 +21,7 @@ import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
 // Инициализация приложения
 
+
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {
   if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
@@ -77,17 +78,15 @@ const container = document.getElementById("root")!;
 const root = createRoot(container);
 
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <ThemeProvider>
-        <HeaderProvider>
-          <ThemeWrapper>
-            <Auth>
-              <RouterProvider router={router} />
-            </Auth>
-          </ThemeWrapper>
-        </HeaderProvider>
-      </ThemeProvider>
-    </Provider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <ThemeProvider>
+      <HeaderProvider>
+        <ThemeWrapper>
+          <Auth>
+            <RouterProvider router={router} />
+          </Auth>
+        </ThemeWrapper>
+      </HeaderProvider>
+    </ThemeProvider>
+  </Provider>
 );

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Layout, Typography, Avatar, Modal, Form, Input, Switch } from "antd";
+import { Layout, Avatar, Button, Modal, Form, Input, Switch } from "antd";
 import { LoginOutlined, TeamOutlined, UserOutlined, EditOutlined, BulbOutlined, BulbFilled } from "@ant-design/icons";
 
 import styles from "./Header.module.css";
-import CustomButton from "../customButton/CustomButton";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Paths } from "../../path";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,7 +18,6 @@ const Header = () => {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [form] = Form.useForm();
 
-    // Определяем, находимся ли мы на странице авторизации
     const isAuthPage = location.pathname === Paths.login || location.pathname === Paths.register;
 
     const onLogoutClick = () => {
@@ -41,9 +39,7 @@ const Header = () => {
 
     const handleEditSubmit = async (values: any) => {
         try {
-            // Здесь будет логика обновления профиля пользователя
             console.log('Updating profile:', values);
-            // TODO: Добавить API вызов для обновления профиля
             setIsEditModalVisible(false);
             form.resetFields();
         } catch (error) {
@@ -58,95 +54,73 @@ const Header = () => {
 
     return (
         <Layout.Header className={isAuthPage ? styles.authHeader : styles.header}>
+
             {/* Логотип и название */}
-            <div className={isAuthPage ? styles.authHeaderCenter : styles.headerLeft}>
-                <Link to={Paths.home} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-                    <TeamOutlined className={isAuthPage ? styles.authTeamIcon : styles.teamIcon} />
-                    <Typography.Title level={1} style={{ 
-                        margin: 0, 
-                        fontSize: isAuthPage ? 'clamp(24px, 5vw, 32px)' : 'clamp(18px, 4vw, 24px)', 
-                        color: isAuthPage ? 'var(--text-primary)' : 'white',
-                        textAlign: isAuthPage ? 'center' : 'left'
-                    }}>
-                        Участок ТЭО
-                    </Typography.Title>
-                </Link>
-            </div>
+            <Link
+                to={Paths.home}
+                className={isAuthPage ? styles.authBrand : styles.brand}
+            >
+                <TeamOutlined className={isAuthPage ? styles.authBrandIcon : styles.brandIcon} />
+                <span className={isAuthPage ? styles.authBrandTitle : styles.brandTitle}>
+                    Участок ТЭО
+                </span>
+            </Link>
 
-            {/* Правая часть - все элементы управления в столбце */}
+            {/* Правая часть — горизонтальный ряд элементов управления */}
             {!isAuthPage && (
-                <div className={styles.headerRight}>
-                    <div className={styles.controlsColumn}>
-                        {/* Переключатель темы - скрыт на мобильных */}
-                        <div className={styles.themeToggle}>
-                            <BulbOutlined style={{ color: 'white', fontSize: '12px' }} />
-                            <Switch
-                                checked={theme === 'dark'}
-                                onChange={toggleTheme}
-                                size="small"
-                                style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
-                            />
-                            <BulbFilled style={{ color: 'white', fontSize: '12px' }} />
-                        </div>
-
-                        {user ? (
-                            <>
-                                {/* Профиль пользователя */}
-                                <div 
-                                    className={styles.userProfile}
-                                    onClick={handleEditProfile}
-                                >
-                                    <Avatar icon={<UserOutlined />} size="default" />
-                                    <div className={styles.userInfo}>
-                                        <Typography.Text strong style={{ color: 'white', fontSize: 'clamp(14px, 4vw, 16px)' }}>
-                                            {user.name} {user.lastName}
-                                        </Typography.Text>
-                                        <EditOutlined style={{ color: 'white', fontSize: '12px' }} />
-                                    </div>
-                                </div>
-                                
-                                {/* Кнопка выхода */}
-                                <CustomButton
-                                    type="ghost"
-                                    icon={<LoginOutlined />}
-                                    onClick={onLogoutClick}
-                                    size="small"
-                                    className={styles.logoutButton}
-                                >
-                                    Выйти
-                                </CustomButton>
-                            </>
-                        ) : (
-                            <div className={styles.authButtons}>
-                                <Link to={Paths.register}>
-                                    <CustomButton type="ghost" icon={<UserOutlined />} size="small">
-                                        Регистрация
-                                    </CustomButton>
-                                </Link>
-                                <Link to={Paths.login}>
-                                    <CustomButton type="ghost" icon={<LoginOutlined />} size="small">
-                                        Войти
-                                    </CustomButton>
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Переключатель темы для мобильных - в самом низу */}
-            {!isAuthPage && (
-                <div className={styles.mobileThemeToggle}>
+                <div className={styles.controls}>
+                    {/* Переключатель темы */}
                     <div className={styles.themeToggle}>
-                        <BulbOutlined style={{ color: 'white', fontSize: '12px' }} />
+                        <BulbOutlined style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }} />
                         <Switch
                             checked={theme === 'dark'}
                             onChange={toggleTheme}
                             size="small"
-                            style={{ backgroundColor: theme === 'dark' ? '#1890ff' : '#d9d9d9' }}
+                            style={{ backgroundColor: theme === 'dark' ? '#3b82f6' : 'rgba(255,255,255,0.3)' }}
                         />
-                        <BulbFilled style={{ color: 'white', fontSize: '12px' }} />
+                        <BulbFilled style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }} />
                     </div>
+
+                    {user ? (
+                        <>
+                            <div className={styles.divider} />
+
+                            {/* Профиль пользователя */}
+                            <div className={styles.userProfile} onClick={handleEditProfile}>
+                                <Avatar icon={<UserOutlined />} size="small" />
+                                <div className={styles.userInfo}>
+                                    <span className={styles.userName}>
+                                        {user.name} {user.lastName}
+                                    </span>
+                                    <EditOutlined style={{ color: 'rgba(255,255,255,0.55)', fontSize: '11px' }} />
+                                </div>
+                            </div>
+
+                            {/* Кнопка выхода */}
+                            <Button
+                                type="default"
+                                icon={<LoginOutlined />}
+                                onClick={onLogoutClick}
+                                size="small"
+                                className={styles.logoutButton}
+                            >
+                                Выйти
+                            </Button>
+                        </>
+                    ) : (
+                        <div className={styles.authButtons}>
+                            <Link to={Paths.register}>
+                                <Button type="default" icon={<UserOutlined />} size="small">
+                                    Регистрация
+                                </Button>
+                            </Link>
+                            <Link to={Paths.login}>
+                                <Button type="default" icon={<LoginOutlined />} size="small">
+                                    Войти
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -158,11 +132,7 @@ const Header = () => {
                 okText="Сохранить"
                 cancelText="Отмена"
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleEditSubmit}
-                >
+                <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
                     <Form.Item
                         name="name"
                         label="Имя"
@@ -170,7 +140,6 @@ const Header = () => {
                     >
                         <Input placeholder="Введите имя" />
                     </Form.Item>
-                    
                     <Form.Item
                         name="lastName"
                         label="Фамилия"
@@ -178,7 +147,6 @@ const Header = () => {
                     >
                         <Input placeholder="Введите фамилию" />
                     </Form.Item>
-                    
                     <Form.Item
                         name="email"
                         label="Email"

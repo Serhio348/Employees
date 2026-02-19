@@ -1,0 +1,118 @@
+/* Курсор для интерактивных элементов */
+.ant-btn,
+.ant-btn:hover,
+.ant-btn:focus,
+.ant-btn:active {
+    cursor: pointer !important;
+}
+
+.ant-table-tbody .ant-btn,
+.ant-table-tbody .ant-checkbox,
+.ant-table-tbody .ant-checkbox-wrapper,
+.ant-table-tbody .ant-btn:hover,
+.ant-table-tbody .ant-checkbox:hover,
+.ant-table-tbody .ant-checkbox-wrapper:hover {
+    cursor: pointer !important;
+}
+
+.ant-table-tbody > tr,
+.ant-table-tbody > tr:hover,
+.ant-table-tbody > tr > td,
+.ant-table-tbody > tr:hover > td {
+    cursor: default !important;
+}
+
+/* Адаптивные стили для мобильных (до 768px) */
+@media (max-width: 768px) {
+    .ant-table-thead > tr > th {
+        padding: 6px 2px !important;
+        font-size: 11px !important;
+    }
+
+    .ant-table-tbody > tr > td {
+        padding: 6px 2px !important;
+        font-size: 11px !important;
+    }
+
+    .ant-btn-sm {
+        padding: 2px 4px !important;
+        font-size: 10px !important;
+        height: 24px !important;
+    }
+
+    .ant-tag {
+        font-size: 10px !important;
+        padding: 1px 4px !important;
+    }
+
+    .ant-pagination {
+        font-size: 11px !important;
+    }
+
+    .ant-pagination-item,
+    .ant-pagination-prev,
+    .ant-pagination-next {
+        min-width: 24px !important;
+        height: 24px !important;
+        line-height: 22px !important;
+    }
+
+    .ant-table-tbody > tr > td:first-child,
+    .ant-table-thead > tr > th:first-child {
+        max-width: 0 !important;
+        width: auto !important;
+    }
+
+    .ant-table-container {
+        overflow-x: hidden !important;
+    }
+}
+
+/* Адаптивные стили для очень маленьких экранов (до 420px) */
+@media (max-width: 420px) {
+    .ant-table-thead > tr > th {
+        padding: 4px 1px !important;
+        font-size: 10px !important;
+    }
+
+    .ant-table-tbody > tr > td {
+        padding: 4px 1px !important;
+        font-size: 10px !important;
+    }
+
+    .ant-btn-sm {
+        padding: 1px 2px !important;
+        font-size: 8px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+    }
+
+    .ant-tag {
+        font-size: 8px !important;
+        padding: 0px 2px !important;
+    }
+
+    .ant-pagination {
+        font-size: 9px !important;
+    }
+
+    .ant-pagination-item,
+    .ant-pagination-prev,
+    .ant-pagination-next {
+        min-width: 20px !important;
+        height: 20px !important;
+        line-height: 18px !important;
+    }
+
+    .ant-table-tbody > tr > td:first-child,
+    .ant-table-thead > tr > th:first-child {
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    .ant-table-tbody > tr > td:last-child,
+    .ant-table-thead > tr > th:last-child {
+        width: 60px !important;
+        min-width: 60px !important;
+    }
+}

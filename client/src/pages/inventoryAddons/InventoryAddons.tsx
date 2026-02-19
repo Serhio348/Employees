@@ -26,7 +26,7 @@ const InventoryAddons = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingAddon, setEditingAddon] = useState<InventoryAddon | null>(null);
 
-    const { data: addons = [], isLoading } = useGetInventoryAddonsQuery(inventoryId!);
+    const { data: addons = [], isLoading, refetch } = useGetInventoryAddonsQuery(inventoryId!);
     const [addInventoryAddon, { isLoading: isAdding }] = useAddInventoryAddonMutation();
     const [updateInventoryAddon, { isLoading: isUpdating }] = useUpdateInventoryAddonMutation();
     const [deleteInventoryAddon] = useDeleteInventoryAddonMutation();
@@ -57,8 +57,7 @@ const InventoryAddons = () => {
             await addInventoryAddon({ ...values, inventoryId: inventoryId! }).unwrap();
             setIsModalVisible(false);
             setError("");
-            // Автоматическое обновление страницы
-            window.location.reload();
+            refetch();
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -75,8 +74,7 @@ const InventoryAddons = () => {
             setIsModalVisible(false);
             setEditingAddon(null);
             setError("");
-            // Автоматическое обновление страницы
-            window.location.reload();
+            refetch();
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -90,8 +88,7 @@ const InventoryAddons = () => {
     const handleDeleteAddon = async (id: string) => {
         try {
             await deleteInventoryAddon(id).unwrap();
-            // Автоматическое обновление страницы
-            window.location.reload();
+            refetch();
         } catch (error) {
             const maybeError = isErrorWithMessage(error);
             if (maybeError) {
@@ -102,13 +99,8 @@ const InventoryAddons = () => {
         }
     };
 
-    const handleCancelDelete = (id: string) => {
-        // Автоматическое обновление страницы при отмене удаления
-        window.location.reload();
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            window.location.reload();
-        }, 100);
+    const handleCancelDelete = (_id: string) => {
+        // Состояние кнопки подтверждения управляется в дочернем компоненте
     };
 
     const openAddModal = () => {
@@ -127,12 +119,6 @@ const InventoryAddons = () => {
         setIsModalVisible(false);
         setEditingAddon(null);
         setError("");
-        // Принудительно очищаем состояние
-        setTimeout(() => {
-            setIsModalVisible(false);
-            setEditingAddon(null);
-            setError("");
-        }, 100);
     };
 
     const handleGoBack = () => {
