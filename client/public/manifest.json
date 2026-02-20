@@ -3,12 +3,6 @@
   "name": "Учёт СИЗ — Белалко",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64",
-      "type": "image/x-icon",
-      "purpose": "any"
-    },
-    {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192",
