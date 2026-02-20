@@ -7,9 +7,8 @@ import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
 import { useResponsive } from '../../hooks/useResponsive';
 import './EmployeeInventory.css';
-import { Row, Col, Button, Typography, Statistic, Card, Tabs, Dropdown } from 'antd';
-import { DownOutlined, CloseOutlined } from '@ant-design/icons';
-import { PlusOutlined, BookOutlined } from '@ant-design/icons';
+import { Row, Col, Button, Statistic, Card, Tabs, Dropdown } from 'antd';
+import { DownOutlined, CloseOutlined, MoreOutlined } from '@ant-design/icons';
 import * as Dialog from '@radix-ui/react-dialog';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
@@ -25,8 +24,6 @@ import {
 import { useGetEmployeeQuery } from '../../app/services/employees';
 import { useGetAllSizNormsQuery } from '../../app/services/sizNorms';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
-
-const { Title, Text } = Typography;
 
 const EmployeeInventory = () => {
     const { id: employeeId } = useParams<{ id: string }>();
@@ -120,9 +117,12 @@ const EmployeeInventory = () => {
     }, []);
 
 
-    // Прокрутка к началу страницы при загрузке компонента
+    // Блокируем скрол страницы — прокрутка только внутри таблицы
     useEffect(() => {
-        window.scrollTo(0, 0);
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, []);
 
     // Скрываем хедер при загрузке страницы инвентаря
@@ -362,7 +362,7 @@ const EmployeeInventory = () => {
     return (
         <Layout>
             {employee && (
-                <EmployeeHeader 
+                <EmployeeHeader
                     employee={{
                         id: employee.id,
                         firstName: employee.firstName,
@@ -372,22 +372,106 @@ const EmployeeInventory = () => {
                         employeeNumber: employee.employeeNumber
                     }}
                     backPath={`/employee/${employeeId}`}
+                    actions={isMobile ? (
+                        <Dropdown
+                            trigger={['click']}
+                            dropdownRender={() => (
+                                <div style={{
+                                    background: 'var(--bg-primary)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+                                    padding: '6px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px',
+                                    minWidth: '190px',
+                                }}>
+                                    <button
+                                        onClick={openAddModal}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '8px',
+                                            padding: '8px 12px', borderRadius: '6px',
+                                            border: 'none', background: '#52c41a',
+                                            color: '#fff', cursor: 'pointer',
+                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
+                                        }}
+                                    >
+                                        + Добавить предмет
+                                    </button>
+                                    <button
+                                        onClick={openNormsModal}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '8px',
+                                            padding: '8px 12px', borderRadius: '6px',
+                                            border: '1px solid #1890ff', background: '#fff',
+                                            color: '#1890ff', cursor: 'pointer',
+                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
+                                        }}
+                                    >
+                                        Нормативы СИЗ
+                                    </button>
+                                    <ExportCard
+                                        employee={employee}
+                                        inventory={allInventory}
+                                        sizNorms={sizNorms}
+                                    />
+                                </div>
+                            )}
+                        >
+                            <button
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center',
+                                    height: '32px', padding: '0 12px', fontSize: '20px',
+                                    borderRadius: '6px', border: '1px solid #d9d9d9',
+                                    background: '#fff', color: 'rgba(0,0,0,0.88)',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <MoreOutlined />
+                            </button>
+                        </Dropdown>
+                    ) : (
+                        <>
+                            <button
+                                onClick={openAddModal}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    height: '32px', padding: '0 15px', fontSize: '14px',
+                                    borderRadius: '6px', border: 'none',
+                                    background: '#52c41a', color: '#fff',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                + Добавить предмет
+                            </button>
+                            <button
+                                onClick={openNormsModal}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    height: '32px', padding: '0 15px', fontSize: '14px',
+                                    borderRadius: '6px', border: '1px solid #1890ff',
+                                    background: '#fff', color: '#1890ff',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                Нормативы СИЗ
+                            </button>
+                            <ExportCard
+                                employee={employee}
+                                inventory={allInventory}
+                                sizNorms={sizNorms}
+                            />
+                        </>
+                    )}
                 />
             )}
             
             <div className="inventory-page">
             <Row gutter={[16, 16]}>
-                <Col span={24}>
-                    <div style={{ marginBottom: '24px' }}>
-                        <Title level={2} style={{ marginBottom: '16px' }}>
-                            Инвентарь сотрудника
-                        </Title>
-                    </div>
-                </Col>
-
-                {/* Статистика */}
-                <Col span={24}>
-                    <Row gutter={isMobile ? 8 : 16}>
+                {/* Статистика — только на десктопе */}
+                {!isMobile && <Col span={24}>
+                    <Row gutter={16}>
                         <Col span={isMobile ? 12 : 6}>
                             <Card style={{ 
                                 textAlign: 'center',
@@ -465,85 +549,7 @@ const EmployeeInventory = () => {
                             </Card>
                         </Col>
                     </Row>
-                </Col>
-
-                <Col span={24}>
-                    <div style={{ 
-                        background: 'linear-gradient(135deg, #f0f2f5 0%, #e6f7ff 100%)', 
-                        padding: '16px', 
-                        borderRadius: '12px', 
-                        marginBottom: '16px',
-                        border: '1px solid #d9d9d9',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                    }}>
-                        <Text strong style={{ color: '#1890ff', fontSize: '16px', marginBottom: '12px', display: 'block' }}>
-                            Управление инвентарем
-                        </Text>
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                flexDirection: isMobile ? 'column' : 'row',
-                                gap: isMobile ? '8px' : '12px',
-                                flexWrap: 'wrap',
-                                alignItems: isMobile ? 'stretch' : 'center'
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                            }}
-                        >
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={openAddModal}
-                                size={isMobile ? "small" : "middle"}
-                            style={{ 
-                                    backgroundColor: '#52c41a',
-                                    borderColor: '#52c41a',
-                                    fontSize: isMobile ? '12px' : '14px',
-                                    height: isMobile ? '32px' : '36px',
-                                    padding: isMobile ? '0 12px' : '0 16px',
-                                    fontWeight: '500',
-                                    borderRadius: '6px',
-                                    boxShadow: '0 2px 4px rgba(82, 196, 26, 0.3)',
-                                    width: isMobile ? '100%' : 'auto'
-                                }}
-                            >
-                                {isMobile ? 'Добавить' : 'Добавить предмет'}
-                        </Button>
-                        <Button
-                            type="default"
-                            icon={<BookOutlined />}
-                            onClick={openNormsModal}
-                            size={isMobile ? "small" : "middle"}
-                            style={{
-                                fontSize: isMobile ? '12px' : '14px',
-                                height: isMobile ? '32px' : '36px',
-                                padding: isMobile ? '0 12px' : '0 16px',
-                                fontWeight: '500',
-                                borderRadius: '6px',
-                                borderColor: '#1890ff',
-                                color: '#1890ff',
-                                backgroundColor: '#f0f9ff',
-                                width: isMobile ? '100%' : 'auto',
-                            }}
-                        >
-                            {isMobile ? 'Нормативы' : 'Нормативы СИЗ'}
-                        </Button>
-                        {employee && (
-                                <div style={{ 
-                                    marginLeft: isMobile ? '0' : 'auto',
-                                    width: isMobile ? '100%' : 'auto'
-                                }}>
-                            <ExportCard
-                                employee={employee}
-                                inventory={allInventory}
-                                sizNorms={sizNorms}
-                            />
-                                </div>
-                        )}
-                        </div>
-                    </div>
-                </Col>
+                </Col>}
 
                 <Col span={24}>
                     {isMobile ? (
@@ -606,9 +612,7 @@ const EmployeeInventory = () => {
                             </button>
                         </Dialog.Close>
                         <div
-                            className="radix-dialog-scroll"
                             style={{
-                                maxHeight: isMobile ? '70vh' : '65vh',
                                 padding: isMobile ? '4px 0' : '8px 0',
                             }}
                         >

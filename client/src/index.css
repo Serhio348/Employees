@@ -378,3 +378,9 @@ code {
     width: 95vw;
   }
 }
+
+/* Disable Ant Design wave/ripple effect that causes sticky overlay divs */
+.ant-wave {
+  display: none !important;
+  pointer-events: none !important;
+}

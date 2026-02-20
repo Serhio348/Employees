@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Typography, Button } from 'antd';
-import { ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
+import { Card, Typography } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useHeader } from '../../contexts/HeaderContext';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -19,12 +19,14 @@ interface EmployeeHeaderProps {
     };
     showBackButton?: boolean;
     backPath?: string;
+    actions?: React.ReactNode;
 }
 
 const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
     employee,
     showBackButton = true,
-    backPath = Paths.home
+    backPath = Paths.home,
+    actions
 }) => {
     const navigate = useNavigate();
     const { showHeader } = useHeader();
@@ -129,33 +131,41 @@ const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
                 </div>
             </Card>
 
-            {/* Кнопки навигации */}
+            {/* Кнопки навигации + действия */}
             <div style={{
                 display: 'flex',
                 gap: '10px',
                 marginBottom: '16px',
                 flexWrap: 'wrap',
+                alignItems: 'center',
             }}>
                 {showBackButton && (
-                    <Button
-                        type="default"
-                        icon={<ArrowLeftOutlined />}
+                    <button
                         onClick={handleBackClick}
-                        size="middle"
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px',
+                            height: '32px', padding: '0 15px', fontSize: '14px',
+                            borderRadius: '6px', border: '1px solid #d9d9d9',
+                            background: '#fff', color: 'rgba(0,0,0,0.88)',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                        }}
                     >
-                        Назад
-                    </Button>
+                        ← Назад
+                    </button>
                 )}
-                <Button
-                    type="primary"
-                    onClick={() => {
-                        showHeader();
-                        navigate(Paths.home);
+                <button
+                    onClick={() => { showHeader(); navigate(Paths.home); }}
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        height: '32px', padding: '0 15px', fontSize: '14px',
+                        borderRadius: '6px', border: 'none',
+                        background: '#1677ff', color: '#fff',
+                        cursor: 'pointer', fontFamily: 'inherit',
                     }}
-                    size="middle"
                 >
                     Главное меню
-                </Button>
+                </button>
+                {actions}
             </div>
         </>
     );

@@ -7,18 +7,20 @@ type Props = {
     name: string;
     placeholder: string;
     dependencies?: NamePath[];
+    hasFeedback?: boolean;
 }
 
 const PasswordInput = ({
     name,
     placeholder,
-    dependencies
+    dependencies,
+    hasFeedback = false
 }: Props) => {
     return (
         <Form.Item
             name={name}
             dependencies={dependencies}
-            hasFeedback={true}
+            hasFeedback={hasFeedback}
             rules={[
                 {
                     required: true, 

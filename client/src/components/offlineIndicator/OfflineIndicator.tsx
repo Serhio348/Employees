@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
 
 const OfflineIndicator: React.FC = () => {
-    const [isOnline, setIsOnline] = useState(navigator.onLine);
-    const [showRestored, setShowRestored] = useState(false);
+    // visible: null = не показывать (ещё не было события), false = offline, true = restored
+    const [visible, setVisible] = useState<null | 'offline' | 'restored'>(null);
 
     useEffect(() => {
-        const handleOffline = () => {
-            setIsOnline(false);
-            setShowRestored(false);
-        };
+        const handleOffline = () => setVisible('offline');
 
         const handleOnline = () => {
-            setIsOnline(true);
-            setShowRestored(true);
+            setVisible('restored');
             setTimeout(() => {
-                setShowRestored(false);
+                setVisible(null);
                 window.location.reload();
             }, 2000);
         };
@@ -27,7 +23,9 @@ const OfflineIndicator: React.FC = () => {
         };
     }, []);
 
-    if (isOnline && !showRestored) return null;
+    if (visible === null) return null;
+
+    const restored = visible === 'restored';
 
     const style: React.CSSProperties = {
         position: 'fixed',
@@ -40,13 +38,13 @@ const OfflineIndicator: React.FC = () => {
         fontSize: '13px',
         fontWeight: 500,
         color: '#fff',
-        background: isOnline ? '#52c41a' : '#ff4d4f',
+        background: restored ? '#52c41a' : '#ff4d4f',
         transition: 'background 0.3s ease',
     };
 
     return (
         <div style={style}>
-            {isOnline
+            {restored
                 ? 'Подключение восстановлено. Обновление данных...'
                 : 'Нет подключения к сети — данные могут быть устаревшими'}
         </div>

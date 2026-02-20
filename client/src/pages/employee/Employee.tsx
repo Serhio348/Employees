@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useGetEmployeeQuery, useRemoveEmployeeMutation } from '../../app/services/employees';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
 import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
-import { Divider, Modal, Typography, Card, Row, Col, Tag } from 'antd';
-import { DeleteOutlined, EditOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Dropdown } from 'antd';
+import { DeleteOutlined, EditOutlined, ToolOutlined, MoreOutlined } from '@ant-design/icons';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
-import CustomButton from '../../components/customButton/CustomButton';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 import { Paths } from '../../path';
 
-const { Text } = Typography;
 
 // Расширенный интерфейс Employee с новыми полями
 interface ExtendedEmployee {
@@ -55,6 +53,15 @@ const Employee = () => {
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
+
+    // Блокируем скрол страницы на мобильных
+    useEffect(() => {
+        if (!isMobile) return;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isMobile]);
 
     // Скрываем хедер при загрузке страницы сотрудника
     useEffect(() => {
@@ -133,7 +140,7 @@ const Employee = () => {
 
     return (
         <Layout>
-            <EmployeeHeader 
+            <EmployeeHeader
                 employee={{
                     id: employeeData.id,
                     firstName: employeeData.firstName,
@@ -143,243 +150,147 @@ const Employee = () => {
                     employeeNumber: employeeData.employeeNumber
                 }}
                 backPath={Paths.home}
+                actions={user?.id === employeeData.userId ? (
+                    isMobile ? (
+                        <Dropdown
+                            trigger={['click']}
+                            dropdownRender={() => (
+                                <div style={{
+                                    background: 'var(--bg-primary)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+                                    padding: '6px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px',
+                                    minWidth: '180px',
+                                }}>
+                                    <button
+                                        onClick={() => navigate(`/employee/edit/${employeeData.id}`)}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '8px',
+                                            padding: '8px 12px', borderRadius: '6px',
+                                            border: 'none', background: '#1677ff',
+                                            color: '#fff', cursor: 'pointer',
+                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
+                                        }}
+                                    >
+                                        <EditOutlined /> Редактировать
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/employee/${employeeData.id}/inventory`)}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '8px',
+                                            padding: '8px 12px', borderRadius: '6px',
+                                            border: '1px solid #1890ff', background: '#fff',
+                                            color: '#1890ff', cursor: 'pointer',
+                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
+                                        }}
+                                    >
+                                        <ToolOutlined /> Инвентарь
+                                    </button>
+                                    <button
+                                        onClick={showModal}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '8px',
+                                            padding: '8px 12px', borderRadius: '6px',
+                                            border: '1px solid #ff4d4f', background: '#fff',
+                                            color: '#ff4d4f', cursor: 'pointer',
+                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
+                                        }}
+                                    >
+                                        <DeleteOutlined /> Удалить
+                                    </button>
+                                </div>
+                            )}
+                        >
+                            <button style={{
+                                display: 'inline-flex', alignItems: 'center',
+                                height: '32px', padding: '0 12px', fontSize: '20px',
+                                borderRadius: '6px', border: '1px solid #d9d9d9',
+                                background: '#fff', color: 'rgba(0,0,0,0.88)',
+                                cursor: 'pointer', fontFamily: 'inherit',
+                            }}>
+                                <MoreOutlined />
+                            </button>
+                        </Dropdown>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => navigate(`/employee/edit/${employeeData.id}`)}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    height: '32px', padding: '0 15px', fontSize: '14px',
+                                    borderRadius: '6px', border: 'none',
+                                    background: '#1677ff', color: '#fff',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <EditOutlined /> Редактировать
+                            </button>
+                            <button
+                                onClick={() => navigate(`/employee/${employeeData.id}/inventory`)}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    height: '32px', padding: '0 15px', fontSize: '14px',
+                                    borderRadius: '6px', border: '1px solid #1890ff',
+                                    background: '#fff', color: '#1890ff',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <ToolOutlined /> Инвентарь
+                            </button>
+                            <button
+                                onClick={showModal}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    height: '32px', padding: '0 15px', fontSize: '14px',
+                                    borderRadius: '6px', border: '1px solid #ff4d4f',
+                                    background: '#fff', color: '#ff4d4f',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <DeleteOutlined /> Удалить
+                            </button>
+                        </>
+                    )
+                ) : undefined}
             />
 
-            {/* Современный дизайн подробной информации */}
-            <Card 
-                title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            background: 'var(--gradient-primary)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '16px'
-                        }}>
-                            <UserOutlined />
-                        </div>
-                        <span style={{ fontSize: '18px', fontWeight: '600' }}>Подробная информация</span>
-                    </div>
-                }
-                style={{ 
-                    marginBottom: 24,
+            <Descriptions
+                title="Подробная информация"
+                bordered
+                column={1}
+                size="small"
+                style={{
+                    marginBottom: 16,
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'var(--shadow-md)',
-                    border: '1px solid var(--border-color)'
+                    overflow: 'hidden',
                 }}
-                bodyStyle={{ padding: '24px' }}
+                labelStyle={{ fontWeight: 500, width: '40%', color: 'var(--text-secondary)', fontSize: '13px' }}
+                contentStyle={{ color: 'var(--text-primary)', fontSize: '13px' }}
             >
-                <Row gutter={[16, 16]}>
-                    <Col xs={24} sm={12} md={8}>
-                        <Card 
-                            size="small" 
-                            style={{ 
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)'
-                            }}
-                            bodyStyle={{ padding: '16px' }}
-                        >
-                            <div style={{ marginBottom: '8px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Возраст
-                                </Text>
-                            </div>
-                            <div>
-                                <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
-                                    {getCurrentAge() ? `${getCurrentAge()} лет` : 'Не указан'}
-                                </Tag>
-                            </div>
-                        </Card>
-                    </Col>
-                    
-                    <Col xs={24} sm={12} md={8}>
-                        <Card 
-                            size="small" 
-                            style={{ 
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)'
-                            }}
-                            bodyStyle={{ padding: '16px' }}
-                        >
-                            <div style={{ marginBottom: '8px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Дата рождения
-                                </Text>
-                            </div>
-                            <div>
-                                <Tag color="green" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
-                                    {employeeData.birthDate ? new Date(employeeData.birthDate).toLocaleDateString('ru-RU') : 'Не указана'}
-                                </Tag>
-                            </div>
-                        </Card>
-                    </Col>
-                    
-                    <Col xs={24} sm={12} md={8}>
-                        <Card 
-                            size="small" 
-                            style={{ 
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)'
-                            }}
-                            bodyStyle={{ padding: '16px' }}
-                        >
-                            <div style={{ marginBottom: '8px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Рост
-                                </Text>
-                            </div>
-                            <div>
-                                <Tag color="orange" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
-                                    {employeeData.height ? `${employeeData.height} см` : 'Не указан'}
-                                </Tag>
-                            </div>
-                        </Card>
-                    </Col>
-                    
-                    <Col xs={24} sm={12} md={8}>
-                        <Card 
-                            size="small" 
-                            style={{ 
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)'
-                            }}
-                            bodyStyle={{ padding: '16px' }}
-                        >
-                            <div style={{ marginBottom: '8px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Размер одежды
-                                </Text>
-                            </div>
-                            <div>
-                                <Tag color="purple" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
-                                    {employeeData.clothingSize || 'Не указан'}
-                                </Tag>
-                            </div>
-                        </Card>
-                    </Col>
-                    
-                    <Col xs={24} sm={12} md={8}>
-                        <Card 
-                            size="small" 
-                            style={{ 
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)'
-                            }}
-                            bodyStyle={{ padding: '16px' }}
-                        >
-                            <div style={{ marginBottom: '8px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Размер обуви
-                                </Text>
-                            </div>
-                            <div>
-                                <Tag color="cyan" style={{ fontSize: '14px', padding: '4px 12px', borderRadius: 'var(--radius-sm)' }}>
-                                    {employeeData.shoeSize || 'Не указан'}
-                                </Tag>
-                            </div>
-                        </Card>
-                    </Col>
-                    
-                    <Col xs={24} sm={12} md={8}>
-                        <Card 
-                            size="small" 
-                            style={{ 
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)'
-                            }}
-                            bodyStyle={{ padding: '16px' }}
-                        >
-                            <div style={{ marginBottom: '8px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Адрес
-                                </Text>
-                            </div>
-                            <div>
-                                <Text style={{ fontSize: '14px', color: 'var(--text-primary)' }}>
-                                    {employeeData.address}
-                                </Text>
-                            </div>
-                        </Card>
-                    </Col>
-                </Row>
-            </Card>
-            {user?.id === employeeData.userId && (
-                <>
-                    <Divider orientation="left">Управление</Divider>
-                    <div style={{ 
-                        display: 'flex', 
-                        flexDirection: isMobile ? 'column' : 'row',
-                        gap: isMobile ? '8px' : '12px',
-                        flexWrap: 'wrap'
-                    }}>
-                        <Link to={`/employee/edit/${employeeData.id}`}>
-                            <CustomButton
-                                type="primary"
-                                icon={<EditOutlined />}
-                                size="small"
-                                style={{
-                                    width: isMobile ? "100%" : "140px",
-                                    height: "32px",
-                                    fontSize: "12px",
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '6px'
-                                }}
-                            >
-                                Редактировать
-                            </CustomButton>
-                        </Link>
-                        <Link to={`/employee/${employeeData.id}/inventory`}>
-                            <CustomButton
-                                type="default"
-                                icon={<ToolOutlined />}
-                                size="small"
-                                style={{
-                                    width: isMobile ? "100%" : "140px",
-                                    height: "32px",
-                                    fontSize: "12px",
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '6px',
-                                    borderColor: '#1890ff',
-                                    color: '#1890ff'
-                                }}
-                            >
-                                Инвентарь
-                            </CustomButton>
-                        </Link>
-                        <CustomButton
-                            danger
-                            onClick={showModal}
-                            icon={<DeleteOutlined />}
-                            size="small"
-                            style={{
-                                width: isMobile ? "100%" : "140px",
-                                height: "32px",
-                                fontSize: "12px",
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '6px'
-                            }}
-                        >
-                            Удалить
-                        </CustomButton>
-                    </div>
-                </>
-            )}
+                <Descriptions.Item label="Возраст">
+                    {getCurrentAge() ? `${getCurrentAge()} лет` : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Дата рождения">
+                    {employeeData.birthDate ? new Date(employeeData.birthDate).toLocaleDateString('ru-RU') : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Рост">
+                    {employeeData.height ? `${employeeData.height} см` : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Размер одежды">
+                    {employeeData.clothingSize || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Размер обуви">
+                    {employeeData.shoeSize || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Адрес">
+                    {employeeData.address}
+                </Descriptions.Item>
+            </Descriptions>
             <ErrorMessage message={error} />
             <Modal
                 title="Подтвердите удаление"

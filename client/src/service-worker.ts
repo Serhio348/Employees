@@ -9,6 +9,11 @@ import { BackgroundSyncPlugin } from 'workbox-background-sync';
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Немедленно активируемся при установке — вытесняем старый SW без ожидания
+self.addEventListener('install', () => {
+    self.skipWaiting();
+});
+
 clientsClaim();
 
 // Прекэш всех статических ресурсов сборки (инжектируется CRA/Workbox при билде)
