@@ -70,17 +70,29 @@ const PwaInstallPrompt: React.FC = () => {
             return;
         }
 
-        const handler = (e: Event) => {
-            e.preventDefault();
-            setDeferredPrompt(e as BeforeInstallPromptEvent);
+        // Событие могло уже сработать до монтирования компонента
+        const already = (window as any).__deferredInstallPrompt;
+        if (already) {
+            setDeferredPrompt(already);
             setShowBanner(true);
+            return;
+        }
+
+        // Слушаем на случай если событие ещё не пришло
+        const onPromptReady = () => {
+            const prompt = (window as any).__deferredInstallPrompt;
+            if (prompt) {
+                setDeferredPrompt(prompt);
+                setShowBanner(true);
+            }
         };
-        window.addEventListener('beforeinstallprompt', handler);
+        window.addEventListener('pwa-prompt-ready', onPromptReady);
         window.addEventListener('appinstalled', () => {
             setShowBanner(false);
             setDeferredPrompt(null);
+            (window as any).__deferredInstallPrompt = null;
         });
-        return () => window.removeEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('pwa-prompt-ready', onPromptReady);
     }, []);
 
     const handleInstall = async () => {

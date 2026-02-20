@@ -23,8 +23,14 @@ import EditEmployee from "./pages/editEmployee/EditEmployee";
 import EmployeeInventory from "./pages/employeeInventory/EmployeeInventory";
 import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 
-// Инициализация приложения
-
+// Перехватываем beforeinstallprompt до рендера React,
+// чтобы не пропустить событие из-за race condition
+(window as any).__deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    (window as any).__deferredInstallPrompt = e;
+    window.dispatchEvent(new Event('pwa-prompt-ready'));
+});
 
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {
