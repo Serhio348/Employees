@@ -7,6 +7,32 @@
     padding: 0 !important;
 }
 
+/* Прокрутка только внутри области содержимого вкладок */
+.inventory-page .ant-tabs-content-holder {
+    max-height: calc(100vh - 360px);
+    overflow-y: auto;
+}
+
+/* Компактные статистические карточки */
+.inventory-page .ant-statistic-content {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+}
+
+.inventory-page .ant-statistic-content-value {
+    font-size: 18px !important;
+}
+
+.inventory-page .ant-statistic-title {
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+    line-height: 1.2 !important;
+}
+
+.inventory-page > .ant-row:first-child .ant-card-body {
+    padding: 10px 14px !important;
+}
+
 /* Стили для карточки сотрудника */
 .inventory-page .ant-card-body {
     padding: 16px !important;
