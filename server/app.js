@@ -47,12 +47,18 @@ const buildPath = path.join(__dirname, '../client/build');
 app.use(express.static(buildPath, {
   etag: true,
   lastModified: true,
-  setHeaders: (res, path) => {
-    // Для статических файлов с хешами (JS, CSS, изображения) - длительное кэширование
-    if (/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i.test(path)) {
+  setHeaders: (res, filePath) => {
+    // Service Worker никогда не кэшируем — браузер должен проверять обновления
+    if (/service-worker\.js$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // Статические файлы с хешами (JS, CSS, изображения) — длительное кэширование
+    else if (/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
-    // Для остальных файлов - не кэшировать
+    // Остальные файлы — не кэшировать
     else {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
