@@ -153,18 +153,20 @@ const EmployeeHeader: React.FC<EmployeeHeaderProps> = ({
                         ← Назад
                     </button>
                 )}
-                <button
-                    onClick={() => { showHeader(); navigate(Paths.home); }}
-                    style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '6px',
-                        height: '32px', padding: '0 15px', fontSize: '14px',
-                        borderRadius: '6px', border: 'none',
-                        background: '#1677ff', color: '#fff',
-                        cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                >
-                    Главное меню
-                </button>
+                {backPath !== Paths.home && (
+                    <button
+                        onClick={() => { showHeader(); navigate(Paths.home); }}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px',
+                            height: '32px', padding: '0 15px', fontSize: '14px',
+                            borderRadius: '6px', border: 'none',
+                            background: '#1677ff', color: '#fff',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                    >
+                        Главное меню
+                    </button>
+                )}
                 {actions}
             </div>
         </>

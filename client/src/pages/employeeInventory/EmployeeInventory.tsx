@@ -33,6 +33,7 @@ const EmployeeInventory = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+    const [isActionsDropdownOpen, setIsActionsDropdownOpen] = useState(false);
     const [, setDeletingIds] = useState<string[]>([]);
     // Получаем активную вкладку из URL параметров
     const getTabFromUrl = () => {
@@ -375,6 +376,8 @@ const EmployeeInventory = () => {
                     actions={isMobile ? (
                         <Dropdown
                             trigger={['click']}
+                            open={isActionsDropdownOpen}
+                            onOpenChange={setIsActionsDropdownOpen}
                             dropdownRender={() => (
                                 <div style={{
                                     background: 'var(--bg-primary)',
@@ -388,7 +391,7 @@ const EmployeeInventory = () => {
                                     minWidth: '190px',
                                 }}>
                                     <button
-                                        onClick={openAddModal}
+                                        onClick={() => { setIsActionsDropdownOpen(false); openAddModal(); }}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '8px',
                                             padding: '8px 12px', borderRadius: '6px',
@@ -400,12 +403,12 @@ const EmployeeInventory = () => {
                                         + Добавить предмет
                                     </button>
                                     <button
-                                        onClick={openNormsModal}
+                                        onClick={() => { setIsActionsDropdownOpen(false); openNormsModal(); }}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '8px',
                                             padding: '8px 12px', borderRadius: '6px',
-                                            border: '1px solid #1890ff', background: '#fff',
-                                            color: '#1890ff', cursor: 'pointer',
+                                            border: 'none', background: '#1890ff',
+                                            color: '#fff', cursor: 'pointer',
                                             fontFamily: 'inherit', fontSize: '14px', width: '100%',
                                         }}
                                     >
@@ -450,8 +453,8 @@ const EmployeeInventory = () => {
                                 style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '6px',
                                     height: '32px', padding: '0 15px', fontSize: '14px',
-                                    borderRadius: '6px', border: '1px solid #1890ff',
-                                    background: '#fff', color: '#1890ff',
+                                    borderRadius: '6px', border: 'none',
+                                    background: '#1890ff', color: '#fff',
                                     cursor: 'pointer', fontFamily: 'inherit',
                                 }}
                             >

@@ -481,7 +481,7 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                     }
                 })}
                 pagination={{
-                    pageSize: isMobile ? 5 : 10,
+                    pageSize: isMobile ? 10 : 10,
                     showSizeChanger: !isMobile,
                     showQuickJumper: !isMobile,
                     showTotal: (total, range) => isMobile ? 
@@ -587,7 +587,10 @@ const InventoryList = ({ inventory, onEdit, onDelete, onViewAddons, loading, onC
                                 Будет списано: {selectedItems.length} из {expiredItems.length} предметов
                             </div>
                             <div className="radix-dialog-footer">
-                                <Button onClick={() => { setIsWriteOffModalVisible(false); setSelectedItems([]); }}>
+                                <Button
+                                    onClick={() => { setIsWriteOffModalVisible(false); setSelectedItems([]); }}
+                                    style={{ background: '#8c8c8c', color: '#fff', border: 'none' }}
+                                >
                                     Отмена
                                 </Button>
                                 <Button type="primary" danger onClick={handleWriteOff}>
