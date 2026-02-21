@@ -43,10 +43,10 @@ function registerStart(bot) {
     );
   });
 
-  bot.on('text', async (ctx) => {
+  bot.on('text', async (ctx, next) => {
     const chatId = ctx.chat.id;
 
-    if (!waitingForName.has(chatId)) return;
+    if (!waitingForName.has(chatId)) return next();
 
     const input = ctx.message.text.trim();
 
