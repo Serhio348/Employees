@@ -1,19 +1,5 @@
 const { prisma } = require('../../../prisma/prisma-client');
-
-function getDaysLeft(nextReplacementDate) {
-  const now = new Date();
-  const diff = new Date(nextReplacementDate) - now;
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
-
-function formatDaysLeft(days) {
-  if (days <= 0) return `${Math.abs(days)} дн. назад 🔴 ПРОСРОЧЕНО`;
-  if (days <= 7) return `${days} дн. 🔴`;
-  if (days <= 30) return `${days} дн. ⚠️`;
-  if (days < 60) return `~${days} дн. ✅`;
-  const months = Math.floor(days / 30);
-  return `~${months} мес. ✅`;
-}
+const { getDaysLeft, formatDaysLeft } = require('../utils');
 
 // Общая логика — вызывается и командой /mysiz, и кнопкой
 async function handleMySiz(ctx) {
@@ -41,14 +27,26 @@ async function handleMySiz(ctx) {
       );
     }
 
+    // Один запрос на все аддоны сразу — вместо N запросов в цикле
+    const inventoryIds = inventory.map(i => i.id);
+    const allAddons = await prisma.inventoryAddon.findMany({
+      where: { inventoryId: { in: inventoryIds } },
+      orderBy: { nextReplacementDate: 'asc' }
+    });
+
+    // Группируем аддоны по inventoryId
+    const addonsByInventory = {};
+    for (const addon of allAddons) {
+      if (!addonsByInventory[addon.inventoryId]) {
+        addonsByInventory[addon.inventoryId] = [];
+      }
+      addonsByInventory[addon.inventoryId].push(addon);
+    }
+
     const lines = [`👷 *${employee.lastName} ${employee.firstName}* — ваш инвентарь СИЗ:\n`];
 
     for (const item of inventory) {
-      const addons = await prisma.inventoryAddon.findMany({
-        where: { inventoryId: item.id },
-        orderBy: { nextReplacementDate: 'asc' }
-      });
-
+      const addons = addonsByInventory[item.id] || [];
       const dateStr = new Date(item.issueDate).toLocaleDateString('ru-RU');
       lines.push(`📦 *${item.itemName}* (выдано ${dateStr})`);
 

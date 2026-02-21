@@ -140,7 +140,9 @@ const employee = async (req, res) => {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 
-        res.status(200).json(emp);
+        // Не передаём telegramChatId на фронт — только наличие/отсутствие
+        const { telegramChatId, ...empData } = emp;
+        res.status(200).json({ ...empData, hasTelegram: !!telegramChatId });
     } catch {
         res.status(500).json({ message: "Не удалось получить сотрудника" });
     }
