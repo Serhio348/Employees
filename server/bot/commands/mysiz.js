@@ -1,6 +1,33 @@
 const { prisma } = require('../../../prisma/prisma-client');
 const { getDaysLeft, formatDaysLeft } = require('../utils');
 
+// Поиск подходящей нормы по названию предмета (регистронезависимо, по вхождению)
+function matchNorm(itemName, sizNorms) {
+  const name = itemName.toLowerCase();
+  return sizNorms.find(n => {
+    const norm = n.name.toLowerCase();
+    return name.includes(norm) || norm.includes(name);
+  }) || null;
+}
+
+// Строка для предмета без аддонов — берём из нормативов
+function formatFromNorm(item, sizNorms) {
+  const norm = matchNorm(item.itemName, sizNorms);
+  if (!norm) return `   └ Нет данных о сроках`;
+
+  if (norm.periodType === 'until_worn') {
+    return `   └ ${norm.name} — срок: *до износа*`;
+  }
+
+  const months = parseInt(norm.period);
+  if (!months) return `   └ Нет данных о сроках`;
+
+  const issueDate = new Date(item.issueDate);
+  const nextDate = new Date(issueDate.getFullYear(), issueDate.getMonth() + months, issueDate.getDate());
+  const days = getDaysLeft(nextDate);
+  return `   └ ${norm.name} (${months} мес.) — осталось: *${formatDaysLeft(days)}* _(по нормативу)_`;
+}
+
 // Общая логика — вызывается и командой /mysiz, и кнопкой
 async function handleMySiz(ctx) {
   const chatId = String(ctx.chat.id);
@@ -29,12 +56,13 @@ async function handleMySiz(ctx) {
 
     // Один запрос на все аддоны сразу — вместо N запросов в цикле
     const inventoryIds = inventory.map(i => i.id);
-    console.log(`[Bot/mysiz] employeeId=${employee.id}, inventoryIds=${JSON.stringify(inventoryIds)}`);
-    const allAddons = await prisma.inventoryAddon.findMany({
-      where: { inventoryId: { in: inventoryIds } },
-      orderBy: { nextReplacementDate: 'asc' }
-    });
-    console.log(`[Bot/mysiz] addons found: ${allAddons.length}`, allAddons.map(a => ({ id: a.id, inventoryId: a.inventoryId, name: a.name })));
+    const [allAddons, sizNorms] = await Promise.all([
+      prisma.inventoryAddon.findMany({
+        where: { inventoryId: { in: inventoryIds } },
+        orderBy: { nextReplacementDate: 'asc' }
+      }),
+      prisma.sizNorm.findMany()
+    ]);
 
     // Группируем аддоны по inventoryId
     const addonsByInventory = {};
@@ -53,7 +81,8 @@ async function handleMySiz(ctx) {
       lines.push(`📦 *${item.itemName}* (выдано ${dateStr})`);
 
       if (addons.length === 0) {
-        lines.push(`   └ Нет данных о сроках`);
+        // Нет индивидуальных записей — пробуем взять из нормативов
+        lines.push(formatFromNorm(item, sizNorms));
       } else {
         for (const addon of addons) {
           const days = getDaysLeft(addon.nextReplacementDate);
