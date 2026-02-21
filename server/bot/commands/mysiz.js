@@ -29,10 +29,12 @@ async function handleMySiz(ctx) {
 
     // Один запрос на все аддоны сразу — вместо N запросов в цикле
     const inventoryIds = inventory.map(i => i.id);
+    console.log(`[Bot/mysiz] employeeId=${employee.id}, inventoryIds=${JSON.stringify(inventoryIds)}`);
     const allAddons = await prisma.inventoryAddon.findMany({
       where: { inventoryId: { in: inventoryIds } },
       orderBy: { nextReplacementDate: 'asc' }
     });
+    console.log(`[Bot/mysiz] addons found: ${allAddons.length}`, allAddons.map(a => ({ id: a.id, inventoryId: a.inventoryId, name: a.name })));
 
     // Группируем аддоны по inventoryId
     const addonsByInventory = {};
