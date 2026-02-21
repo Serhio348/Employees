@@ -6,6 +6,10 @@ const cors = require('cors');
 
 require('dotenv').config();
 
+// Запуск Telegram-бота (не блокирует HTTP-сервер)
+const { startBot } = require('./bot');
+startBot();
+
 const app = express();
 
 // Middleware

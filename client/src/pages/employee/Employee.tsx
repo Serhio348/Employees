@@ -28,6 +28,7 @@ interface ExtendedEmployee {
     clothingSize?: string | null;
     shoeSize?: string | null;
     userId: string;
+    hasTelegram?: boolean;
 }
 
 
@@ -286,6 +287,12 @@ const Employee = () => {
                 </Descriptions.Item>
                 <Descriptions.Item label="Размер обуви">
                     {employeeData.shoeSize || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Telegram">
+                    {employeeData.hasTelegram
+                        ? <span style={{ color: '#52c41a' }}>✓ Привязан</span>
+                        : <span style={{ color: 'var(--text-secondary)' }}>Не привязан — пусть сотрудник напишет <a href="https://t.me/belalkosiz_bot" target="_blank" rel="noreferrer">@belalkosiz_bot</a> команду /start</span>
+                    }
                 </Descriptions.Item>
                 <Descriptions.Item label="Адрес">
                     {employeeData.address}
