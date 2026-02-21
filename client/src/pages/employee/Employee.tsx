@@ -184,8 +184,8 @@ const Employee = () => {
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '8px',
                                             padding: '8px 12px', borderRadius: '6px',
-                                            border: '1px solid #1890ff', background: '#fff',
-                                            color: '#1890ff', cursor: 'pointer',
+                                            border: 'none', background: '#52c41a',
+                                            color: '#fff', cursor: 'pointer',
                                             fontFamily: 'inherit', fontSize: '14px', width: '100%',
                                         }}
                                     >
@@ -235,8 +235,8 @@ const Employee = () => {
                                 style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '6px',
                                     height: '32px', padding: '0 15px', fontSize: '14px',
-                                    borderRadius: '6px', border: '1px solid #1890ff',
-                                    background: '#fff', color: '#1890ff',
+                                    borderRadius: '6px', border: 'none',
+                                    background: '#52c41a', color: '#fff',
                                     cursor: 'pointer', fontFamily: 'inherit',
                                 }}
                             >

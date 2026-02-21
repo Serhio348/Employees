@@ -12,6 +12,11 @@ function startBot() {
     return null;
   }
 
+  if (process.env.TELEGRAM_BOT_DISABLED === 'true') {
+    console.warn('[Bot] TELEGRAM_BOT_DISABLED=true — бот не запущен (локальная разработка)');
+    return null;
+  }
+
   const bot = new Telegraf(token);
 
   // Регистрация команд
