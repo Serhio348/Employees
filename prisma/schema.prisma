@@ -32,7 +32,7 @@ model Employee {
   height    Int?    // рост в см
   clothingSize String? // размер одежды
   shoeSize  String? // размер обуви
-
+  telegramChatId String?
   user      User   @relation(fields: [userId], references: [id])
   userId    String
 }
