@@ -4,7 +4,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { NetworkFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategies';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -55,7 +55,7 @@ registerRoute(
     'GET'
 );
 
-// API мутации — Background Sync (повтор при восстановлении сети)
+// API мутации — NetworkOnly + Background Sync (не кэшируем, только повтор при потере сети)
 const bgSyncPlugin = new BackgroundSyncPlugin('api-mutations', {
     maxRetentionTime: 24 * 60, // 24 часа
 });
@@ -63,7 +63,7 @@ const bgSyncPlugin = new BackgroundSyncPlugin('api-mutations', {
 for (const method of ['POST', 'PUT', 'DELETE'] as const) {
     registerRoute(
         ({ url }: { url: URL }) => url.pathname.startsWith('/api'),
-        new NetworkFirst({ plugins: [bgSyncPlugin] }),
+        new NetworkOnly({ plugins: [bgSyncPlugin] }),
         method
     );
 }
