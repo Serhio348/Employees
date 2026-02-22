@@ -27,10 +27,12 @@ import InventoryAddons from "./pages/inventoryAddons/InventoryAddons";
 // чтобы не пропустить событие из-за race condition
 (window as any).__deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('[PWA] beforeinstallprompt fired ✅');
     e.preventDefault();
     (window as any).__deferredInstallPrompt = e;
     window.dispatchEvent(new Event('pwa-prompt-ready'));
 });
+console.log('[PWA] beforeinstallprompt listener registered');
 
 // Подавляем ошибку ResizeObserver
 const resizeObserverErr = (e: ErrorEvent) => {
