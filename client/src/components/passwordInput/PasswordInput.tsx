@@ -1,6 +1,4 @@
-import React from 'react'
-import { Form } from 'antd'
-import { Input } from 'antd'
+import { Form, Input } from 'antd'
 import { NamePath } from 'antd/es/form/interface'
 
 type Props = {
@@ -23,7 +21,7 @@ const PasswordInput = ({
             hasFeedback={hasFeedback}
             rules={[
                 {
-                    required: true, 
+                    required: true,
                     message: 'Обязательное поле'
                 },
                 ({ getFieldValue }: { getFieldValue: (name: string) => any }) => ({
@@ -46,11 +44,7 @@ const PasswordInput = ({
                 })
             ]}
         >
-            {React.createElement(Input, {
-                type: "password",
-                placeholder: placeholder,
-                size: "large"
-            })}
+            <Input.Password placeholder={placeholder} size="large" />
         </Form.Item>
     )
 }
