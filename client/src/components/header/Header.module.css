@@ -190,6 +190,38 @@
     max-width: 180px;
 }
 
+/* ---- Install PWA button ---- */
+.installBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.installBtn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.installLabel {
+    display: inline;
+}
+
+@media (max-width: 480px) {
+    .installLabel {
+        display: none;
+    }
+}
+
 /* ---- Logout button ---- */
 .logoutButton.logoutButton {
     background: rgba(255, 255, 255, 0.08) !important;
