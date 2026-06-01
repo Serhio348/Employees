@@ -108,7 +108,6 @@ function buildSizNormKeyboard(sizNorms, page, totalPages) {
     { text: '🔎 Искать заново', callback_data: 'sizreq_search' },
     { text: '📋 Все СИЗ', callback_data: 'sizreq_all' }
   ]);
-  buttons.push([{ text: '↩️ Отмена', callback_data: 'sizreq_cancel' }]);
 
   const navigation = [];
   if (page > 0) {
@@ -132,8 +131,6 @@ async function askSearch(ctx, editMessage = false) {
     reply_markup: {
       inline_keyboard: [[
         { text: '📋 Показать все СИЗ', callback_data: 'sizreq_all' }
-      ], [
-        { text: '↩️ Отмена', callback_data: 'sizreq_cancel' }
       ]]
     }
   };
@@ -167,8 +164,6 @@ async function showSizNorms(ctx, page = 0, editMessage = false, searchQuery = ''
           inline_keyboard: [[
             { text: '🔎 Искать заново', callback_data: 'sizreq_search' },
             { text: '📋 Все СИЗ', callback_data: 'sizreq_all' }
-          ], [
-            { text: '↩️ Отмена', callback_data: 'sizreq_cancel' }
           ]]
         }
       });
@@ -179,8 +174,6 @@ async function showSizNorms(ctx, page = 0, editMessage = false, searchQuery = ''
         inline_keyboard: [[
           { text: '🔎 Искать заново', callback_data: 'sizreq_search' },
           { text: '📋 Все СИЗ', callback_data: 'sizreq_all' }
-        ], [
-          { text: '↩️ Отмена', callback_data: 'sizreq_cancel' }
         ]]
       }
     });
@@ -531,13 +524,6 @@ function registerRequestSiz(bot) {
   bot.hears(CANCEL_BUTTON, (ctx) => {
     pendingRequests.delete(String(ctx.chat.id));
     return ctx.reply('Действие отменено.', getMainKeyboard());
-  });
-
-  bot.action('sizreq_cancel', async (ctx) => {
-    pendingRequests.delete(String(ctx.chat.id));
-    await ctx.answerCbQuery('Отменено');
-    await ctx.editMessageText('Добавление СИЗ отменено.');
-    return ctx.reply('Вы вернулись в главное меню.', getMainKeyboard());
   });
 
   bot.action('sizreq_search', async (ctx) => {
