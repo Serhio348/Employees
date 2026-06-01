@@ -49,8 +49,6 @@ const item = async (req, res) => {
 const add = async (req, res) => {
     try {
         const data = req.body;
-        console.log('Received SIZ norm data:', data);
-        
         if (!data.name || !data.period || !data.periodType) {
             return res.status(400).json({ message: "Название, период и тип периода обязательны" });
         }
@@ -82,8 +80,6 @@ const edit = async (req, res) => {
     const { id } = req.params;
 
     try {
-        console.log('Edit SIZ norm - received data:', data);
-        
         const sizNorm = await prisma.sizNorm.update({
             where: { id },
             data: {
@@ -95,7 +91,6 @@ const edit = async (req, res) => {
             },
         });
 
-        console.log('Edit SIZ norm - updated item:', sizNorm);
         res.status(200).json(sizNorm);
     } catch (error) {
         console.error('Edit SIZ norm error:', error);

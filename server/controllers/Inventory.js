@@ -1,4 +1,5 @@
 const { prisma } = require('../../prisma/prisma-client');
+const { getAccessibleEmployee, getAccessibleInventoryItem, isAdminUser } = require('../utils/access');
 
 /**
  * @route GET /api/inventory
@@ -7,7 +8,19 @@ const { prisma } = require('../../prisma/prisma-client');
  */
 const all = async (req, res) => {
     try {
+        const where = isAdminUser(req.user)
+            ? {}
+            : {
+                employeeId: {
+                    in: (await prisma.employee.findMany({
+                        where: { userId: req.user.id },
+                        select: { id: true }
+                    })).map(employee => employee.id)
+                }
+            };
+
         const inventory = await prisma.inventory.findMany({
+            where,
             orderBy: { createdAt: 'desc' }
         });
         res.status(200).json(inventory);
@@ -26,9 +39,7 @@ const item = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const inventoryItem = await prisma.inventory.findUnique({
-            where: { id }
-        });
+        const inventoryItem = await getAccessibleInventoryItem(prisma, id, req.user);
 
         if (!inventoryItem) {
             return res.status(404).json({ message: "Предмет не найден" });
@@ -50,6 +61,11 @@ const getEmployeeInventory = async (req, res) => {
     const { employeeId } = req.params;
 
     try {
+        const employee = await getAccessibleEmployee(prisma, employeeId, req.user);
+        if (!employee) {
+            return res.status(404).json({ message: "Сотрудник не найден" });
+        }
+
         const inventory = await prisma.inventory.findMany({
             where: { employeeId },
             orderBy: { createdAt: 'desc' }
@@ -70,8 +86,6 @@ const getEmployeeInventory = async (req, res) => {
 const add = async (req, res) => {
     try {
         const data = req.body;
-        console.log('Received inventory data:', data);
-        
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: "Пользователь не авторизован" });
         }
@@ -84,6 +98,11 @@ const add = async (req, res) => {
                 issueDate: !!data.issueDate
             });
             return res.status(400).json({ message: "Название предмета, тип, дата выдачи и ID сотрудника обязательны" });
+        }
+
+        const employee = await getAccessibleEmployee(prisma, data.employeeId, req.user);
+        if (!employee) {
+            return res.status(404).json({ message: "Сотрудник не найден" });
         }
         
         const inventoryItem = await prisma.inventory.create({
@@ -114,7 +133,10 @@ const edit = async (req, res) => {
     const { id } = req.params;
 
     try {
-        console.log('Edit inventory - received data:', data);
+        const existing = await getAccessibleInventoryItem(prisma, id, req.user);
+        if (!existing) {
+            return res.status(404).json({ message: "Предмет не найден" });
+        }
         
         const inventoryItem = await prisma.inventory.update({
             where: { id },
@@ -127,7 +149,6 @@ const edit = async (req, res) => {
             },
         });
 
-        console.log('Edit inventory - updated item:', inventoryItem);
         res.status(200).json(inventoryItem);
     } catch (error) {
         console.error('Edit inventory item error:', error);
@@ -144,6 +165,11 @@ const remove = async (req, res) => {
     const { id } = req.params;
 
     try {
+        const existing = await getAccessibleInventoryItem(prisma, id, req.user);
+        if (!existing) {
+            return res.status(404).json({ message: "Предмет не найден" });
+        }
+
         await prisma.inventory.delete({
             where: { id },
         });
