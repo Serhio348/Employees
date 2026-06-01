@@ -113,6 +113,7 @@ const add = async (req, res) => {
                 quantity: parseInt(data.quantity) || 1,
                 status: data.status || "выдан",
                 employeeId: data.employeeId,
+                sizNormId: data.sizNormId || null,
             },
         });
         
@@ -146,6 +147,7 @@ const edit = async (req, res) => {
                 issueDate: data.issueDate ? new Date(data.issueDate) : undefined,
                 quantity: data.quantity ? parseInt(data.quantity) : undefined,
                 status: data.status,
+                sizNormId: data.sizNormId,
             },
         });
 

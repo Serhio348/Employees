@@ -1,4 +1,5 @@
 const { prisma } = require('../../../prisma/prisma-client');
+const { getMainKeyboard } = require('./requestSiz');
 
 // Храним состояние ожидания ввода (в памяти, достаточно для MVP)
 // При перезапуске бота сбрасывается — сотрудник повторит /start
@@ -31,14 +32,7 @@ async function linkEmployee(ctx, employee) {
     `Используйте кнопки ниже 👇`,
     {
       parse_mode: 'Markdown',
-      reply_markup: {
-        keyboard: [
-          [{ text: '📦 Мой инвентарь' }],
-          [{ text: '⚠️ Что скоро истекает' }]
-        ],
-        resize_keyboard: true,
-        persistent: true
-      }
+      ...getMainKeyboard()
     }
   );
 }
@@ -57,16 +51,7 @@ function registerStart(bot) {
         return ctx.reply(
           `✅ Вы уже привязаны как ${existing.lastName} ${existing.firstName}.\n` +
           `Используйте кнопки ниже для просмотра инвентаря.`,
-          {
-            reply_markup: {
-              keyboard: [
-                [{ text: '📦 Мой инвентарь' }],
-                [{ text: '⚠️ Что скоро истекает' }]
-              ],
-              resize_keyboard: true,
-              persistent: true
-            }
-          }
+          getMainKeyboard()
         );
       }
     } catch (err) {

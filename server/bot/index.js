@@ -2,6 +2,7 @@ const { Telegraf } = require('telegraf');
 const { registerStart } = require('./commands/start');
 const { registerMySiz, handleMySiz } = require('./commands/mysiz');
 const { registerExpiring, handleExpiring } = require('./commands/expiring');
+const { getMainKeyboard, registerRequestSiz } = require('./commands/requestSiz');
 const { startScheduler } = require('./scheduler');
 
 function startBot() {
@@ -23,6 +24,7 @@ function startBot() {
   registerStart(bot);
   registerMySiz(bot);
   registerExpiring(bot);
+  registerRequestSiz(bot);
 
   // Нажатие кнопок клавиатуры — вызывают те же обработчики что и команды
   bot.hears('📦 Мой инвентарь', handleMySiz);
@@ -35,17 +37,10 @@ function startBot() {
       'Или команды:\n' +
       '/start — привязать аккаунт\n' +
       '/mysiz — мой инвентарь\n' +
-      '/expiring — что скоро истекает',
-      {
-        reply_markup: {
-          keyboard: [
-            [{ text: '📦 Мой инвентарь' }],
-            [{ text: '⚠️ Что скоро истекает' }]
-          ],
-          resize_keyboard: true,
-          persistent: true
-        }
-      }
+      '/expiring — что скоро истекает\n' +
+      '/addsiz — заявить получение СИЗ\n' +
+      '/myid — показать ваш Telegram chat id',
+      getMainKeyboard()
     );
   });
 

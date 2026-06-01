@@ -10,9 +10,15 @@ function matchNorm(itemName, sizNorms) {
   }) || null;
 }
 
+function findNormForItem(item, sizNorms) {
+  return item.sizNormId
+    ? sizNorms.find(n => n.id === item.sizNormId) || null
+    : matchNorm(item.itemName, sizNorms);
+}
+
 // Строка для предмета без аддонов — берём из нормативов
 function formatFromNorm(item, sizNorms) {
-  const norm = matchNorm(item.itemName, sizNorms);
+  const norm = findNormForItem(item, sizNorms);
   if (!norm) return `   └ Нет данных о сроках`;
 
   if (norm.periodType === 'until_worn') {

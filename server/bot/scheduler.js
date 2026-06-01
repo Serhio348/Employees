@@ -13,7 +13,9 @@ function matchNorm(itemName, sizNorms) {
 }
 
 function getNormReplacement(item, sizNorms) {
-  const norm = matchNorm(item.itemName, sizNorms);
+  const norm = item.sizNormId
+    ? sizNorms.find(n => n.id === item.sizNormId) || null
+    : matchNorm(item.itemName, sizNorms);
   if (!norm || norm.periodType === 'until_worn') return null;
 
   const months = parseInt(norm.period);
