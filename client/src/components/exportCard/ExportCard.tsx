@@ -1,5 +1,6 @@
-import React from 'react';
-import { Button, message } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Button, Checkbox, Modal, Space, message } from 'antd';
+import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import { FilePdfOutlined } from '@ant-design/icons';
 import { Employee } from '@prisma/client';
 import { InventoryItem } from '../../app/services/inventory';
@@ -11,19 +12,59 @@ interface Props {
     sizNorms: SizNorm[];
 }
 
+type InventoryType = 'спецодежда' | 'сиз' | 'инструмент' | 'оборудование';
+
+const EXPORT_TYPE_OPTIONS: Array<{ label: string; value: InventoryType }> = [
+    { label: 'Спецодежда', value: 'спецодежда' },
+    { label: 'СИЗ', value: 'сиз' },
+    { label: 'Инвентарь / инструмент', value: 'инструмент' },
+    { label: 'Оборудование', value: 'оборудование' },
+];
+
 const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [selectedTypes, setSelectedTypes] = useState<InventoryType[]>(
+        EXPORT_TYPE_OPTIONS.map(option => option.value)
+    );
 
-    // Расчёт % износа по нормам СИЗ
-    const calculateWearPercentage = (item: InventoryItem): number => {
-        if (!item.issueDate) return 0;
+    const availableTypeOptions = useMemo(() => {
+        const activeTypes = new Set(
+            inventory
+                .filter(item => item.status !== 'списан')
+                .map(item => item.itemType)
+        );
 
-        const norm = sizNorms.find(n => {
-            const normName = n.name.toLowerCase().trim();
-            const itemName = item.itemName.toLowerCase().trim();
+        const visibleOptions = EXPORT_TYPE_OPTIONS.filter(option => activeTypes.has(option.value));
+        return visibleOptions.length > 0 ? visibleOptions : EXPORT_TYPE_OPTIONS;
+    }, [inventory]);
+
+    const normalizeName = (value: string = '') => value
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[^a-zа-я0-9\s]/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const findNormForItem = (item: InventoryItem, norms: SizNorm[]) => {
+        if (item.sizNormId) {
+            const normById = norms.find(n => n.id === item.sizNormId);
+            if (normById) return normById;
+        }
+
+        const itemName = normalizeName(item.itemName);
+        return norms.find(n => {
+            const normName = normalizeName(n.name);
             return normName === itemName
                 || itemName.includes(normName)
                 || normName.includes(itemName);
         });
+    };
+
+    // Расчёт % износа по нормам СИЗ
+    const calculateWearPercentage = (item: InventoryItem, norms: SizNorm[]): number => {
+        if (!item.issueDate) return 0;
+
+        const norm = findNormForItem(item, norms);
 
         if (!norm || norm.periodType === 'until_worn') return 0;
 
@@ -77,9 +118,17 @@ const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
     };
 
     const generateHTMLContent = () => {
-        const activeItems = inventory.filter(i => i.status !== 'списан');
+        const activeItems = inventory.filter(i =>
+            i.status !== 'списан' && selectedTypes.includes(i.itemType as InventoryType)
+        );
+        const matchedNormIds = new Set(
+            activeItems
+                .map(item => findNormForItem(item, sizNorms)?.id)
+                .filter(Boolean)
+        );
+        const filteredNorms = sizNorms.filter(norm => norm.id && matchedNormIds.has(norm.id));
 
-        const normsRows = sizNorms.map(norm => `
+        const normsRows = filteredNorms.map(norm => `
             <tr>
                 <td>${norm.name}</td>
                 <td style="text-align:center">${norm.classification || ''}</td>
@@ -88,7 +137,7 @@ const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
             </tr>`).join('');
 
         const inventoryRows = activeItems.map(item => {
-            const wear = calculateWearPercentage(item);
+            const wear = calculateWearPercentage(item, sizNorms);
             return `
             <tr>
                 <td>${item.itemName}</td>
@@ -326,7 +375,7 @@ const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
 </div>
 
 <!-- Нормы СИЗ -->
-${sizNorms.length > 0 ? `
+${filteredNorms.length > 0 ? `
 <div class="norms-section">
   <div class="norms-title">Предусмотрено по установленным нормам:</div>
   <table>
@@ -428,13 +477,52 @@ ${sizNorms.length > 0 ? `
     };
 
     return (
-        <Button
-            type="primary"
-            icon={<FilePdfOutlined />}
-            onClick={exportToPDF}
-        >
-            Экспорт карточки
-        </Button>
+        <>
+            <Button
+                type="primary"
+                icon={<FilePdfOutlined />}
+                onClick={() => setIsExportModalOpen(true)}
+            >
+                Экспорт карточки
+            </Button>
+
+            <Modal
+                title="Экспорт карточки"
+                open={isExportModalOpen}
+                onCancel={() => setIsExportModalOpen(false)}
+                okText="Экспортировать"
+                cancelText="Отмена"
+                onOk={() => {
+                    if (selectedTypes.length === 0) {
+                        message.warning('Выберите хотя бы один вид СИЗ');
+                        return;
+                    }
+
+                    setIsExportModalOpen(false);
+                    exportToPDF();
+                }}
+            >
+                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                    <div>
+                        Выберите виды, которые нужно включить в карточку:
+                    </div>
+                    <Checkbox.Group
+                        value={selectedTypes}
+                        onChange={(values: CheckboxValueType[]) => {
+                            setSelectedTypes(values as InventoryType[]);
+                        }}
+                    >
+                        <Space direction="vertical">
+                            {availableTypeOptions.map(option => (
+                                <Checkbox key={option.value} value={option.value}>
+                                    {option.label}
+                                </Checkbox>
+                            ))}
+                        </Space>
+                    </Checkbox.Group>
+                </Space>
+            </Modal>
+        </>
     );
 };
 

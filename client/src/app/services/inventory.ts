@@ -8,6 +8,7 @@ export interface InventoryItem {
     quantity: number;
     status: string;
     employeeId: string;
+    sizNormId?: string | null;
     createdAt?: string;
     updatedAt?: string;
 }
