@@ -1,4 +1,5 @@
 const { prisma } = require('../../prisma/prisma-client')
+const { getAccessibleEmployee, isAdminUser, sanitizeEmployee } = require('../utils/access');
 
 /**
  * @route GET /api/employees
@@ -14,12 +15,12 @@ const all = async (req, res) => {
             return res.status(401).json({ message: 'Не авторизован' });
         }
 
-        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
+        const isAdmin = isAdminUser(req.user);
         const employees = await prisma.employee.findMany({
             where: isAdmin ? {} : { userId: req.user.id },
             orderBy: { lastName: 'asc' }
         });
-        res.status(200).json(employees)
+        res.status(200).json(employees.map(sanitizeEmployee))
     } catch {
         res.status(400).json({ message: 'Не удалось получить сотрудников' })
     }
@@ -34,7 +35,6 @@ const all = async (req, res) => {
 const add = async (req, res) => {
     try {
         const data = req.body;
-        console.log('Received employee data:', data);
         
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: "Пользователь не авторизован" });
@@ -77,9 +77,8 @@ const remove = async (req, res) => {
 
     try {
         // Проверяем владение записью (админ имеет доступ ко всем)
-        const existing = await prisma.employee.findUnique({ where: { id } });
-        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
-        if (!existing || (!isAdmin && existing.userId !== req.user.id)) {
+        const existing = await getAccessibleEmployee(prisma, id, req.user);
+        if (!existing) {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 
@@ -102,9 +101,8 @@ const edit = async (req, res) => {
 
     try {
         // Проверяем владение записью (админ имеет доступ ко всем)
-        const existing = await prisma.employee.findUnique({ where: { id } });
-        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
-        if (!existing || (!isAdmin && existing.userId !== req.user.id)) {
+        const existing = await getAccessibleEmployee(prisma, id, req.user);
+        if (!existing) {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 
@@ -133,16 +131,13 @@ const employee = async (req, res) => {
     const { id } = req.params; // http://localhost:8000/api/employees/9fe371c1-361f-494a-9def-465959ecc098
 
     try {
-        const emp = await prisma.employee.findUnique({ where: { id } });
-        const isAdmin = req.user.email === 'serhiosidorovich@gmail.com';
-
-        if (!emp || (!isAdmin && emp.userId !== req.user.id)) {
+        const emp = await getAccessibleEmployee(prisma, id, req.user);
+        if (!emp) {
             return res.status(404).json({ message: 'Сотрудник не найден' });
         }
 
         // Не передаём telegramChatId на фронт — только наличие/отсутствие
-        const { telegramChatId, ...empData } = emp;
-        res.status(200).json({ ...empData, hasTelegram: !!telegramChatId });
+        res.status(200).json(sanitizeEmployee(emp));
     } catch {
         res.status(500).json({ message: "Не удалось получить сотрудника" });
     }

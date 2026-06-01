@@ -27,23 +27,13 @@ const login = async (req, res) => {
         });
 
         ///Сравнение паролей, который пришел к нам с client и хэш пароля текущего пользователя
-        console.log('User found:', user ? 'Yes' : 'No');
-        console.log('User password hash:', user ? user.password.substring(0, 20) + '...' : 'N/A');
-        console.log('Input password:', password);
-        
         const isPasswordCorrect =
             user && (await bcrypt.compare(password, user.password));
-            
-        console.log('Password comparison result:', isPasswordCorrect);
 
         const secret = process.env.JWT_SECRET;
-        console.log('JWT Secret exists:', secret ? 'Yes' : 'No');
-        console.log('JWT Secret length:', secret ? secret.length : 0);
-        console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('JWT')));
 
         //// Проверяем условие что есть такой пользователь и введенный пароль верный
         if (user && isPasswordCorrect && secret) {
-            console.log('All conditions met, generating token...');
             res.status(200).json({
                 id: user.id,
                 email: user.email,
@@ -52,10 +42,6 @@ const login = async (req, res) => {
                 token: jwt.sign({ id: user.id }, secret, { expiresIn: "1h" }),
             });
         } else {
-            console.log('Login failed - conditions not met:');
-            console.log('- User exists:', !!user);
-            console.log('- Password correct:', isPasswordCorrect);
-            console.log('- Secret exists:', !!secret);
             return res
                 .status(400)
                 .json({ message: "Введен неверный логин или пароль" });
@@ -104,9 +90,6 @@ const register = async (req, res) => {
 
         ////Хэшировавние пароля с помощью сгенерированной соли:
         const hashedPassword = await bcrypt.hash(password, salt);
-        console.log('Original password:', password);
-        console.log('Hashed password:', hashedPassword.substring(0, 20) + '...');
-
         const user = await prisma.user.create({
             data: {
                 email,

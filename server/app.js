@@ -11,13 +11,17 @@ const { startBot } = require('./bot');
 startBot();
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
 // Middleware
 app.use(logger('dev'));
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? true  // Разрешить все домены в продакшене
-        : 'http://localhost:3000',
+    origin: process.env.NODE_ENV === 'production'
+        ? allowedOrigins
+        : ['http://localhost:3000', ...allowedOrigins],
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
