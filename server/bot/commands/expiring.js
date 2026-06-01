@@ -10,6 +10,12 @@ function matchNorm(itemName, sizNorms) {
   }) || null;
 }
 
+function findNormForItem(item, sizNorms) {
+  return item.sizNormId
+    ? sizNorms.find(n => n.id === item.sizNormId) || null
+    : matchNorm(item.itemName, sizNorms);
+}
+
 // Общая логика — вызывается и командой /expiring, и кнопкой
 async function handleExpiring(ctx) {
   const chatId = String(ctx.chat.id);
@@ -57,7 +63,7 @@ async function handleExpiring(ctx) {
     // Если нет аддонов — проверяем по нормативам
     if (addonExpiring.length === 0) {
       for (const item of inventory) {
-        const norm = matchNorm(item.itemName, sizNorms);
+        const norm = findNormForItem(item, sizNorms);
         if (!norm || norm.periodType === 'until_worn') continue;
 
         const months = parseInt(norm.period);
