@@ -1,6 +1,7 @@
 const { prisma } = require('../../../prisma/prisma-client');
 
 const ADD_SIZ_BUTTON = '➕ Добавить полученное СИЗ';
+const CANCEL_BUTTON = '↩️ Отмена';
 const PAGE_SIZE = 8;
 const pendingRequests = new Map();
 
@@ -25,12 +26,31 @@ function getMainKeyboard() {
   };
 }
 
+function getCancelKeyboard() {
+  return {
+    reply_markup: {
+      keyboard: [[{ text: CANCEL_BUTTON }]],
+      resize_keyboard: true,
+      one_time_keyboard: true
+    }
+  };
+}
+
 function getFullName(employee) {
   return [employee.lastName, employee.firstName, employee.surName].filter(Boolean).join(' ');
 }
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString('ru-RU');
+}
+
+function normalizeSearch(value = '') {
+  return value
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я0-9\s]/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function parseRuDate(input) {
@@ -62,11 +82,33 @@ async function getLinkedEmployee(ctx) {
   });
 }
 
+function buildSizNormWhere(searchQuery) {
+  if (!searchQuery) return {};
+
+  const variants = Array.from(new Set([
+    searchQuery,
+    searchQuery.replace(/е/g, 'ё')
+  ])).filter(Boolean);
+
+  return {
+    OR: variants.flatMap(query => ([
+      { name: { contains: query, mode: 'insensitive' } },
+      { classification: { contains: query, mode: 'insensitive' } }
+    ]))
+  };
+}
+
 function buildSizNormKeyboard(sizNorms, page, totalPages) {
   const buttons = sizNorms.map(norm => ([{
     text: norm.name,
     callback_data: `sizreq_pick_${norm.id}`
   }]));
+
+  buttons.push([
+    { text: '🔎 Искать заново', callback_data: 'sizreq_search' },
+    { text: '📋 Все СИЗ', callback_data: 'sizreq_all' }
+  ]);
+  buttons.push([{ text: '↩️ Отмена', callback_data: 'sizreq_cancel' }]);
 
   const navigation = [];
   if (page > 0) {
@@ -80,21 +122,81 @@ function buildSizNormKeyboard(sizNorms, page, totalPages) {
   return { inline_keyboard: buttons };
 }
 
-async function showSizNorms(ctx, page = 0, editMessage = false) {
-  const total = await prisma.sizNorm.count();
+async function askSearch(ctx, editMessage = false) {
+  const text =
+    'Введите часть названия СИЗ для поиска.\n\n' +
+    'Например: ботинки, каска, перчатки.\n' +
+    'Или нажмите "Показать все СИЗ".';
+
+  const options = {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '📋 Показать все СИЗ', callback_data: 'sizreq_all' }
+      ], [
+        { text: '↩️ Отмена', callback_data: 'sizreq_cancel' }
+      ]]
+    }
+  };
+
+  if (editMessage) {
+    return ctx.editMessageText(text, options);
+  }
+
+  return ctx.reply(text, options);
+}
+
+async function showSizNorms(ctx, page = 0, editMessage = false, searchQuery = '') {
+  const where = buildSizNormWhere(searchQuery);
+  const total = await prisma.sizNorm.count({ where });
   if (total === 0) {
-    return ctx.reply('В базе пока нет норм СИЗ. Обратитесь к ответственному.');
+    if (searchQuery) {
+      const chatId = String(ctx.chat.id);
+      const state = pendingRequests.get(chatId);
+      if (state) {
+        pendingRequests.set(chatId, { ...state, step: 'search', searchQuery: '' });
+      }
+    }
+
+    const message = searchQuery
+      ? `По запросу "${searchQuery}" ничего не найдено. Попробуйте другое слово.`
+      : 'В базе пока нет норм СИЗ. Обратитесь к ответственному.';
+
+    if (editMessage) {
+      return ctx.editMessageText(message, {
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '🔎 Искать заново', callback_data: 'sizreq_search' },
+            { text: '📋 Все СИЗ', callback_data: 'sizreq_all' }
+          ], [
+            { text: '↩️ Отмена', callback_data: 'sizreq_cancel' }
+          ]]
+        }
+      });
+    }
+
+    return ctx.reply(message, {
+      reply_markup: {
+        inline_keyboard: [[
+          { text: '🔎 Искать заново', callback_data: 'sizreq_search' },
+          { text: '📋 Все СИЗ', callback_data: 'sizreq_all' }
+        ], [
+          { text: '↩️ Отмена', callback_data: 'sizreq_cancel' }
+        ]]
+      }
+    });
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const safePage = Math.min(Math.max(page, 0), totalPages - 1);
   const sizNorms = await prisma.sizNorm.findMany({
+    where,
     orderBy: { name: 'asc' },
     skip: safePage * PAGE_SIZE,
     take: PAGE_SIZE
   });
 
-  const text = `Выберите СИЗ из базы (${safePage + 1}/${totalPages}):`;
+  const searchLabel = searchQuery ? `\nПоиск: "${searchQuery}"` : '';
+  const text = `Выберите СИЗ из базы (${safePage + 1}/${totalPages}):${searchLabel}`;
   const options = {
     reply_markup: buildSizNormKeyboard(sizNorms, safePage, totalPages)
   };
@@ -112,8 +214,9 @@ async function startRequest(ctx) {
     return ctx.reply('⚠️ Вы не привязаны к системе. Используйте /start для регистрации.');
   }
 
-  pendingRequests.set(String(ctx.chat.id), { step: 'selectNorm', employeeId: employee.id });
-  return showSizNorms(ctx);
+  pendingRequests.set(String(ctx.chat.id), { step: 'search', employeeId: employee.id, searchQuery: '' });
+  await ctx.reply('Начинаем заявку на получение СИЗ.', getCancelKeyboard());
+  return askSearch(ctx);
 }
 
 async function askQuantity(ctx, sizNormId) {
@@ -127,7 +230,7 @@ async function askQuantity(ctx, sizNormId) {
   const sizNorm = await prisma.sizNorm.findUnique({ where: { id: sizNormId } });
   if (!sizNorm) {
     await ctx.answerCbQuery('СИЗ не найден');
-    return showSizNorms(ctx);
+    return showSizNorms(ctx, 0, false, state.searchQuery || '');
   }
 
   pendingRequests.set(chatId, {
@@ -152,7 +255,7 @@ function askIssueDate(ctx, state, quantity) {
     'Введите дату получения в формате ДД.ММ.ГГГГ или нажмите "Сегодня".',
     {
       reply_markup: {
-        keyboard: [[{ text: 'Сегодня' }]],
+        keyboard: [[{ text: 'Сегодня' }], [{ text: CANCEL_BUTTON }]],
         resize_keyboard: true,
         one_time_keyboard: true
       }
@@ -254,6 +357,25 @@ async function handleRequestText(ctx, next) {
   if (!state || state.step === 'selectNorm') return next();
 
   const input = ctx.message.text.trim();
+  if (input === CANCEL_BUTTON || input === '/cancel') {
+    pendingRequests.delete(chatId);
+    return ctx.reply('Добавление СИЗ отменено.', getMainKeyboard());
+  }
+
+  if (state.step === 'search') {
+    const searchQuery = normalizeSearch(input);
+    if (searchQuery.length < 2) {
+      return ctx.reply('Введите минимум 2 символа для поиска.');
+    }
+
+    pendingRequests.set(chatId, {
+      ...state,
+      step: 'selectNorm',
+      searchQuery
+    });
+
+    return showSizNorms(ctx, 0, false, searchQuery);
+  }
 
   if (state.step === 'quantity') {
     const quantity = Number(input.replace(',', '.'));
@@ -400,13 +522,51 @@ async function rejectRequest(ctx, requestId) {
 
 function registerRequestSiz(bot) {
   bot.command('myid', (ctx) => ctx.reply(`Ваш Telegram chat id: ${ctx.chat.id}`));
+  bot.command('cancel', (ctx) => {
+    pendingRequests.delete(String(ctx.chat.id));
+    return ctx.reply('Действие отменено.', getMainKeyboard());
+  });
   bot.command('addsiz', startRequest);
   bot.hears(ADD_SIZ_BUTTON, startRequest);
+  bot.hears(CANCEL_BUTTON, (ctx) => {
+    pendingRequests.delete(String(ctx.chat.id));
+    return ctx.reply('Действие отменено.', getMainKeyboard());
+  });
+
+  bot.action('sizreq_cancel', async (ctx) => {
+    pendingRequests.delete(String(ctx.chat.id));
+    await ctx.answerCbQuery('Отменено');
+    await ctx.editMessageText('Добавление СИЗ отменено.');
+    return ctx.reply('Вы вернулись в главное меню.', getMainKeyboard());
+  });
+
+  bot.action('sizreq_search', async (ctx) => {
+    const chatId = String(ctx.chat.id);
+    const state = pendingRequests.get(chatId);
+    if (state) {
+      pendingRequests.set(chatId, { ...state, step: 'search', searchQuery: '' });
+    }
+
+    await ctx.answerCbQuery();
+    return askSearch(ctx, true);
+  });
+
+  bot.action('sizreq_all', async (ctx) => {
+    const chatId = String(ctx.chat.id);
+    const state = pendingRequests.get(chatId);
+    if (state) {
+      pendingRequests.set(chatId, { ...state, step: 'selectNorm', searchQuery: '' });
+    }
+
+    await ctx.answerCbQuery();
+    return showSizNorms(ctx, 0, true);
+  });
 
   bot.action(/^sizreq_page_(\d+)$/, async (ctx) => {
     const page = Number(ctx.match[1]);
+    const state = pendingRequests.get(String(ctx.chat.id));
     await ctx.answerCbQuery();
-    return showSizNorms(ctx, page, true);
+    return showSizNorms(ctx, page, true, state?.searchQuery || '');
   });
 
   bot.action(/^sizreq_pick_(.+)$/, (ctx) => askQuantity(ctx, ctx.match[1]));
