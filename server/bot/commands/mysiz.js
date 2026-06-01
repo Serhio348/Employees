@@ -99,7 +99,10 @@ async function handleMySiz(ctx) {
       lines.push('');
     }
 
-    lines.push(`_Обновлено: ${new Date().toLocaleString('ru-RU')}_`);
+    const generatedAt = new Date().toLocaleString('ru-RU', {
+      timeZone: 'Europe/Minsk'
+    });
+    lines.push(`_Сформировано: ${generatedAt} (Минск)_`);
 
     ctx.reply(lines.join('\n'), { parse_mode: 'Markdown' });
 
