@@ -10,6 +10,7 @@ import { useRegisterMutation } from "../../app/services/auth";
 import { User } from "@prisma/client";
 import { isErrorWithMessage } from "../../utils/isErrorWithMessage";
 import ErrorMessage from "../../components/errorMessage/ErrorMessage";
+import "../../styles/authForm.css";
 // import { useDispatch } from "react-redux";
 // import { clearAuth } from "../../features/auth/authSlice";
 // import { api } from "../../app/services/api";
@@ -41,17 +42,17 @@ const Register = () => {
         <Layout>
             <Row align="middle" justify="center">
                 <Card title="Регистрация" style={{ width: "30rem" }}>
-                    <Form onFinish={register}>
+                    <Form className="auth-form" onFinish={register}>
                         <CustomInput name="name" placeholder="Имя" />
                         <CustomInput name="lastName" placeholder="Фамилия" />
                         <CustomInput type="email" name="email" placeholder="Email" />
                         <PasswordInput name="password" placeholder="Пароль" />
                         <PasswordInput name="confirmPassword" placeholder="Повторите пароль" />
-                        <CustomButton type="primary" htmlType="submit">
+                        <CustomButton type="primary" htmlType="submit" size="large">
                             Зарегистрироваться
                         </CustomButton>
                     </Form>
-                    <Space direction="vertical" size="large">
+                    <Space direction="vertical" size="middle" className="auth-form-footer">
                         <Typography.Text>
                             Уже зарегистрированы? <Link to={Paths.login}>Войдите</Link>
                         </Typography.Text>

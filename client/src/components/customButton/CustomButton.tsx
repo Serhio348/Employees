@@ -37,7 +37,7 @@ const CustomButton = ({
     className,
 }: Props) => {
     return (
-        <Form.Item>
+        <Form.Item className="auth-form-submit">
             <Button
                 htmlType={htmlType}
                 type={type}

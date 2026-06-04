@@ -6,13 +6,15 @@ type Props = {
     placeholder: string;
     dependencies?: NamePath[];
     hasFeedback?: boolean;
+    size?: 'small' | 'middle' | 'large';
 }
 
 const PasswordInput = ({
     name,
     placeholder,
     dependencies,
-    hasFeedback = false
+    hasFeedback = false,
+    size = 'large',
 }: Props) => {
     return (
         <Form.Item
@@ -44,7 +46,7 @@ const PasswordInput = ({
                 })
             ]}
         >
-            <Input.Password placeholder={placeholder} size="large" />
+            <Input.Password placeholder={placeholder} size={size} style={{ width: '100%' }} />
         </Form.Item>
     )
 }

@@ -1,47 +1,49 @@
-/* Стили для формы в модальном окне */
-.ant-form {
+/* Стили только внутри формы инвентаря (не затрагивают login/register) */
+.inventory-form .ant-form {
     margin: 0 !important;
     padding: 0 !important;
     margin-top: 0 !important;
 }
 
-.ant-form-item {
+.inventory-form .ant-form-item {
     margin: 0 0 16px 0 !important;
     padding: 0 !important;
     margin-top: 0 !important;
 }
 
-.ant-form-item:first-child {
+.inventory-form .ant-form-item:first-child {
     margin-top: 0 !important;
 }
 
-.ant-form-item-label {
+.inventory-form .ant-form-item-label {
     margin: 0 !important;
     padding: 0 0 4px 0 !important;
 }
 
-.ant-form-item-control {
+.inventory-form .ant-form-item-control {
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.ant-form-item-control-input {
+.inventory-form .ant-form-item-control-input {
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.ant-select, .ant-picker, .ant-input {
+.inventory-form .ant-select,
+.inventory-form .ant-picker,
+.inventory-form .ant-input {
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.ant-select-selector, .ant-picker-input {
+.inventory-form .ant-select-selector,
+.inventory-form .ant-picker-input {
     margin: 0 !important;
     padding: 0 !important;
 }
 
-/* Отступы и размер текста для placeholder */
-.ant-select-selector {
+.inventory-form .ant-select-selector {
     padding-left: 8px !important;
     padding-right: 8px !important;
     padding-top: 4px !important;
@@ -51,7 +53,7 @@
     align-items: center !important;
 }
 
-.ant-select-selection-placeholder {
+.inventory-form .ant-select-selection-placeholder {
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-top: 0 !important;
@@ -63,7 +65,7 @@
     align-items: center !important;
 }
 
-.ant-picker-input {
+.inventory-form .ant-picker-input {
     padding-left: 8px !important;
     padding-right: 8px !important;
     padding-top: 4px !important;
@@ -73,7 +75,7 @@
     align-items: center !important;
 }
 
-.ant-picker-input input {
+.inventory-form .ant-picker-input input {
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-top: 0 !important;
@@ -85,13 +87,13 @@
     background: transparent !important;
 }
 
-.ant-picker-input input::placeholder {
+.inventory-form .ant-picker-input input::placeholder {
     font-size: 14px !important;
     color: #bfbfbf !important;
     line-height: 1.4 !important;
 }
 
-.ant-input {
+.inventory-form .ant-input {
     padding-left: 8px !important;
     padding-right: 8px !important;
     padding-top: 4px !important;
@@ -103,41 +105,41 @@
     align-items: center !important;
 }
 
-.ant-input::placeholder {
+.inventory-form .ant-input::placeholder {
     font-size: 14px !important;
     color: #bfbfbf !important;
     line-height: 1.4 !important;
 }
 
-/* Дополнительные стили для выравнивания текста */
-.ant-select-selection-item {
+.inventory-form .ant-select-selection-item {
     display: flex !important;
     align-items: center !important;
     line-height: 1.4 !important;
 }
 
-.ant-select-selection-search {
+.inventory-form .ant-select-selection-search {
     display: flex !important;
     align-items: center !important;
 }
 
-.ant-select-selection-search-input {
+.inventory-form .ant-select-selection-search-input {
     height: auto !important;
     line-height: 1.4 !important;
 }
 
-/* Адаптивные стили для формы в модальном окне */
 @media (max-width: 768px) {
-    .ant-form-item-label > label {
+    .inventory-form .ant-form-item-label > label {
         font-size: 12px !important;
         font-weight: 500 !important;
     }
-    .ant-select-selector, .ant-picker, .ant-input {
+    .inventory-form .ant-select-selector,
+    .inventory-form .ant-picker,
+    .inventory-form .ant-input {
         font-size: 12px !important;
         height: 32px !important;
     }
 
-    .ant-select-selector {
+    .inventory-form .ant-select-selector {
         padding-left: 6px !important;
         padding-right: 6px !important;
         padding-top: 4px !important;
@@ -147,7 +149,7 @@
         align-items: center !important;
     }
 
-    .ant-select-selection-placeholder {
+    .inventory-form .ant-select-selection-placeholder {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
         font-size: 12px !important;
@@ -155,7 +157,7 @@
         line-height: 1.4 !important;
     }
 
-    .ant-picker-input {
+    .inventory-form .ant-picker-input {
         padding-left: 6px !important;
         padding-right: 6px !important;
         padding-top: 4px !important;
@@ -165,20 +167,20 @@
         align-items: center !important;
     }
 
-    .ant-picker-input input {
+    .inventory-form .ant-picker-input input {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
         font-size: 12px !important;
         line-height: 1.4 !important;
     }
 
-    .ant-picker-input input::placeholder {
+    .inventory-form .ant-picker-input input::placeholder {
         font-size: 12px !important;
         color: #bfbfbf !important;
         line-height: 1.4 !important;
     }
 
-    .ant-input {
+    .inventory-form .ant-input {
         padding-left: 6px !important;
         padding-right: 6px !important;
         padding-top: 4px !important;
@@ -190,31 +192,33 @@
         align-items: center !important;
     }
 
-    .ant-input::placeholder {
+    .inventory-form .ant-input::placeholder {
         font-size: 12px !important;
         color: #bfbfbf !important;
         line-height: 1.4 !important;
     }
 
-    .ant-btn {
+    .inventory-form .ant-btn {
         font-size: 12px !important;
         height: 32px !important;
     }
 
-    .ant-form-item {
+    .inventory-form .ant-form-item {
         margin-bottom: 12px !important;
     }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
-    .ant-form-item-label > label {
+    .inventory-form .ant-form-item-label > label {
         font-size: 14px !important;
     }
-    .ant-select-selector, .ant-picker, .ant-input {
+    .inventory-form .ant-select-selector,
+    .inventory-form .ant-picker,
+    .inventory-form .ant-input {
         font-size: 14px !important;
     }
 
-    .ant-select-selector {
+    .inventory-form .ant-select-selector {
         padding-left: 8px !important;
         padding-right: 8px !important;
         padding-top: 4px !important;
@@ -224,7 +228,7 @@
         align-items: center !important;
     }
 
-    .ant-select-selection-placeholder {
+    .inventory-form .ant-select-selection-placeholder {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
         font-size: 14px !important;
@@ -232,7 +236,7 @@
         line-height: 1.4 !important;
     }
 
-    .ant-picker-input {
+    .inventory-form .ant-picker-input {
         padding-left: 8px !important;
         padding-right: 8px !important;
         padding-top: 4px !important;
@@ -242,20 +246,20 @@
         align-items: center !important;
     }
 
-    .ant-picker-input input {
+    .inventory-form .ant-picker-input input {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
         font-size: 14px !important;
         line-height: 1.4 !important;
     }
 
-    .ant-picker-input input::placeholder {
+    .inventory-form .ant-picker-input input::placeholder {
         font-size: 14px !important;
         color: #bfbfbf !important;
         line-height: 1.4 !important;
     }
 
-    .ant-input {
+    .inventory-form .ant-input {
         padding-left: 8px !important;
         padding-right: 8px !important;
         padding-top: 4px !important;
@@ -267,17 +271,17 @@
         align-items: center !important;
     }
 
-    .ant-input::placeholder {
+    .inventory-form .ant-input::placeholder {
         font-size: 14px !important;
         color: #bfbfbf !important;
         line-height: 1.4 !important;
     }
 
-    .ant-btn {
+    .inventory-form .ant-btn {
         font-size: 14px !important;
     }
 
-    .ant-form-item {
+    .inventory-form .ant-form-item {
         margin-bottom: 16px !important;
     }
 }

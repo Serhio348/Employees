@@ -36,7 +36,7 @@ const CustomInput = ({
                 placeholder={placeholder}
                 type={type}
                 size={size}
-                style={style}
+                style={{ width: '100%', ...style }}
             />
         </Form.Item>
     );
