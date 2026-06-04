@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from 'react';
-
-interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import {
+    type BeforeInstallPromptEvent,
+    canShowNativeInstallPrompt,
+    getDeferredInstallPrompt,
+    isInStandaloneMode,
+    isIOS,
+    requestPwaInstall,
+} from '../../utils/pwaInstall';
 
 const DISMISSED_KEY = 'pwa-install-dismissed';
-
-const isIOS = () =>
-    /iphone|ipad|ipod/i.test(navigator.userAgent) &&
-    !(window as any).MSStream;
-
-const isInStandaloneMode = () =>
-    (window.navigator as any).standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
 
 const btnStyle: React.CSSProperties = {
     background: '#fff',
@@ -71,16 +66,15 @@ const PwaInstallPrompt: React.FC = () => {
         }
 
         // Событие могло уже сработать до монтирования компонента
-        const already = (window as any).__deferredInstallPrompt;
+        const already = getDeferredInstallPrompt();
         if (already) {
             setDeferredPrompt(already);
             setShowBanner(true);
             return;
         }
 
-        // Слушаем на случай если событие ещё не пришло
         const onPromptReady = () => {
-            const prompt = (window as any).__deferredInstallPrompt;
+            const prompt = getDeferredInstallPrompt();
             if (prompt) {
                 setDeferredPrompt(prompt);
                 setShowBanner(true);
@@ -90,16 +84,15 @@ const PwaInstallPrompt: React.FC = () => {
         window.addEventListener('appinstalled', () => {
             setShowBanner(false);
             setDeferredPrompt(null);
-            (window as any).__deferredInstallPrompt = null;
+            (window as typeof window & { __deferredInstallPrompt?: null }).__deferredInstallPrompt = null;
         });
         return () => window.removeEventListener('pwa-prompt-ready', onPromptReady);
     }, []);
 
     const handleInstall = async () => {
-        if (!deferredPrompt) return;
-        await deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
+        if (!canShowNativeInstallPrompt()) return;
+        const result = await requestPwaInstall();
+        if (result.status === 'accepted') {
             setShowBanner(false);
             setDeferredPrompt(null);
         }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Layout, Avatar, Button, Modal, Form, Input, Switch, message } from "antd";
 import { LoginOutlined, TeamOutlined, UserOutlined, EditOutlined, BulbOutlined, BulbFilled, DownloadOutlined } from "@ant-design/icons";
 
@@ -8,10 +8,13 @@ import { Paths } from "../../path";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, selectUser } from "../../features/auth/authSlice";
 import { useTheme } from "../../contexts/ThemeContext";
-
-const isInStandaloneMode = () =>
-    (window.navigator as any).standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
+import {
+    canShowNativeInstallPrompt,
+    installUnavailableMessage,
+    isInStandaloneMode,
+    isIOS,
+    requestPwaInstall,
+} from "../../utils/pwaInstall";
 
 const Header = () => {
     const user = useSelector(selectUser);
@@ -21,20 +24,23 @@ const Header = () => {
     const { theme, toggleTheme } = useTheme();
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [form] = Form.useForm();
-    const [installPrompt, setInstallPrompt] = useState<any>(null);
+    const [canNativeInstall, setCanNativeInstall] = useState(canShowNativeInstallPrompt);
     const [isInstalled, setIsInstalled] = useState(isInStandaloneMode);
+
+    const syncInstallPrompt = useCallback(() => {
+        setCanNativeInstall(canShowNativeInstallPrompt());
+    }, []);
 
     useEffect(() => {
         if (isInstalled) return;
 
-        const already = (window as any).__deferredInstallPrompt;
-        if (already) setInstallPrompt(already);
+        syncInstallPrompt();
 
-        const onReady = () => {
-            const p = (window as any).__deferredInstallPrompt;
-            if (p) setInstallPrompt(p);
+        const onReady = () => syncInstallPrompt();
+        const onInstalled = () => {
+            setIsInstalled(true);
+            setCanNativeInstall(false);
         };
-        const onInstalled = () => { setIsInstalled(true); setInstallPrompt(null); };
 
         window.addEventListener('pwa-prompt-ready', onReady);
         window.addEventListener('appinstalled', onInstalled);
@@ -42,25 +48,30 @@ const Header = () => {
             window.removeEventListener('pwa-prompt-ready', onReady);
             window.removeEventListener('appinstalled', onInstalled);
         };
-    }, [isInstalled]);
+    }, [isInstalled, syncInstallPrompt]);
 
     const handleInstallClick = async () => {
-        if (installPrompt) {
-            await installPrompt.prompt();
-            const { outcome } = await installPrompt.userChoice;
-            if (outcome === 'accepted') {
-                setIsInstalled(true);
-                setInstallPrompt(null);
-            }
-        } else {
-            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-            if (isIOS) {
-                message.info('Safari: нажмите «Поделиться» → «На экран "Домой"»', 5);
-            } else {
-                message.info('Chrome: нажмите ⋮ → «Добавить на главный экран»', 5);
-            }
+        const result = await requestPwaInstall();
+
+        if (result.status === 'accepted') {
+            setIsInstalled(true);
+            setCanNativeInstall(false);
+            return;
         }
+
+        if (result.status === 'ios_manual') {
+            message.info('Safari: нажмите «Поделиться» → «На экран «Домой»»', 6);
+            return;
+        }
+
+        if (result.status === 'dismissed') {
+            return;
+        }
+
+        message.info(installUnavailableMessage(result.reason), 8);
     };
+
+    const showInstallButton = !isInstalled && (canNativeInstall || isIOS());
 
     const isAuthPage = location.pathname === Paths.login || location.pathname === Paths.register;
 
@@ -106,11 +117,16 @@ const Header = () => {
                 <div className={styles.controls}>
 
                     {/* Кнопка установки — скрыта если уже установлено */}
-                    {!isInstalled && (
+                    {showInstallButton && (
                         <button
+                            type="button"
                             onClick={handleInstallClick}
                             className={styles.installBtn}
-                            title="Установить приложение"
+                            title={
+                                canNativeInstall
+                                    ? 'Установить приложение'
+                                    : 'Установить через меню Safari'
+                            }
                         >
                             <DownloadOutlined />
                             <span className={styles.installLabel}>Установить</span>
