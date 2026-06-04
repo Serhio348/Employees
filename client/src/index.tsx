@@ -9,6 +9,7 @@ import { store } from "./app/store";
 import PwaInstallPrompt from "./components/pwaInstallPrompt/PwaInstallPrompt";
 import OfflineIndicator from "./components/offlineIndicator/OfflineIndicator";
 import SwUpdateNotification from "./components/swUpdateNotification/SwUpdateNotification";
+import RouteCleanup from "./components/routeCleanup/RouteCleanup";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
@@ -48,40 +49,45 @@ window.addEventListener('error', resizeObserverErr);
 
 export const router = createBrowserRouter([
   {
-    path: Paths.home,
-    element: <Employees />,
-  },
-  {
-    path: Paths.login,
-    element: <Login />,
-  },
-  {
-    path: Paths.register,
-    element: <Register />,
-  },
-  {
-    path: Paths.employeeAdd,
-    element: <AddEmployee />,
-  },
-  {
-    path: `${Paths.status}/:status`,
-    element: <Status />,
-  },
-  {
-    path: `${Paths.employee}/:id`,
-    element: <Employee />,
-  },
-  {
-    path: `${Paths.employeeEdit}/:id`,
-    element: <EditEmployee />,
-  },
-  {
-    path: `${Paths.employee}/:id/inventory`,
-    element: <EmployeeInventory />,
-  },
-  {
-    path: `/inventory/:inventoryId/addons`,
-    element: <InventoryAddons />,
+    element: <RouteCleanup />,
+    children: [
+      {
+        path: Paths.home,
+        element: <Employees />,
+      },
+      {
+        path: Paths.login,
+        element: <Login />,
+      },
+      {
+        path: Paths.register,
+        element: <Register />,
+      },
+      {
+        path: Paths.employeeAdd,
+        element: <AddEmployee />,
+      },
+      {
+        path: `${Paths.status}/:status`,
+        element: <Status />,
+      },
+      {
+        path: `${Paths.employee}/:id`,
+        element: <Employee />,
+      },
+      {
+        path: `${Paths.employeeEdit}/:id`,
+        element: <EditEmployee />,
+      },
+      {
+        path: `${Paths.employee}/:id/inventory`,
+        element: <EmployeeInventory />,
+      },
+      {
+        path: `/inventory/:inventoryId/addons`,
+        element: <InventoryAddons />,
+      },
+    ],
   },
 ]);
 
