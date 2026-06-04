@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-    type BeforeInstallPromptEvent,
     canShowNativeInstallPrompt,
     getDeferredInstallPrompt,
     isInStandaloneMode,
@@ -52,7 +51,6 @@ const bannerStyle: React.CSSProperties = {
 };
 
 const PwaInstallPrompt: React.FC = () => {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showBanner, setShowBanner] = useState(false);
     const [showIOS, setShowIOS] = useState(false);
 
@@ -65,25 +63,19 @@ const PwaInstallPrompt: React.FC = () => {
             return;
         }
 
-        // Событие могло уже сработать до монтирования компонента
-        const already = getDeferredInstallPrompt();
-        if (already) {
-            setDeferredPrompt(already);
+        if (getDeferredInstallPrompt()) {
             setShowBanner(true);
             return;
         }
 
         const onPromptReady = () => {
-            const prompt = getDeferredInstallPrompt();
-            if (prompt) {
-                setDeferredPrompt(prompt);
+            if (getDeferredInstallPrompt()) {
                 setShowBanner(true);
             }
         };
         window.addEventListener('pwa-prompt-ready', onPromptReady);
         window.addEventListener('appinstalled', () => {
             setShowBanner(false);
-            setDeferredPrompt(null);
             (window as typeof window & { __deferredInstallPrompt?: null }).__deferredInstallPrompt = null;
         });
         return () => window.removeEventListener('pwa-prompt-ready', onPromptReady);
@@ -94,7 +86,6 @@ const PwaInstallPrompt: React.FC = () => {
         const result = await requestPwaInstall();
         if (result.status === 'accepted') {
             setShowBanner(false);
-            setDeferredPrompt(null);
         }
     };
 
