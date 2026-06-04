@@ -68,7 +68,9 @@ const Header = () => {
             return;
         }
 
-        message.info(installUnavailableMessage(result.reason), 8);
+        if (result.status === 'unavailable') {
+            message.info(installUnavailableMessage(result.reason), 8);
+        }
     };
 
     const showInstallButton = !isInstalled && (canNativeInstall || isIOS());
