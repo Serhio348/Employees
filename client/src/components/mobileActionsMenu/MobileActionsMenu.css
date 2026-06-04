@@ -1,0 +1,56 @@
+.mobile-actions-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.mobile-actions-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: transparent;
+}
+
+.mobile-actions-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: auto;
+  z-index: 1041;
+  min-width: 190px;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.mobile-actions-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-actions-menu-item--green {
+  background: #52c41a;
+}
+
+.mobile-actions-menu-item--blue {
+  background: #1890ff;
+}
+
+.mobile-actions-menu-item--export {
+  background: #1677ff;
+}

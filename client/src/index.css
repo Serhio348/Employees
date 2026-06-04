@@ -50,9 +50,7 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-body>div {
+html {
   height: 100%;
 }
 
@@ -69,7 +67,19 @@ body {
   transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 100vh;
+  height: auto;
   overflow-x: hidden;
+}
+
+/* Только #root — НЕ body>div: иначе каждый портал Ant (modal/dropdown) получает height:100% и раздувает скролл */
+#root {
+  min-height: 100%;
+  height: auto;
+}
+
+body > div:not(#root) {
+  height: auto !important;
+  min-height: 0 !important;
 }
 
 /* Улучшенная типографика */
@@ -382,5 +392,17 @@ code {
 /* Disable Ant Design wave/ripple effect that causes sticky overlay divs */
 .ant-wave {
   display: none !important;
+  pointer-events: none !important;
+}
+
+/* Ant Design wave can also leave an inline absolute div without a stable class.
+   Keep it transparent to pointer events so it cannot block the whole UI. */
+.ant-btn > div[style*="position: absolute"],
+button > div[style*="position: absolute"] {
+  pointer-events: none !important;
+}
+
+/* Orphan full-screen div on body (Ant wave) — must not block taps */
+body > div[style*="position: absolute"][style*="top: 0"][style*="width: 100%"]:not([class]) {
   pointer-events: none !important;
 }

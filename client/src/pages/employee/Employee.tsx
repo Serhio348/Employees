@@ -6,8 +6,10 @@ import { selectUser } from '../../features/auth/authSlice';
 import Layout from '../../components/layout/Layout';
 import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
-import { Modal, Descriptions, Dropdown } from 'antd';
+import { Modal, Descriptions } from 'antd';
 import { DeleteOutlined, EditOutlined, ToolOutlined, MoreOutlined } from '@ant-design/icons';
+import MobileActionsMenu from '../../components/mobileActionsMenu/MobileActionsMenu';
+import { cleanupMobileBlockers } from '../../utils/cleanupMobileBlockers';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 import { isErrorWithMessage } from '../../utils/isErrorWithMessage';
 import { Paths } from '../../path';
@@ -39,6 +41,7 @@ const Employee = () => {
     const params = useParams<{ id: string }>();
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
+    const [isActionsDropdownOpen, setIsActionsDropdownOpen] = useState(false)
     const { data, isLoading } = useGetEmployeeQuery(params.id || "")
     const employeeData = data as ExtendedEmployee | undefined
     const [removeEmployee] = useRemoveEmployeeMutation();
@@ -55,14 +58,11 @@ const Employee = () => {
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    // Блокируем скрол страницы на мобильных
-    useEffect(() => {
-        if (!isMobile) return;
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [isMobile]);
+    const goToInventory = () => {
+        setIsActionsDropdownOpen(false);
+        cleanupMobileBlockers();
+        navigate(`/employee/${employeeData?.id}/inventory`);
+    };
 
     // Скрываем хедер при загрузке страницы сотрудника
     useEffect(() => {
@@ -153,69 +153,69 @@ const Employee = () => {
                 backPath={Paths.home}
                 actions={user?.id === employeeData.userId ? (
                     isMobile ? (
-                        <Dropdown
-                            trigger={['click']}
-                            dropdownRender={() => (
-                                <div style={{
-                                    background: 'var(--bg-primary)',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-                                    padding: '6px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '6px',
-                                    minWidth: '180px',
-                                }}>
-                                    <button
-                                        onClick={() => navigate(`/employee/edit/${employeeData.id}`)}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                            padding: '8px 12px', borderRadius: '6px',
-                                            border: 'none', background: '#1677ff',
-                                            color: '#fff', cursor: 'pointer',
-                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
-                                        }}
-                                    >
-                                        <EditOutlined /> Редактировать
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/employee/${employeeData.id}/inventory`)}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                            padding: '8px 12px', borderRadius: '6px',
-                                            border: 'none', background: '#52c41a',
-                                            color: '#fff', cursor: 'pointer',
-                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
-                                        }}
-                                    >
-                                        <ToolOutlined /> Инвентарь
-                                    </button>
-                                    <button
-                                        onClick={showModal}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                            padding: '8px 12px', borderRadius: '6px',
-                                            border: '1px solid #ff4d4f', background: '#fff',
-                                            color: '#ff4d4f', cursor: 'pointer',
-                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
-                                        }}
-                                    >
-                                        <DeleteOutlined /> Удалить
-                                    </button>
-                                </div>
-                            )}
-                        >
-                            <button style={{
-                                display: 'inline-flex', alignItems: 'center',
-                                height: '32px', padding: '0 12px', fontSize: '20px',
-                                borderRadius: '6px', border: '1px solid #d9d9d9',
-                                background: '#fff', color: 'rgba(0,0,0,0.88)',
-                                cursor: 'pointer', fontFamily: 'inherit',
-                            }}>
-                                <MoreOutlined />
+                        <>
+                            <button
+                                type="button"
+                                onClick={goToInventory}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    height: '32px', padding: '0 12px', fontSize: '14px',
+                                    borderRadius: '6px', border: 'none',
+                                    background: '#52c41a', color: '#fff',
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <ToolOutlined /> Инвентарь
                             </button>
-                        </Dropdown>
+                            <MobileActionsMenu
+                                open={isActionsDropdownOpen}
+                                onOpenChange={(open) => {
+                                    setIsActionsDropdownOpen(open);
+                                    if (!open) cleanupMobileBlockers();
+                                }}
+                                trigger={
+                                    <button
+                                        type="button"
+                                        style={{
+                                            display: 'inline-flex', alignItems: 'center',
+                                            height: '32px', padding: '0 12px', fontSize: '20px',
+                                            borderRadius: '6px', border: '1px solid #d9d9d9',
+                                            background: '#fff', color: 'rgba(0,0,0,0.88)',
+                                            cursor: 'pointer', fontFamily: 'inherit',
+                                        }}
+                                    >
+                                        <MoreOutlined />
+                                    </button>
+                                }
+                            >
+                                <button
+                                    type="button"
+                                    className="mobile-actions-menu-item mobile-actions-menu-item--blue"
+                                    onClick={() => {
+                                        setIsActionsDropdownOpen(false);
+                                        cleanupMobileBlockers();
+                                        navigate(`/employee/edit/${employeeData.id}`);
+                                    }}
+                                >
+                                    <EditOutlined /> Редактировать
+                                </button>
+                                <button
+                                    type="button"
+                                    className="mobile-actions-menu-item"
+                                    onClick={() => {
+                                        setIsActionsDropdownOpen(false);
+                                        showModal();
+                                    }}
+                                    style={{
+                                        background: '#fff',
+                                        color: '#ff4d4f',
+                                        border: '1px solid #ff4d4f',
+                                    }}
+                                >
+                                    <DeleteOutlined /> Удалить
+                                </button>
+                            </MobileActionsMenu>
+                        </>
                     ) : (
                         <>
                             <button

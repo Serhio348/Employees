@@ -180,11 +180,30 @@
 
 /* Стили для модальных окон на мобильных */
 @media (max-width: 768px) {
+    .ant-modal-wrap {
+        align-items: flex-start !important;
+        padding-top: 12px !important;
+        overflow-y: auto !important;
+    }
+
     .ant-modal {
-        margin: 0 !important;
-        top: 20px !important;
-        max-width: 90% !important;
+        margin: 0 auto !important;
+        top: 0 !important;
+        max-width: 95vw !important;
+        max-height: calc(100vh - 24px) !important;
         border-radius: 8px !important;
+        padding-bottom: 0 !important;
+    }
+
+    .ant-modal-content {
+        max-height: calc(100vh - 24px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .ant-modal-body {
+        overflow-y: auto !important;
+        flex: 1 1 auto !important;
     }
     
     .ant-modal-header {

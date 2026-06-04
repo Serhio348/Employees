@@ -10,6 +10,10 @@ interface Props {
     employee: Employee;
     inventory: InventoryItem[];
     sizNorms: SizNorm[];
+    onOpen?: () => void;
+    showTrigger?: boolean;
+    exportModalOpen?: boolean;
+    onExportModalOpenChange?: (open: boolean) => void;
 }
 
 type InventoryType = 'спецодежда' | 'сиз' | 'инструмент' | 'оборудование';
@@ -21,8 +25,18 @@ const EXPORT_TYPE_OPTIONS: Array<{ label: string; value: InventoryType }> = [
     { label: 'Оборудование', value: 'оборудование' },
 ];
 
-const ExportCard = ({ employee, inventory, sizNorms }: Props) => {
-    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+const ExportCard = ({
+    employee,
+    inventory,
+    sizNorms,
+    onOpen,
+    showTrigger = true,
+    exportModalOpen,
+    onExportModalOpenChange,
+}: Props) => {
+    const [internalExportModalOpen, setInternalExportModalOpen] = useState(false);
+    const isExportModalOpen = exportModalOpen ?? internalExportModalOpen;
+    const setExportModalOpen = onExportModalOpenChange ?? setInternalExportModalOpen;
     const [selectedTypes, setSelectedTypes] = useState<InventoryType[]>(
         EXPORT_TYPE_OPTIONS.map(option => option.value)
     );
@@ -478,18 +492,23 @@ ${filteredNorms.length > 0 ? `
 
     return (
         <>
-            <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={() => setIsExportModalOpen(true)}
-            >
-                Экспорт карточки
-            </Button>
+            {showTrigger && (
+                <Button
+                    type="primary"
+                    icon={<FilePdfOutlined />}
+                    onClick={() => {
+                        onOpen?.();
+                        setExportModalOpen(true);
+                    }}
+                >
+                    Экспорт карточки
+                </Button>
+            )}
 
             <Modal
                 title="Экспорт карточки"
                 open={isExportModalOpen}
-                onCancel={() => setIsExportModalOpen(false)}
+                onCancel={() => setExportModalOpen(false)}
                 okText="Экспортировать"
                 cancelText="Отмена"
                 onOk={() => {
@@ -498,7 +517,7 @@ ${filteredNorms.length > 0 ? `
                         return;
                     }
 
-                    setIsExportModalOpen(false);
+                    setExportModalOpen(false);
                     exportToPDF();
                 }}
             >

@@ -15,7 +15,7 @@ const Layout = ({ children }: Props) => {
     return (
         <div className={styles.main}>
             {!isHeaderHidden && <Header />}
-            <AntLayout.Content style={{ height: '100%' }}>
+            <AntLayout.Content className={styles.content}>
                 {children}
             </AntLayout.Content>
         </div>

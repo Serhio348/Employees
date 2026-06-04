@@ -7,12 +7,13 @@ import EmployeeHeader from '../../components/employeeHeader/EmployeeHeader';
 import { useHeader } from '../../contexts/HeaderContext';
 import { useResponsive } from '../../hooks/useResponsive';
 import './EmployeeInventory.css';
-import { Row, Col, Button, Statistic, Card, Tabs, Dropdown } from 'antd';
-import { DownOutlined, CloseOutlined, MoreOutlined } from '@ant-design/icons';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Row, Col, Statistic, Card, Tabs, Modal } from 'antd';
+import { MoreOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { cleanupMobileBlockers, scheduleCleanupMobileBlockers } from '../../utils/cleanupMobileBlockers';
 import InventoryForm from '../../components/inventoryForm/InventoryForm';
 import InventoryList from '../../components/inventoryList/InventoryList';
-import SizNormsTable from '../../components/sizNormsTable/SizNormsTable';
+import NormsPanel from '../../components/normsPanel/NormsPanel';
+import MobileActionsMenu from '../../components/mobileActionsMenu/MobileActionsMenu';
 import ExportCard from '../../components/exportCard/ExportCard';
 import {
     useGetEmployeeInventoryQuery,
@@ -34,6 +35,7 @@ const EmployeeInventory = () => {
     const [isNormsModalVisible, setIsNormsModalVisible] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
     const [isActionsDropdownOpen, setIsActionsDropdownOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [, setDeletingIds] = useState<string[]>([]);
     // Получаем активную вкладку из URL параметров
     const getTabFromUrl = () => {
@@ -61,19 +63,6 @@ const EmployeeInventory = () => {
     // Разделяем инвентарь на активный и списанный
     const activeInventory = allInventory.filter(item => item.status !== 'списан');
     const writtenOffInventory = allInventory.filter(item => item.status === 'списан');
-    
-    // Функция для получения названия текущего таба
-    const getTabLabel = (key: string): string => {
-        const tabLabels: { [key: string]: string } = {
-            'active': isMobile ? `Все (${activeInventory.length})` : `Все активные (${activeInventory.length})`,
-            'спецодежда': `Спецодежда (${activeInventory.filter(item => item.itemType === 'спецодежда').length})`,
-            'сиз': `СИЗ (${activeInventory.filter(item => item.itemType === 'сиз').length})`,
-            'инструмент': `Инструмент (${activeInventory.filter(item => item.itemType === 'инструмент').length})`,
-            'оборудование': `Оборудование (${activeInventory.filter(item => item.itemType === 'оборудование').length})`,
-            'written-off': isMobile ? `Списанный (${writtenOffInventory.length})` : `Списанный инвентарь (${writtenOffInventory.length})`
-        };
-        return tabLabels[key] || key;
-    };
     
     // Функция для обработки смены таба
     const handleTabChange = (key: string) => {
@@ -117,14 +106,6 @@ const EmployeeInventory = () => {
         };
     }, []);
 
-
-    // Блокируем скрол страницы — прокрутка только внутри таблицы
-    useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, []);
 
     // Скрываем хедер при загрузке страницы инвентаря
     useEffect(() => {
@@ -223,13 +204,19 @@ const EmployeeInventory = () => {
         setEditingItem(null);
         setIsModalVisible(true);
         setError("");
+        if (isMobile) {
+            window.scrollTo(0, 0);
+        }
     };
 
     const openEditModal = useCallback((item: InventoryItem) => {
         setEditingItem(item);
         setIsModalVisible(true);
         setError("");
-    }, []);
+        if (isMobile) {
+            window.scrollTo(0, 0);
+        }
+    }, [isMobile]);
 
     const closeModal = () => {
         setIsModalVisible(false);
@@ -237,13 +224,20 @@ const EmployeeInventory = () => {
         setError("");
     };
 
-    const openNormsModal = () => {
-        setIsNormsModalVisible(true);
-    };
+    const closeActionsMenu = useCallback(() => {
+        setIsActionsDropdownOpen(false);
+        cleanupMobileBlockers();
+    }, []);
 
-    const closeNormsModal = () => {
+    const openNormsModal = useCallback(() => {
+        closeActionsMenu();
+        setIsNormsModalVisible(true);
+    }, [closeActionsMenu]);
+
+    const closeNormsModal = useCallback(() => {
         setIsNormsModalVisible(false);
-    };
+        scheduleCleanupMobileBlockers();
+    }, []);
 
     const handleViewAddons = useCallback((item: InventoryItem) => {
         navigate(`/inventory/${item.id}/addons`);
@@ -374,66 +368,63 @@ const EmployeeInventory = () => {
                     }}
                     backPath={`/employee/${employeeId}`}
                     actions={isMobile ? (
-                        <Dropdown
-                            trigger={['click']}
-                            open={isActionsDropdownOpen}
-                            onOpenChange={setIsActionsDropdownOpen}
-                            dropdownRender={() => (
-                                <div style={{
-                                    background: 'var(--bg-primary)',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-                                    padding: '6px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '6px',
-                                    minWidth: '190px',
-                                }}>
+                        <>
+                            <MobileActionsMenu
+                                open={isActionsDropdownOpen}
+                                onOpenChange={setIsActionsDropdownOpen}
+                                trigger={
                                     <button
-                                        onClick={() => { setIsActionsDropdownOpen(false); openAddModal(); }}
+                                        type="button"
                                         style={{
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                            padding: '8px 12px', borderRadius: '6px',
-                                            border: 'none', background: '#52c41a',
-                                            color: '#fff', cursor: 'pointer',
-                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
+                                            display: 'inline-flex', alignItems: 'center',
+                                            height: '32px', padding: '0 12px', fontSize: '20px',
+                                            borderRadius: '6px', border: '1px solid #d9d9d9',
+                                            background: '#fff', color: 'rgba(0,0,0,0.88)',
+                                            cursor: 'pointer', fontFamily: 'inherit',
                                         }}
                                     >
-                                        + Добавить предмет
+                                        <MoreOutlined />
                                     </button>
-                                    <button
-                                        onClick={() => { setIsActionsDropdownOpen(false); openNormsModal(); }}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                            padding: '8px 12px', borderRadius: '6px',
-                                            border: 'none', background: '#1890ff',
-                                            color: '#fff', cursor: 'pointer',
-                                            fontFamily: 'inherit', fontSize: '14px', width: '100%',
-                                        }}
-                                    >
-                                        Нормативы СИЗ
-                                    </button>
-                                    <ExportCard
-                                        employee={employee}
-                                        inventory={allInventory}
-                                        sizNorms={sizNorms}
-                                    />
-                                </div>
-                            )}
-                        >
-                            <button
-                                style={{
-                                    display: 'inline-flex', alignItems: 'center',
-                                    height: '32px', padding: '0 12px', fontSize: '20px',
-                                    borderRadius: '6px', border: '1px solid #d9d9d9',
-                                    background: '#fff', color: 'rgba(0,0,0,0.88)',
-                                    cursor: 'pointer', fontFamily: 'inherit',
-                                }}
+                                }
                             >
-                                <MoreOutlined />
-                            </button>
-                        </Dropdown>
+                                <button
+                                    type="button"
+                                    className="mobile-actions-menu-item mobile-actions-menu-item--green"
+                                    onClick={() => {
+                                        closeActionsMenu();
+                                        openAddModal();
+                                    }}
+                                >
+                                    + Добавить предмет
+                                </button>
+                                <button
+                                    type="button"
+                                    className="mobile-actions-menu-item mobile-actions-menu-item--blue"
+                                    onClick={openNormsModal}
+                                >
+                                    Нормативы СИЗ
+                                </button>
+                                <button
+                                    type="button"
+                                    className="mobile-actions-menu-item mobile-actions-menu-item--export"
+                                    onClick={() => {
+                                        closeActionsMenu();
+                                        setIsExportModalOpen(true);
+                                    }}
+                                >
+                                    <FilePdfOutlined />
+                                    Экспорт карточки
+                                </button>
+                            </MobileActionsMenu>
+                            <ExportCard
+                                employee={employee}
+                                inventory={allInventory}
+                                sizNorms={sizNorms}
+                                showTrigger={false}
+                                exportModalOpen={isExportModalOpen}
+                                onExportModalOpenChange={setIsExportModalOpen}
+                            />
+                        </>
                     ) : (
                         <>
                             <button
@@ -557,32 +548,18 @@ const EmployeeInventory = () => {
                 <Col span={24}>
                     {isMobile ? (
                         <>
-                            <Dropdown
-                                menu={{
-                                    items: tabMenuItems,
-                                    onClick: ({ key }) => handleTabChange(key),
-                                    selectedKeys: [activeTab],
-                                }}
-                                trigger={['click']}
-                                placement="bottomLeft"
+                            <select
+                                className="inventory-tab-select"
+                                value={activeTab}
+                                onChange={(event) => handleTabChange(event.target.value)}
+                                aria-label="Выбор раздела инвентаря"
                             >
-                                <Button
-                                    style={{
-                                        width: '100%',
-                                        marginBottom: '16px',
-                                        textAlign: 'left',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        height: '40px',
-                                        fontSize: '14px',
-                                        fontWeight: '500'
-                                    }}
-                                >
-                                    <span>{getTabLabel(activeTab)}</span>
-                                    <DownOutlined />
-                                </Button>
-                            </Dropdown>
+                                {tabMenuItems.map(({ key, label }) => (
+                                    <option key={key} value={key}>
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
                             {tabItems.find(t => t.key === activeTab)?.children ?? tabItems[0].children}
                         </>
                     ) : (
@@ -598,66 +575,30 @@ const EmployeeInventory = () => {
                 </Col>
             </Row>
 
-            <Dialog.Root open={isModalVisible} onOpenChange={(open) => { if (!open) closeModal(); }}>
-                <Dialog.Portal>
-                    <Dialog.Overlay className="radix-dialog-overlay" />
-                    <Dialog.Content
-                        className="radix-dialog-content"
-                        style={{ maxWidth: isMobile ? '95vw' : '600px' }}
-                        aria-describedby={undefined}
-                    >
-                        <Dialog.Title className="radix-dialog-title">
-                            {editingItem ? "Редактировать предмет" : "Добавить предмет"}
-                        </Dialog.Title>
-                        <Dialog.Close asChild>
-                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
-                                <CloseOutlined />
-                            </button>
-                        </Dialog.Close>
-                        <div
-                            style={{
-                                padding: isMobile ? '4px 0' : '8px 0',
-                            }}
-                        >
-                            <InventoryForm
-                                title=""
-                                btnText={editingItem ? "Обновить" : "Добавить"}
-                                onFinish={editingItem ? handleEditItem : handleAddItem}
-                                error={error}
-                                item={editingItem || undefined}
-                                employeeId={employeeId}
-                                loading={isUpdating || isAdding}
-                            />
-                        </div>
-                    </Dialog.Content>
-                </Dialog.Portal>
-            </Dialog.Root>
+            <Modal
+                title={editingItem ? "Редактировать предмет" : "Добавить предмет"}
+                open={isModalVisible}
+                onCancel={closeModal}
+                footer={null}
+                width={isMobile ? '95vw' : 600}
+                centered={!isMobile}
+                destroyOnClose
+                style={isMobile ? { top: 12, paddingBottom: 0 } : undefined}
+                bodyStyle={isMobile ? { maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' } : undefined}
+            >
+                <InventoryForm
+                    title=""
+                    btnText={editingItem ? "Обновить" : "Добавить"}
+                    onFinish={editingItem ? handleEditItem : handleAddItem}
+                    error={error}
+                    item={editingItem || undefined}
+                    employeeId={employeeId}
+                    loading={isUpdating || isAdding}
+                />
+            </Modal>
 
-            <Dialog.Root open={isNormsModalVisible} onOpenChange={(open) => { if (!open) closeNormsModal(); }}>
-                <Dialog.Portal>
-                    <Dialog.Overlay className="radix-dialog-overlay" />
-                    <Dialog.Content
-                        className="radix-dialog-content"
-                        style={{ maxWidth: isMobile ? '95vw' : '1000px', width: '90vw' }}
-                        aria-describedby={undefined}
-                    >
-                        <Dialog.Title className="radix-dialog-title">
-                            Нормативы СИЗ
-                        </Dialog.Title>
-                        <Dialog.Close asChild>
-                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
-                                <CloseOutlined />
-                            </button>
-                        </Dialog.Close>
-                        <div
-                            className="radix-dialog-scroll"
-                            style={{ maxHeight: isMobile ? '70vh' : '65vh' }}
-                        >
-                            <SizNormsTable />
-                        </div>
-                    </Dialog.Content>
-                </Dialog.Portal>
-            </Dialog.Root>
+            {/* Нормативы СИЗ — отдельная панель NormsPanel (без Ant Modal) */}
+            <NormsPanel open={isNormsModalVisible} onClose={closeNormsModal} />
 
             </div>
         </Layout>

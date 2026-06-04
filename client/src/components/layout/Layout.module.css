@@ -12,6 +12,11 @@
     position: relative;
 }
 
+.content {
+    min-height: 0;
+    height: auto;
+}
+
 
 /* Анимация появления */
 .main {
@@ -129,16 +134,19 @@
     padding: 16px;
 }
 
-/* Компактные стили для модальных окон */
-.main .ant-modal {
-    max-height: 90vh;
-    overflow-y: auto;
+/* Компактные стили для модальных окон (десктоп) */
+@media (min-width: 769px) {
+    .main .ant-modal {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
 }
 
 /* Адаптивные стили для мобильных устройств */
 @media (max-width: 768px) {
     .main {
         padding: 16px;
+        min-height: auto;
     }
     
     .main .ant-card-body {

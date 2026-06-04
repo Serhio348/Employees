@@ -1,7 +1,6 @@
 import React, { memo, useState } from 'react';
-import { Table, Tag, Button, Form, Input, Select, message, Row, Col, Dropdown, Menu } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, MoreOutlined, CloseOutlined } from '@ant-design/icons';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Table, Tag, Button, Form, Input, Select, message, Row, Col, Card } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useResponsive } from '../../hooks/useResponsive';
 import './SizNormsTable.css';
 import { ColumnsType } from 'antd/es/table';
@@ -153,45 +152,22 @@ const SizNormsTable = () => {
             align: 'center' as const,
             render: (_: any, record: SizNorm) => {
                 if (isMobile) {
-                    const menu = (
-                        <Menu>
-                            <Menu.Item 
-                                key="edit" 
+                    return (
+                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                            <Button
+                                type="primary"
+                                size="small"
                                 icon={<EditOutlined />}
                                 onClick={() => handleEdit(record)}
-                            >
-                                Редактировать
-                            </Menu.Item>
-                            <Menu.Item 
-                                key="delete" 
-                                icon={<DeleteOutlined />}
-                                danger
-                                onClick={() => record.id && handleDelete(record.id)}
-                            >
-                                Удалить
-                            </Menu.Item>
-                        </Menu>
-                    );
-
-                    return (
-                        <Dropdown 
-                            overlay={menu} 
-                            trigger={['click']}
-                            placement="bottomRight"
-                            overlayStyle={{
-                                position: 'fixed',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                zIndex: 1050
-                            }}
-                        >
-                            <Button 
-                                type="text" 
-                                icon={<MoreOutlined />}
-                                size="small"
-                                style={{ fontSize: '12px' }}
                             />
-                        </Dropdown>
+                            <Button
+                                type="primary"
+                                danger
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                onClick={() => record.id && handleDelete(record.id)}
+                            />
+                        </div>
                     );
                 }
 
@@ -282,102 +258,81 @@ const SizNormsTable = () => {
                 />
             </div>
             
-            <Dialog.Root
-                open={isModalVisible}
-                onOpenChange={(open) => { if (!open) handleModalCancel(); }}
-            >
-                <Dialog.Portal>
-                    <Dialog.Overlay
-                        className="radix-dialog-overlay"
-                        style={{ zIndex: 1100 }}
-                    />
-                    <Dialog.Content
-                        className="radix-dialog-content"
-                        style={{
-                            maxWidth: isMobile ? '95vw' : '600px',
-                            zIndex: 1101,
-                        }}
-                        aria-describedby={undefined}
+            {isModalVisible && (
+                <Card
+                    title={editingNorm ? 'Редактировать норматив' : 'Добавить норматив'}
+                    size="small"
+                    style={{ marginBottom: 16 }}
+                    extra={
+                        <Button type="text" size="small" onClick={handleModalCancel}>
+                            Закрыть
+                        </Button>
+                    }
+                >
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        initialValues={{ periodType: 'months' }}
+                        style={{ fontSize: isMobile ? '11px' : '14px' }}
                     >
-                        <Dialog.Title className="radix-dialog-title">
-                            {editingNorm ? "Редактировать норматив" : "Добавить норматив"}
-                        </Dialog.Title>
-                        <Dialog.Close asChild>
-                            <button className="radix-dialog-close-btn" aria-label="Закрыть">
-                                <CloseOutlined />
-                            </button>
-                        </Dialog.Close>
-                        <Form
-                            form={form}
-                            layout="vertical"
-                            initialValues={{ periodType: 'months' }}
-                            style={{ fontSize: isMobile ? '11px' : '14px' }}
+                        <Form.Item
+                            name="name"
+                            label="Наименование СИЗ"
+                            rules={[{ required: true, message: 'Введите наименование СИЗ' }]}
+                            style={{ marginBottom: 12 }}
                         >
-                            <Form.Item
-                                name="name"
-                                label="Наименование СИЗ"
-                                rules={[{ required: true, message: 'Введите наименование СИЗ' }]}
-                                style={{ marginBottom: 12 }}
+                            <Input placeholder="Введите наименование СИЗ" style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item
+                            name="classification"
+                            label="Классификация (маркировка)"
+                            style={{ marginBottom: 12 }}
+                        >
+                            <Select
+                                placeholder="Выберите классификацию"
+                                allowClear
+                                style={{ width: '100%' }}
+                                getPopupContainer={(trigger) => trigger.parentElement || document.body}
                             >
-                                <Input
-                                    placeholder="Введите наименование СИЗ"
-                                    style={{ width: '100%' }}
-                                />
-                            </Form.Item>
-                            <Form.Item
-                                name="classification"
-                                label="Классификация (маркировка)"
-                                style={{ marginBottom: 12 }}
+                                <Select.Option value="Тн">Тн (теплозащитные)</Select.Option>
+                                <Select.Option value="ЗМи">ЗМи (от механических воздействий)</Select.Option>
+                                <Select.Option value="Ми">Ми (механические воздействия)</Select.Option>
+                                <Select.Option value="В">В (влагозащитные)</Select.Option>
+                                <Select.Option value="Вн">Вн (влагонепроницаемые)</Select.Option>
+                                <Select.Option value="ЗП">ЗП (защитные от пыли)</Select.Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            name="periodType"
+                            label="Тип срока носки"
+                            rules={[{ required: true, message: 'Выберите тип срока носки' }]}
+                            style={{ marginBottom: 12 }}
+                        >
+                            <Select
+                                style={{ width: '100%' }}
+                                getPopupContainer={(trigger) => trigger.parentElement || document.body}
                             >
-                                <Select
-                                    placeholder="Выберите классификацию"
-                                    allowClear
-                                    style={{ width: '100%' }}
-                                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
-                                >
-                                    <Select.Option value="Тн">Тн (теплозащитные)</Select.Option>
-                                    <Select.Option value="ЗМи">ЗМи (от механических воздействий)</Select.Option>
-                                    <Select.Option value="Ми">Ми (механические воздействия)</Select.Option>
-                                    <Select.Option value="В">В (влагозащитные)</Select.Option>
-                                    <Select.Option value="Вн">Вн (влагонепроницаемые)</Select.Option>
-                                    <Select.Option value="ЗП">ЗП (защитные от пыли)</Select.Option>
-                                </Select>
-                            </Form.Item>
-                            <Form.Item
-                                name="periodType"
-                                label="Тип срока носки"
-                                rules={[{ required: true, message: 'Выберите тип срока носки' }]}
-                                style={{ marginBottom: 12 }}
-                            >
-                                <Select
-                                    style={{ width: '100%' }}
-                                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
-                                >
-                                    <Select.Option value="months">В месяцах</Select.Option>
-                                    <Select.Option value="until_worn">До износа</Select.Option>
-                                </Select>
-                            </Form.Item>
-                            <Form.Item
-                                name="period"
-                                label="Срок носки"
-                                rules={[{ required: true, message: 'Введите срок носки' }]}
-                                style={{ marginBottom: 0 }}
-                            >
-                                <Input
-                                    placeholder="Введите срок носки (число)"
-                                    style={{ width: '100%' }}
-                                />
-                            </Form.Item>
-                        </Form>
-                        <div className="radix-dialog-footer">
-                            <Button onClick={handleModalCancel}>Отмена</Button>
-                            <Button type="primary" onClick={handleModalOk}>
-                                {editingNorm ? "Сохранить" : "Добавить"}
-                            </Button>
-                        </div>
-                    </Dialog.Content>
-                </Dialog.Portal>
-            </Dialog.Root>
+                                <Select.Option value="months">В месяцах</Select.Option>
+                                <Select.Option value="until_worn">До износа</Select.Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            name="period"
+                            label="Срок носки"
+                            rules={[{ required: true, message: 'Введите срок носки' }]}
+                            style={{ marginBottom: 12 }}
+                        >
+                            <Input placeholder="Введите срок носки (число)" style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Form>
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                        <Button onClick={handleModalCancel}>Отмена</Button>
+                        <Button type="primary" onClick={handleModalOk}>
+                            {editingNorm ? 'Сохранить' : 'Добавить'}
+                        </Button>
+                    </div>
+                </Card>
+            )}
             
         </>
     );

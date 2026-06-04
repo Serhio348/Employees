@@ -2,6 +2,7 @@ require('dotenv').config();
 const { prisma } = require("../../prisma/prisma-client");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "8h";
 /**
  * @route POST /api/user/login
  * @desс Логин
@@ -39,7 +40,7 @@ const login = async (req, res) => {
                 email: user.email,
                 name: user.name,
                 lastName: user.lastName,
-                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1h" }),
+                token: jwt.sign({ id: user.id }, secret, { expiresIn: JWT_EXPIRES_IN }),
             });
         } else {
             return res
@@ -108,7 +109,7 @@ const register = async (req, res) => {
                 email: user.email,
                 name,
                 lastName,
-                token: jwt.sign({ id: user.id }, secret, { expiresIn: "1h" }),
+                token: jwt.sign({ id: user.id }, secret, { expiresIn: JWT_EXPIRES_IN }),
             });
         } else {
             return res
