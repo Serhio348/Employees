@@ -17,13 +17,15 @@ export const getDeferredInstallPrompt = (): BeforeInstallPromptEvent | null =>
 /** Браузер разрешил показать нативный диалог установки (Chrome / Edge на Android и desktop). */
 export const canShowNativeInstallPrompt = (): boolean => getDeferredInstallPrompt() != null;
 
+export type PwaInstallUnavailableReason = 'dev' | 'no_sw' | 'not_https' | 'unknown';
+
 export type PwaInstallResult =
     | { status: 'accepted' }
     | { status: 'dismissed' }
     | { status: 'ios_manual' }
-    | { status: 'unavailable'; reason: 'dev' | 'no_sw' | 'not_https' | 'unknown' };
+    | { status: 'unavailable'; reason: PwaInstallUnavailableReason };
 
-export const getInstallUnavailableReason = (): PwaInstallResult['reason'] => {
+export const getInstallUnavailableReason = (): PwaInstallUnavailableReason => {
     if (process.env.NODE_ENV !== 'production') return 'dev';
     if (!window.isSecureContext) return 'not_https';
     if (!('serviceWorker' in navigator)) return 'no_sw';
@@ -49,7 +51,7 @@ export const requestPwaInstall = async (): Promise<PwaInstallResult> => {
     return { status: 'unavailable', reason: getInstallUnavailableReason() };
 };
 
-export const installUnavailableMessage = (reason: PwaInstallResult extends { status: 'unavailable' } ? PwaInstallResult['reason'] : never): string => {
+export const installUnavailableMessage = (reason: PwaInstallUnavailableReason): string => {
     switch (reason) {
         case 'dev':
             return 'В режиме разработки (npm run dev) установка недоступна. Откройте собранную версию сайта (npm run build и деплой по HTTPS).';
