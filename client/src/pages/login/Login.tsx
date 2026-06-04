@@ -9,6 +9,7 @@ import { Paths } from "../../path";
 import { UserData, useLoginMutation } from "../../app/services/auth";
 import { isErrorWithMessage } from "../../utils/isErrorWithMessage";
 import ErrorMessage from "../../components/errorMessage/ErrorMessage";
+import "../../styles/authForm.css";
 
 
 
@@ -36,14 +37,14 @@ const Login = () => {
         <Layout>
             <Row align="middle" justify="center">
                 <Card title="Войдите" style={{ width: "30rem" }}>
-                    <Form onFinish={login}>
+                    <Form className="auth-form" onFinish={login}>
                         <CustomInput type="email" name="email" placeholder="Email" />
                         <PasswordInput name="password" placeholder="Пароль" />
-                        <CustomButton type="primary" htmlType="submit">
+                        <CustomButton type="primary" htmlType="submit" size="large">
                             Войти
                         </CustomButton>
                     </Form>
-                    <Space direction="vertical" size="large">
+                    <Space direction="vertical" size="middle" className="auth-form-footer">
                         <Typography.Text>
                             Нет аккаунта? <Link to={Paths.register}>Зарегистрируйтесь</Link>
                         </Typography.Text>

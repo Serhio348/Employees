@@ -107,17 +107,32 @@
     color: var(--text-primary);
 }
 
-.main .ant-input,
+/* Одинаковый вид: обычный Input и Input.Password (affix-wrapper) */
+.main .ant-input-affix-wrapper,
+.main .ant-input:not(.ant-input-affix-wrapper .ant-input),
 .main .ant-select-selector {
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
 }
 
-.main .ant-input:focus,
+.main .ant-input-affix-wrapper .ant-input {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.main .ant-input-affix-wrapper-focused,
+.main .ant-input-affix-wrapper:focus-within,
+.main .ant-input:focus:not(.ant-input-affix-wrapper .ant-input),
 .main .ant-select-focused .ant-select-selector {
     border-color: var(--border-accent);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.main .ant-form-item .ant-input-affix-wrapper,
+.main .ant-form-item .ant-input:not(.ant-input-affix-wrapper .ant-input) {
+    width: 100%;
 }
 
 /* Компактные стили для таблиц */
