@@ -1,5 +1,6 @@
 const { prisma } = require('../../prisma/prisma-client');
 const { getAccessibleEmployee, getAccessibleInventoryItem, isAdminUser } = require('../utils/access');
+const { syncInventoryAddonDates } = require('../utils/inventoryAddons');
 
 /**
  * @route GET /api/inventory
@@ -150,6 +151,15 @@ const edit = async (req, res) => {
                 sizNormId: data.sizNormId,
             },
         });
+
+        const issueDateChanged = data.issueDate
+            && new Date(data.issueDate).getTime() !== new Date(existing.issueDate).getTime();
+        const normChanged = data.sizNormId !== undefined && data.sizNormId !== existing.sizNormId;
+
+        if (issueDateChanged || normChanged) {
+            const sizNorms = await prisma.sizNorm.findMany();
+            await syncInventoryAddonDates(prisma, inventoryItem, sizNorms);
+        }
 
         res.status(200).json(inventoryItem);
     } catch (error) {
